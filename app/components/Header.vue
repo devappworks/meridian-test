@@ -1047,7 +1047,7 @@ a:hover {
   color: var(--text-white);
   text-transform: uppercase;
   padding: 8px 0;
-  transition: color 0.3s ease;
+  transition: var(--transition);
 }
 
 .main-nav a:active,
@@ -1114,7 +1114,7 @@ a:hover {
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition: var(--transition);
   transform-origin: top right;
   min-width: 160px;
   white-space: nowrap;
@@ -1155,7 +1155,7 @@ a:hover {
   gap: 12px;
   padding: 12px 16px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: var(--transition);
   border-radius: 4px;
 }
 
@@ -1264,7 +1264,7 @@ a:hover {
   justify-content: center;
   cursor: pointer;
   z-index: 2;
-  transition: background-color 0.3s ease;
+  transition: var(--transition);
 }
 
 .custom-nav:hover {
@@ -1286,7 +1286,7 @@ a:hover {
   color: var(--text-white);
   padding: 8px 12px;
   border-radius: 8px;
-  transition: background-color 0.2s;
+  transition: var(--transition);
   display: inline-block;
   text-align: center;
   white-space: nowrap;
@@ -1360,7 +1360,7 @@ a:hover {
   border: 1px solid var(--bg-20);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: var(--transition);
   z-index: 1000;
   width: 290px;
 }
@@ -1446,7 +1446,7 @@ a:hover {
   border: 1px solid var(--bg-20);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: var(--transition);
   z-index: 1000;
   margin-bottom: 8px;
   width: 290px;
@@ -1465,7 +1465,7 @@ a:hover {
 .desktop-my-news .tooltip.show {
   opacity: 1;
   visibility: visible;
-  transition: all 0.3s ease;
+  transition: var(--transition);
 }
 
 .search-icon:hover {
@@ -1493,7 +1493,7 @@ a:hover {
   width: 100%;
   height: 2px;
   background-color: var(--text-white);
-  transition: all 0.3s ease;
+  transition: var(--transition);
 }
 
 .burger-line.open:nth-child(1) {
@@ -1520,7 +1520,7 @@ a:hover {
   height: auto;
   background-color: var(--bg-90);
   transform: translateX(-100%);
-  transition: transform 0.3s ease;
+  transition: var(--transition);
   z-index: 99;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;

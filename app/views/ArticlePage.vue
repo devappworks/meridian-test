@@ -822,6 +822,12 @@ export default {
   gap: 4px;
 }
 
+.comments-count a {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .comments-count .count {
   width: 32px;
   height: 14px;

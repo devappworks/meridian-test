@@ -53,6 +53,7 @@
   padding: 0;
   box-sizing: border-box;
   font-family: var(--actions);
+  transition: var(--transition);
 }
 
 body {
@@ -60,6 +61,18 @@ body {
   color: var(--text-white);
   line-height: 1.5;
   overflow-x: hidden;
+}
+
+.container, .container-fluid, .container-lg, .container-md, .container-sm, .container-xl, .container-xxl {
+  padding: 0 !important;
+}
+
+p {
+  margin-bottom: 0;
+}
+
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 0;
 }
 
 .container {
@@ -162,7 +175,9 @@ h6 {
 }
 
 .btn:hover {
-  opacity: 0.9;
+  opacity: var(--hover);
+  background-color: var(--yellow-primary);
+  color: var(--text-100);
 }
 
 .btn-yellow {
