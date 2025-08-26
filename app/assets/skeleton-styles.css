@@ -1,0 +1,119 @@
+/* Shared Skeleton Styles - Based on Figma Design */
+
+/* Skeleton Animation Keyframes - Fixed direction */
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Base Skeleton Gradient - Updated to match Figma */
+.skeleton-gradient {
+  background: linear-gradient(90deg, #2a3a44 25%, #3a4a54 50%, #2a3a44 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite ease-in-out;
+}
+
+/* Container Backgrounds - Updated to match Figma */
+.skeleton-container-gradient {
+  background: linear-gradient(90deg, var(--bg-70) 0%, var(--bg-90) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite ease-in-out;
+}
+
+.skeleton-accent-bg {
+  background: #223b46;
+}
+
+/* Common Skeleton Elements */
+.skeleton-line {
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.skeleton-line.short {
+  width: 70%;
+}
+
+.skeleton-line.medium {
+  width: 85%;
+}
+
+.skeleton-image {
+  border-radius: 4px;
+}
+
+.skeleton-tag {
+  border-radius: 4px;
+}
+
+.skeleton-icon {
+  border-radius: 50%;
+}
+
+/* Skeleton Text Sizes */
+.skeleton-text-xs {
+  height: 12px;
+}
+
+.skeleton-text-sm {
+  height: 14px;
+}
+
+.skeleton-text-base {
+  height: 16px;
+}
+
+.skeleton-text-lg {
+  height: 18px;
+}
+
+.skeleton-text-xl {
+  height: 20px;
+}
+
+.skeleton-text-2xl {
+  height: 23px;
+}
+
+.skeleton-text-3xl {
+  height: 28px;
+}
+
+.skeleton-text-4xl {
+  height: 36px;
+}
+
+.skeleton-text-5xl {
+  height: 48px;
+}
+
+/* Responsive Skeleton Utilities */
+@media screen and (max-width: 768px) {
+  .skeleton-text-lg {
+    height: 16px;
+  }
+
+  .skeleton-text-xl {
+    height: 18px;
+  }
+
+  .skeleton-text-2xl {
+    height: 20px;
+  }
+
+  .skeleton-text-3xl {
+    height: 24px;
+  }
+
+  .skeleton-text-4xl {
+    height: 32px;
+  }
+
+  .skeleton-text-5xl {
+    height: 40px;
+  }
+}

@@ -1,0 +1,186 @@
+<template>
+  <div class="featured-section" v-if="article">
+    <div class="container">
+      <div class="featured-content" @click.stop="navigateToArticle">
+        <div class="featured-image">
+          <img :src="article.image" :alt="article.title" />
+          <div class="category-tag">
+            <span class="sport-tag" :class="sportClass(article.sport)">{{
+              article.sport
+            }}</span>
+          </div>
+        </div>
+        <div class="featured-text">
+          <h2 class="featured-title">{{ article.title }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "FeaturedArticle",
+  props: {
+    article: {
+      type: Object,
+      default: null,
+      validator: function (obj) {
+        return (
+          obj === null || ("title" in obj && "sport" in obj && "image" in obj)
+        );
+      },
+    },
+  },
+  methods: {
+    sportClass(sport) {
+      const sportMap = {
+        // Main sports
+        FUDBAL: "football",
+        "DOMAĆI FUDBAL": "football",
+        REPREZENTACIJE: "football",
+        "EVROPSKA TAKMIČENJA": "football",
+        KOŠARKA: "basketball",
+        EVROBASKET: "basketball",
+        TENIS: "tennis",
+        ODBOJKA: "volleyball",
+
+        // Extended sports
+        RUKOMET: "handball",
+        ATLETIKA: "athletics",
+        PLIVANJE: "swimming",
+        GIMNASTIKA: "gymnastics",
+        "BORILAČKE VEŠTINE": "fighting",
+        AUTOMOTO: "automotive",
+        BICIKLIZAM: "cycling",
+        "ZIMSKI SPORTOVI": "winter",
+        ESPORTS: "esports",
+        INTERVJUI: "interview",
+        "SPORT FOKUS": "focus",
+        "SPORTSKA GEOGRAFIJA": "geography",
+        "OSTALI SPORTOVI": "other",
+        "OSTALE VESTI": "other",
+      };
+      return sportMap[sport] || "other";
+    },
+    navigateToArticle() {
+      if (this.article && this.article.id) {
+        this.$router.push(`/article/${this.article.id}`);
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+.featured-section {
+  padding-top: 16px;
+}
+
+.featured-section .container {
+  max-width: 1440px;
+}
+
+.featured-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 10px 20px 10px 10px;
+  background: var(--dark-gradient);
+  border-radius: 8px;
+  position: relative;
+  flex-direction: row;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-bottom: -16px;
+}
+
+.featured-content:hover {
+  transform: translateY(var(--translate-y-hover));
+}
+
+.featured-image {
+  position: relative;
+  width: 604px;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+}
+
+.featured-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.category-tag {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+}
+
+/* Sport Category Tags - Matching Site Style */
+:deep(.sport-tag) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  font-family: var(--sport-category-tags);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 11px;
+  text-transform: uppercase;
+  border-radius: 4px;
+  background: rgba(17, 17, 17, 0.8);
+}
+
+.featured-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 24px;
+}
+
+.featured-title {
+  font-family: var(--title);
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 48px;
+  color: var(--text-white);
+}
+
+@media screen and (max-width: 1024px) {
+  .featured-content {
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .featured-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16/9;
+  }
+
+  .featured-text {
+    width: 100%;
+    padding: 16px 0;
+  }
+
+  .featured-title {
+    font-size: 28px;
+    line-height: 36px;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .featured-content {
+    gap: 10px;
+  }
+
+  .featured-text {
+    padding: 12px 0;
+  }
+}
+</style>

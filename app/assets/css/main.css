@@ -1,0 +1,341 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Condensed:wght@300;400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap");
+
+/* Global styles from old-spa/src/assets/styles.css */
+:root {
+  color-scheme: dark;
+  /* Background colors */
+  --bg-90: #10181c;
+  --bg-80: #16232a;
+  --bg-70: #1c2f38;
+  --bg-50: #284755;
+  --bg-40: #2e5465;
+  --bg-20: #396f85;
+  --bg-05: #4a9ab7;
+
+  /* Text colors */
+  --text-white: #ffffff;
+  --text-10: #e4e4e4;
+  --text-25: #bdbdbd;
+  --text-90: #2d2d2d;
+  --text-100: #1a1a1a;
+
+  /* Sport category colors */
+  --green-primary: #17bb00; /* Football */
+  --orange-primary: #ff7a00; /* Basketball */
+  --blue-primary: #08a0ff; /* Tennis */
+  --red-primary: #d11101;
+
+  /* Other colors */
+  --yellow-primary: #facc01;
+
+  /* Gradient backgrounds */
+  --red-gradient: linear-gradient(90deg, #a6080e 0%, #d11101 100%);
+  --dark-gradient: linear-gradient(90deg, #1c2f38 0%, #10181c 100%);
+  --vertical-dark-gradient: linear-gradient(0deg, #1c2f38 0%, #10181c 100%);
+
+  /* Animation and interaction properties */
+  --hover: 0.7;
+  --transition: all 0.3s ease-in-out;
+  --translate-y-hover: -4px;
+
+  --actions: "Roboto", sans-serif;
+  --sport-category-tags: "Roboto Condensed", sans-serif;
+  --urbanist: "Urbanist", sans-serif;
+  --title: "Barlow Condensed", sans-serif;
+  --article-content: "Source Sans Pro", sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--actions);
+}
+
+body {
+  background-color: var(--bg-90);
+  color: var(--text-white);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* Global two-column layout */
+.content-wrapper {
+  display: flex;
+  gap: 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.main-column {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-column {
+  width: 346px; /* fixed sidebar width as requested */
+  flex-shrink: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition);
+}
+
+a:hover,
+a:active,
+a:focus {
+  opacity: var(--hover);
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+/* Sport Category Tags */
+.sport-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  font-family: var(--sport-category-tags);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 11px;
+  text-transform: uppercase;
+  border-radius: 4px;
+  background: rgba(17, 17, 17, 0.8);
+}
+
+.sport-tag.football {
+  color: var(--green-primary);
+}
+
+.sport-tag.basketball {
+  color: var(--orange-primary);
+}
+
+.sport-tag.tennis {
+  color: var(--blue-primary);
+}
+
+.sport-tag.volleyball {
+  color: var(--red-primary);
+}
+
+.sport-tag.other {
+  color: var(--text-25);
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn-yellow {
+  background-color: var(--yellow-primary);
+  color: var(--text-100);
+}
+
+.section-title {
+  line-height: 26px;
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-90);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--red-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--red-primary);
+  opacity: 0.8;
+}
+
+/* Firefox scrollbar styles */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--red-primary) var(--bg-90);
+}
+
+/* Responsive Layout */
+@media screen and (max-width: 1200px) {
+  .container {
+    max-width: 100%;
+  }
+  .content-wrapper {
+    flex-direction: column;
+  }
+  .sidebar-column {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  /* .container {
+    padding: 0 20px;
+  } */
+}
+
+/* Skeleton styles from old-spa/src/assets/skeleton-styles.css */
+/* Shared Skeleton Styles - Based on Figma Design */
+
+/* Skeleton Animation Keyframes - Fixed direction */
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Base Skeleton Gradient - Updated to match Figma */
+.skeleton-gradient {
+  background: linear-gradient(90deg, #2a3a44 25%, #3a4a54 50%, #2a3a44 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite ease-in-out;
+}
+
+/* Container Backgrounds - Updated to match Figma */
+.skeleton-container-gradient {
+  background: linear-gradient(90deg, var(--bg-70) 0%, var(--bg-90) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite ease-in-out;
+}
+
+.skeleton-accent-bg {
+  background: #223b46;
+}
+
+/* Common Skeleton Elements */
+.skeleton-line {
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.skeleton-line.short {
+  width: 70%;
+}
+
+.skeleton-line.medium {
+  width: 85%;
+}
+
+.skeleton-image {
+  border-radius: 4px;
+}
+
+.skeleton-tag {
+  border-radius: 4px;
+}
+
+.skeleton-icon {
+  border-radius: 50%;
+}
+
+/* Skeleton Text Sizes */
+.skeleton-text-xs {
+  height: 12px;
+}
+
+.skeleton-text-sm {
+  height: 14px;
+}
+
+.skeleton-text-base {
+  height: 16px;
+}
+
+.skeleton-text-lg {
+  height: 18px;
+}
+
+.skeleton-text-xl {
+  height: 20px;
+}
+
+.skeleton-text-2xl {
+  height: 23px;
+}
+
+.skeleton-text-3xl {
+  height: 28px;
+}
+
+.skeleton-text-4xl {
+  height: 36px;
+}
+
+.skeleton-text-5xl {
+  height: 48px;
+}
+
+/* Responsive Skeleton Utilities */
+@media screen and (max-width: 768px) {
+  .skeleton-text-lg {
+    height: 16px;
+  }
+
+  .skeleton-text-xl {
+    height: 18px;
+  }
+
+  .skeleton-text-2xl {
+    height: 20px;
+  }
+
+  .skeleton-text-3xl {
+    height: 24px;
+  }
+
+  .skeleton-text-4xl {
+    height: 32px;
+  }
+
+  .skeleton-text-5xl {
+    height: 40px;
+  }
+}
