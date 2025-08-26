@@ -1530,6 +1530,11 @@ a:hover {
   transform: translateX(0);
 }
 
+.user-dropdown svg {
+  font-size: 16px;
+  height: 16px;
+}
+
 /* Use dynamic viewport height when supported for more accurate sizing */
 @supports (height: 100dvh) {
   .mobile-menu {
