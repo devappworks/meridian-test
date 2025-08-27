@@ -669,6 +669,7 @@ export default {
   color: var(--bg-05);
   border-left: 4px solid var(--bg-05);
   padding-left: 12px;
+  font-size: 24px;
 }
 
 .grid-container {
