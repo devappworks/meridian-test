@@ -348,15 +348,6 @@ export default {
 </script>
 
 <style scoped>
-.content-wrapper {
-  display: flex;
-  gap: 20px;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 20px;
-  margin-top: 24px;
-}
-
 .main-column {
   flex: 1;
   max-width: 800px;
@@ -699,10 +690,6 @@ ul {
 }
 
 @media screen and (max-width: 1200px) {
-  .content-wrapper {
-    flex-direction: column;
-  }
-
   .main-column {
     max-width: 100%;
   }

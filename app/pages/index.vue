@@ -467,17 +467,6 @@ export default {
 </script>
 
 <style scoped>
-.content-wrapper {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-  flex-direction: row;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
 .main-column {
   flex: 1;
   min-width: 0; /* Prevents flex items from overflowing */
@@ -753,10 +742,6 @@ export default {
 }
 
 @media screen and (max-width: 1024px) {
-  .content-wrapper {
-    flex-direction: column;
-  }
-
   .sidebar-column {
     width: 100%;
   }

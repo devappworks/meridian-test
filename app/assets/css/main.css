@@ -87,12 +87,15 @@ p {
   gap: 24px;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0 20px;
 }
 
 .main-column {
   flex: 1;
   min-width: 0;
+  gap: 16px;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-column {
@@ -187,6 +190,12 @@ h6 {
 
 .section-title {
   line-height: 26px;
+}
+
+.sidebar-header h3 {
+  font-size: 24px;
+  border-left: 4px solid var(--text-white);
+  padding-left: 12px;
 }
 
 /* Custom scrollbar styles */

@@ -205,7 +205,9 @@ export default {
         sport: this.getSportFromCategories(article.categories),
         date: article.date,
         url: article.url,
-        image: article.feat_images["medium"] ? article.feat_images["medium"].url : null,
+        image: article.feat_images["medium"]
+          ? article.feat_images["medium"].url
+          : null,
       };
     },
 
@@ -460,7 +462,7 @@ export default {
   flex-direction: column;
   gap: 24px;
   margin-bottom: 24px;
-  padding-top: 40px;
+  padding-top: 20px;
 }
 
 .news-grid-enter-active,

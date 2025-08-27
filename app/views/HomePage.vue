@@ -463,11 +463,6 @@ export default {
 </script>
 
 <style scoped>
-.content-wrapper {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
 
 .main-column {
   flex: 1;
@@ -739,10 +734,6 @@ export default {
 }
 
 @media screen and (max-width: 1024px) {
-  .content-wrapper {
-    flex-direction: column;
-  }
-
   .sidebar-column {
     width: 100%;
   }

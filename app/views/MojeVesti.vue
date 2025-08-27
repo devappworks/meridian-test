@@ -675,7 +675,7 @@ export default {
 .news-grid {
   gap: 24px;
   margin-bottom: 24px;
-  padding-top: 40px;
+  padding-top: 20px;
   padding-bottom: 1px;
 }
 

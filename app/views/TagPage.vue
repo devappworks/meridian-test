@@ -416,7 +416,7 @@ export default {
   flex-direction: column;
   gap: 24px;
   margin-bottom: 24px;
-  padding-top: 40px;
+  padding-top: 20px;
 }
 
 .news-grid-enter-active,

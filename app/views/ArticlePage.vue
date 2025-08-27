@@ -1331,6 +1331,13 @@ h2.section-title {
   animation: skeleton-loading 1.5s infinite;
 }
 
+.sidebar-header h3 {
+  font-size: 24px;
+  border-left: 4px solid var(--text-white);
+  padding-left: 12px;
+  margin-bottom: 16px;
+}
+
 :deep(strong) {
   font-family: var(--article-content);
 }

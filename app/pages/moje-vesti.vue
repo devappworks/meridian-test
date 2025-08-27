@@ -631,14 +631,6 @@ export default {
   margin: 0;
 }
 
-.content-wrapper {
-  display: flex;
-  flex-direction: row;
-  gap: 24px;
-  padding: 20px;
-  background: var(--bg-90);
-}
-
 .main-column {
   flex: 1;
   display: flex;
@@ -650,7 +642,6 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
 }
 
 .section-actions {
@@ -680,7 +671,7 @@ export default {
 .news-grid {
   gap: 24px;
   margin-bottom: 24px;
-  padding-top: 40px;
+  padding-top: 20px;
   padding-bottom: 1px;
 }
 
@@ -826,10 +817,6 @@ export default {
 }
 
 @media screen and (max-width: 1024px) {
-  .content-wrapper {
-    flex-direction: column;
-  }
-
   .news-grid {
     grid-template-columns: repeat(3, 1fr) !important;
   }

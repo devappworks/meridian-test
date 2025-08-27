@@ -73,9 +73,6 @@ export default {
 </script>
 
 <style scoped>
-.featured-section {
-  padding-top: 16px;
-}
 
 .featured-section .container {
   max-width: 1440px;
