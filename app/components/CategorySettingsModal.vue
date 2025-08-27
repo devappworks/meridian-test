@@ -275,6 +275,7 @@ export default {
   display: flex;
   gap: 10px;
   padding: 0 20px 20px;
+  flex-wrap: nowrap;
 }
 
 .btn-close,
