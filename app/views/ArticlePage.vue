@@ -42,7 +42,7 @@
                   <span class="author" v-if="article.author"
                     >Od {{ article.author }}</span
                   ><span v-else>Redakcija</span> -
-                  {{ formatDate(article.date) }}
+                  {{ formatDate(article.date || article.publish_date) }}
                 </p>
               </div>
               <div class="comments-count">
@@ -510,7 +510,7 @@ export default {
           this.relatedNews = articles.slice(0, 3).map((article) => ({
             id: article.id,
             title: article.title,
-            date: this.formatDate(article.date),
+            date: this.formatDate(article.date || article.publish_date),
             sport: sportCategory,
           }));
         }
@@ -619,16 +619,56 @@ export default {
       return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
     },
     formatDate(dateString) {
-      const date = new Date(dateString);
-      const day = date.getDate();
-      const month = date.getMonth() + 1;
-      const year = date.getFullYear();
-      const hours = date.getHours();
-      const minutes = date.getMinutes();
+      console.log(dateString, "dateString");
+      // Robustly parse multiple possible input formats and avoid NaN
+      if (!dateString) return "";
 
-      return `${day}.${month}.${year}. ${hours}:${minutes
-        .toString()
-        .padStart(2, "0")}`;
+      let date;
+      if (typeof dateString === "number") {
+        // Treat numbers as epoch milliseconds or seconds
+        const ms = dateString > 1e12 ? dateString : dateString * 1000;
+        date = new Date(ms);
+      } else if (typeof dateString === "string") {
+        const trimmed = dateString.trim();
+        // Handle dd.MM.yyyy. HH:mm or dd.MM.yyyy HH:mm
+        const dmYhm = /^(\d{1,2})\.(\d{1,2})\.(\d{4})\.?\s+(\d{1,2}):(\d{2})$/;
+        const dmY = /^(\d{1,2})\.(\d{1,2})\.(\d{4})\.?$/;
+        // Handle dd/MM/yyyy[, HH:mm]
+        const dmySlash = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?$/;
+        // Handle MySQL style: YYYY-MM-DD HH:mm:ss (or with 'T')
+        const ymdHms = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/;
+        let m = trimmed.match(dmySlash);
+        if (m) {
+          const [_, d, mth, y, h, min] = m;
+          date = new Date(Number(y), Number(mth) - 1, Number(d), Number(h || 0), Number(min || 0));
+        } else if ((m = trimmed.match(dmYhm))) {
+          const [_, d, mth, y, h, min] = m;
+          date = new Date(Number(y), Number(mth) - 1, Number(d), Number(h), Number(min));
+        } else if ((m = trimmed.match(dmY))) {
+          const [_, d, mth, y] = m;
+          date = new Date(Number(y), Number(mth) - 1, Number(d));
+        } else if ((m = trimmed.match(ymdHms))) {
+          const [_, y, mth, d, h, min, s] = m;
+          date = new Date(Number(y), Number(mth) - 1, Number(d), Number(h), Number(min), Number(s || 0));
+        } else {
+          // Normalize ISO with microseconds to milliseconds (keep only 3 fractional digits)
+          const normalized = trimmed.replace(/\.(\d{3})\d+(Z|[+-]\d{2}:?\d{2})$/, ".$1$2");
+          // Fallback to native parser (ISO 8601, RFC 2822, etc.)
+          date = new Date(normalized);
+        }
+      } else {
+        date = new Date(dateString);
+      }
+
+      if (!(date instanceof Date) || isNaN(date.getTime())) return "";
+
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+
+      return `${day}.${month}.${year}. ${hours}:${minutes}`;
     },
     navigateToArticle(id) {
       this.$router.push(`/article/${id}`);

@@ -33,7 +33,8 @@ useHead(() => {
   const filledDescription = description || (title !== "Article" ? title : siteName) || siteName || "Meridian Sport";
   const imageUrl = a?.images?.large?.url || a?.images?.small?.url || undefined;
   const authorName = a?.author || "Redakcija";
-  const publishedTime = a?.date || undefined;
+  // Prefer primary date, fallback to publish_date if present
+  const publishedTime = a?.date || a?.publish_date || undefined;
   const tags = Array.isArray(a?.tags) ? a.tags.map((t) => t?.name).filter(Boolean) : [];
 
   const ld = {

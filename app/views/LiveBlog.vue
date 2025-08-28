@@ -271,9 +271,24 @@ export default {
       const sortedItems = [...liveBlogData.live_blog_items].sort((a, b) => b.position - a.position)
       
       this.updates = sortedItems.map(item => {
-        // Extract time from created_at timestamp
-        const createdDate = new Date(item.created_at)
-        const time = createdDate.toLocaleTimeString('sr-RS', { 
+        // Extract time from created_at timestamp, normalizing MySQL/ISO formats
+        const raw = item.created_at
+        let createdDate
+        if (typeof raw === 'string') {
+          const trimmed = raw.trim()
+          const ymdHms = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/
+          let m = trimmed.match(ymdHms)
+          if (m) {
+            const [_, y, mo, d, h, mi, s] = m
+            createdDate = new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s || 0))
+          } else {
+            const normalized = trimmed.replace(/\.(\d{3})\d+(Z|[+-]\d{2}:?\d{2})$/, '.$1$2')
+            createdDate = new Date(normalized)
+          }
+        } else {
+          createdDate = new Date(raw)
+        }
+        const time = isNaN(createdDate.getTime()) ? '' : createdDate.toLocaleTimeString('sr-RS', { 
           hour: '2-digit', 
           minute: '2-digit',
           hour12: false 
