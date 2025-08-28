@@ -44,11 +44,11 @@
               >
                 <div class="dropdown-item" @click="goToProfile">
                   <i class="fa-regular fa-user"></i>
-                  <span>Profile Details</span>
+                  <span>Detalji profila</span>
                 </div>
                 <div class="dropdown-item logout-item" @click="logout">
                   <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                  <span>Log Out</span>
+                  <span>Odjavi se</span>
                 </div>
               </div>
             </div>

@@ -9,7 +9,7 @@
           @click="switchTab('profile')"
           :class="{ active: activeTab === 'profile' }"
         >
-          PROFILE DETAILS
+          DETALJI PROFILA
         </button>
         <button
           ref="passwordTab"
@@ -17,7 +17,7 @@
           @click="switchTab('password')"
           :class="{ active: activeTab === 'password' }"
         >
-          CHANGE PASSWORD
+          PROMENI LOZINKU
         </button>
         <div class="tab-underline" :style="underlineStyle"></div>
       </div>
