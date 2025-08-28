@@ -1,12 +1,22 @@
 export default defineEventHandler(async (event) => {
 	const { id } = event.context.params
 	const config = useRuntimeConfig()
-	// Call the correct backend endpoint and include Authorization when available
 	const headers = {}
-	if (config.public.API_KEY) headers.Authorization = config.public.API_KEY
-	const data = await $fetch(`${config.public.BACKEND_URL}/getOneArticle/${id}`,
-		{ headers }
-	)
-	// Unwrap to return the article object directly for the page to consume
-	return data?.result?.article ?? data
+	// Prefer server-only apiKey if provided, else fall back to public
+	if (config.API_KEY) headers.Authorization = config.API_KEY
+	else if (config.public.API_KEY) headers.Authorization = config.public.API_KEY
+
+	try {
+		const response = await $fetch(`${config.public.BACKEND_URL}/getOneArticle/${id}`,
+			{ headers }
+		)
+		const article = response?.result?.article
+		if (!article || typeof article !== 'object') {
+			throw createError({ statusCode: 404, statusMessage: 'Article not found' })
+		}
+		return article
+	} catch (err) {
+		if (isError(err) && err.statusCode) throw err
+		throw createError({ statusCode: 500, statusMessage: 'Failed to fetch article' })
+	}
 })

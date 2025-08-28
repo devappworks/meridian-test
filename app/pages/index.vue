@@ -1,5 +1,62 @@
 <script setup>
-useHead({ title: "Home" });
+const config = useRuntimeConfig();
+
+function stripHtml(input) {
+  if (!input || typeof input !== "string") return "";
+  return input.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+const siteUrl = (config.public?.SITE_URL || "").replace(/\/$/, "");
+const siteName = config.public?.SITE_NAME || "Meridian Sport";
+const siteDescription = config.public?.SITE_DESCRIPTION || "";
+const twitterHandle = config.public?.TWITTER_HANDLE || "";
+const canonicalUrl = siteUrl || undefined;
+
+const title = siteName;
+const description = stripHtml(siteDescription) || siteName;
+const imageUrl = undefined; // Add if you have a social share image at site level
+
+const ld = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteName,
+  url: canonicalUrl,
+  description,
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${siteUrl}/?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  },
+};
+
+useHead(() => ({
+  title,
+  meta: [
+    { key: "description", name: "description", content: description },
+    { key: "robots", name: "robots", content: "index, follow" },
+    // Open Graph
+    { key: "og:type", property: "og:type", content: "website" },
+    { key: "og:site_name", property: "og:site_name", content: siteName },
+    { key: "og:title", property: "og:title", content: title },
+    { key: "og:description", property: "og:description", content: description },
+    canonicalUrl ? { key: "og:url", property: "og:url", content: canonicalUrl } : null,
+    imageUrl ? { key: "og:image", property: "og:image", content: imageUrl } : null,
+    // Twitter
+    { key: "twitter:card", name: "twitter:card", content: imageUrl ? "summary_large_image" : "summary" },
+    twitterHandle ? { key: "twitter:site", name: "twitter:site", content: twitterHandle } : null,
+    { key: "twitter:title", name: "twitter:title", content: title },
+    { key: "twitter:description", name: "twitter:description", content: description },
+    imageUrl ? { key: "twitter:image", name: "twitter:image", content: imageUrl } : null,
+  ].filter(Boolean),
+  link: canonicalUrl ? [{ rel: "canonical", href: canonicalUrl }] : [],
+  script: [
+    {
+      key: "ldjson-website",
+      type: "application/ld+json",
+      children: JSON.stringify(ld),
+    },
+  ],
+}));
 </script>
 
 <template>
