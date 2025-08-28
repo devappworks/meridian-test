@@ -5,5 +5,5 @@ import CategoryPage from "@/views/CategoryPage.vue";
 </script>
 
 <template>
-  <CategoryPage />
+  <CategoryPage :slug="slug" />
 </template>

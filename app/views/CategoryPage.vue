@@ -153,6 +153,97 @@ export default {
     },
   },
   methods: {
+    slugifyTitle(title) {
+      // Mirror header's slug generation for reliable matching
+      return title
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/š/g, "s")
+        .replace(/č/g, "c")
+        .replace(/ć/g, "c")
+        .replace(/ž/g, "z")
+        .replace(/đ/g, "d")
+        .replace(/[^a-z0-9-]/g, "")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+    },
+
+    findItemBySlug(items, targetSlug) {
+      if (!Array.isArray(items)) return null;
+      for (const item of items) {
+        if (item && item.title && this.slugifyTitle(item.title) === targetSlug) {
+          return item;
+        }
+        if (item && Array.isArray(item.sub_menu)) {
+          const foundInSub = this.findItemBySlug(item.sub_menu, targetSlug);
+          if (foundInSub) return foundInSub;
+        }
+      }
+      return null;
+    },
+
+    async resolveCategoryFromSlug(slug) {
+      try {
+        const [helperNavRes, webSettingsRes] = await Promise.all([
+          fetchFromApi("getHelperNav"),
+          fetchFromApi("getWebSettings"),
+        ]);
+
+        // Helper nav: locate the 'help-nav' container and search its sub_menu
+        let helperItems = [];
+        if (
+          helperNavRes?.success &&
+          helperNavRes.result?.languages &&
+          helperNavRes.result.languages.length > 0
+        ) {
+          const helpMenu = helperNavRes.result.languages[0].web_menu?.find(
+            (it) => it.title === "help-nav"
+          );
+          if (helpMenu && Array.isArray(helpMenu.sub_menu)) {
+            helperItems = helpMenu.sub_menu;
+          }
+        }
+
+        // Main web settings menu items
+        let webMenuItems = [];
+        if (
+          webSettingsRes?.success &&
+          webSettingsRes.result?.languages &&
+          webSettingsRes.result.languages.length > 0
+        ) {
+          webMenuItems = webSettingsRes.result.languages[0].web_menu || [];
+        }
+
+        // Search helper items first, then web menu
+        const candidate =
+          this.findItemBySlug(helperItems, slug) ||
+          this.findItemBySlug(webMenuItems, slug);
+
+        if (candidate) {
+          const candidateTitle = candidate.title;
+          const webCategories = candidate.web_categories;
+          if (Array.isArray(webCategories) && webCategories.length > 0) {
+            return { id: webCategories[0], title: candidateTitle };
+          }
+          // Some items might define category in sub_menu children
+          if (Array.isArray(candidate.sub_menu) && candidate.sub_menu.length) {
+            const childWithCategory = candidate.sub_menu.find(
+              (c) => Array.isArray(c?.web_categories) && c.web_categories.length > 0
+            );
+            if (childWithCategory) {
+              return {
+                id: childWithCategory.web_categories[0],
+                title: childWithCategory.title || candidateTitle,
+              };
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Error resolving category from slug:", e);
+      }
+      return null;
+    },
+
     getCategoryId() {
       // Get category ID from props, query params, or route params
       return (
@@ -303,6 +394,7 @@ export default {
             "category[]": this.currentCategoryId,
             page: currentPage,
           });
+          console.log(response, "response");
 
           const newArticles = response.result.articles;
 
@@ -365,7 +457,7 @@ export default {
       // Note: Don't clear storedCategoryTitle here as it needs to persist for the current page
     },
 
-    initializeCategory() {
+    async initializeCategory() {
       // Store essential data before URL cleanup
       this.currentCategoryId = this.getCategoryId();
 
@@ -377,16 +469,30 @@ export default {
       // Fetch articles first, then clean up URL after successful load
       if (this.currentCategoryId) {
         this.fetchCategoryArticles();
-      } else {
-        // If no category ID, show placeholder or redirect
-        this.resetNews();
-        this.loading = {
-          main: false,
-          loadMore: false,
-          other: false,
-          sidebar: false,
-        };
+        return;
       }
+
+      // Fallback: derive category from slug if available
+      if (this.slug) {
+        const resolved = await this.resolveCategoryFromSlug(this.slug);
+        if (resolved && resolved.id) {
+          this.currentCategoryId = resolved.id;
+          if (!this.storedCategoryTitle && resolved.title) {
+            this.storedCategoryTitle = resolved.title;
+          }
+          this.fetchCategoryArticles();
+          return;
+        }
+      }
+
+      // If no category ID could be determined, show empty UI state
+      this.resetNews();
+      this.loading = {
+        main: false,
+        loadMore: false,
+        other: false,
+        sidebar: false,
+      };
     },
 
     cleanUpUrl() {
