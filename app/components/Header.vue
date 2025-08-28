@@ -1038,6 +1038,7 @@ a:hover {
   list-style: none;
   order: 2;
   margin-bottom: 0;
+  padding-left: 0;
 }
 
 .main-nav a {
