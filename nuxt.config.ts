@@ -6,6 +6,19 @@ import { config as loadDotenv } from 'dotenv'
 loadDotenv()
 
 export default defineNuxtConfig({
+  routeRules: {
+    '/**': { prerender: true }
+  },
+  nitro: {
+    prerender: {
+      crawlLinks: true,
+      // Add any dynamic routes that can't be discovered via links:
+      routes: [
+        // '/article/1',
+        // '/sport/fudbal',
+      ]
+    }
+  },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   srcDir: 'app',
