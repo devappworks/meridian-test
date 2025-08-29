@@ -6,7 +6,9 @@
       </div>
     </div>
     <div class="youtube-content">
-      <img :src="mappedVideos[0]?.thumbnail" alt="Youtube video" class="youtube-thumb" />
+      <a :href="`https://www.youtube.com/watch?v=${mappedVideos[0]?.videoId}`" target="_blank">
+        <img :src="mappedVideos[0]?.thumbnail" alt="Youtube video" class="youtube-thumb" />
+      </a>
     </div>
   </div>
 </template>
@@ -34,7 +36,8 @@ export default {
       return this.youtubeVideo.result.videos.map(video => {
         return {
           title: video.title,
-          thumbnail: video.imageHigh
+          thumbnail: video.imageHigh,
+          videoId: video.id
         }
       })
     }
