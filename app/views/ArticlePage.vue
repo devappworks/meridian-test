@@ -1378,6 +1378,14 @@ h2.section-title {
   margin-bottom: 16px;
 }
 
+.content {
+  width: 100%;
+}
+
+.divider {
+  margin: 0 8px;
+}
+
 :deep(strong) {
   font-family: var(--article-content);
 }
