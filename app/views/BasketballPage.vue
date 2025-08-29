@@ -436,7 +436,9 @@ export default {
     },
 
     navigateToArticle(articleId) {
-      this.$router.push(`/article/${articleId}`);
+      const found = [...this.basketballNews, ...this.loadMoreBasketballNews].find((a) => a.id === articleId);
+      const target = found && found.url ? found.url : `/article/${articleId}`;
+      this.$router.push(target);
     },
   },
   async mounted() {

@@ -310,7 +310,9 @@ export default {
     },
 
     navigateToArticle(articleId) {
-      this.$router.push(`/article/${articleId}`);
+      const found = this.latestNews.find((a) => a.id === articleId);
+      const target = found && found.url ? found.url : `/article/${articleId}`;
+      this.$router.push(target);
     },
   },
   mounted() {

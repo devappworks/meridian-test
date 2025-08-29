@@ -577,7 +577,9 @@ export default {
       }
     },
     navigateToArticle(articleId) {
-      this.$router.push(`/article/${articleId}`);
+      const found = this.newsResults?.find?.((a) => a.id === articleId) || this.news?.find?.((a) => a.id === articleId) || null
+      const target = found && found.url ? found.url : `/article/${articleId}`
+      this.$router.push(target)
     },
   },
 };

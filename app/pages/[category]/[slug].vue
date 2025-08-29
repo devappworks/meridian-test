@@ -1,7 +1,8 @@
 <script setup>
 const route = useRoute();
-const id = route.params.id;
 const config = useRuntimeConfig();
+const category = route.params.category;
+const slug = route.params.slug;
 
 function stripHtml(input) {
   if (!input || typeof input !== "string") return "";
@@ -14,13 +15,14 @@ function truncate(input, max = 160) {
   return input.slice(0, max - 1).trimEnd() + "…";
 }
 
-const { data: article, error } = await useAsyncData(
-  `article-${id}`,
+const { data: article } = await useAsyncData(
+  `article-slug-${category}-${slug}`,
   async () => {
     try {
-      return await $fetch(`/api/articles/${id}`)
+      return await $fetch(`/api/articles/resolve`, {
+        query: { category, slug }
+      })
     } catch (e) {
-      // Let the view handle error state; return null so page still renders
       return null
     }
   }
@@ -31,14 +33,13 @@ useHead(() => {
   const siteUrl = (config.public?.SITE_URL || "").replace(/\/$/, "");
   const siteName = config.public?.SITE_NAME || "";
   const twitterHandle = config.public?.TWITTER_HANDLE || "";
-  const canonicalUrl = siteUrl ? `${siteUrl}/article/${id}` : undefined;
+  const canonicalUrl = siteUrl ? `${siteUrl}/${category}/${slug}` : undefined;
   const title = a.title || siteName || "Meridian Sport";
   const rawDesc = a.excerpt || a.subtitle || stripHtml(a.contents || "") || a.title || "";
   const description = truncate(stripHtml(rawDesc), 160) || a.title || "";
   const filledDescription = description || (title !== "Article" ? title : siteName) || siteName || "Meridian Sport";
   const imageUrl = a?.images?.large?.url || a?.images?.small?.url || undefined;
   const authorName = a?.author || "Redakcija";
-  // Prefer primary date, fallback to publish_date if present
   const publishedTime = a?.date || a?.publish_date || undefined;
   const tags = Array.isArray(a?.tags) ? a.tags.map((t) => t?.name).filter(Boolean) : [];
 
@@ -71,7 +72,6 @@ useHead(() => {
   const meta = [
     { key: "description", name: "description", content: filledDescription },
     { key: "robots", name: "robots", content: "index, follow" },
-    // Open Graph
     { key: "og:type", property: "og:type", content: "article" },
     siteName ? { key: "og:site_name", property: "og:site_name", content: siteName } : null,
     { key: "og:title", property: "og:title", content: title },
@@ -80,14 +80,12 @@ useHead(() => {
     imageUrl ? { key: "og:image", property: "og:image", content: imageUrl } : null,
     imageUrl ? { key: "og:image:alt", property: "og:image:alt", content: title } : null,
     publishedTime ? { key: "article:published_time", property: "article:published_time", content: publishedTime } : null,
-    // Twitter
     { key: "twitter:card", name: "twitter:card", content: imageUrl ? "summary_large_image" : "summary" },
     twitterHandle ? { key: "twitter:site", name: "twitter:site", content: twitterHandle } : null,
     { key: "twitter:title", name: "twitter:title", content: title },
     { key: "twitter:description", name: "twitter:description", content: filledDescription },
     imageUrl ? { key: "twitter:image", name: "twitter:image", content: imageUrl } : null,
     imageUrl ? { key: "twitter:image:alt", name: "twitter:image:alt", content: title } : null,
-    // Article tags
     ...tags.map((t, i) => ({ key: `article:tag:${i}`, property: "article:tag", content: t })),
   ].filter(Boolean);
 
@@ -108,27 +106,14 @@ useHead(() => {
     script,
   };
 });
-import ArticlePage from "@/views/ArticlePage.vue";
 
-// If article is available and contains a canonical URL like /category/slug,
-// redirect to the pretty URL on client navigation.
-onMounted(() => {
-  const a = article?.value
-  const targetPath = a && typeof a.url === 'string' ? a.url : null
-  if (targetPath && typeof window !== 'undefined') {
-    // Only redirect if we are currently on /article/:id
-    const current = window.location.pathname
-    if (current.startsWith('/article/')) {
-      const normalized = targetPath.startsWith('/') ? targetPath : `/${targetPath}`
-      // Avoid loops; only navigate if different
-      if (normalized.toLowerCase() !== current.toLowerCase()) {
-        navigateTo(normalized, { replace: true })
-      }
-    }
-  }
-})
+import ArticlePage from "@/views/ArticlePage.vue";
 </script>
 
 <template>
-  <ArticlePage :id="id" />
+  <ArticlePage :id="article?.id || ''" />
+  <!-- When article cannot be resolved, ArticlePage will render its own error state -->
+  <!-- We still pass an empty id to avoid runtime errors, ArticlePage guards requests -->
 </template>
+
+

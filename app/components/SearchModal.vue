@@ -176,7 +176,9 @@ export default {
     },
     handleArticleClick(articleId) {
       this.closeSearch();
-      this.$router.push(`/article/${articleId}`);
+      const found = this.newsResults.find((a) => a.id === articleId)
+      const target = found && found.url ? found.url : `/article/${articleId}`
+      this.$router.push(target)
     },
   },
   watch: {

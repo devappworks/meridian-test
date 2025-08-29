@@ -27,6 +27,7 @@
           :sport="item.sport"
           :sectionType="sport"
           :id="item.id"
+          :url="item.url"
           :emitEvents="true"
           :forceShowSportTag="forceShowSportTag"
           @change-page="handlePageChange"

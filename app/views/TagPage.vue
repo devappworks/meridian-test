@@ -405,7 +405,9 @@ export default {
     },
 
     navigateToArticle(id) {
-      this.$router.push(`/article/${id}`);
+      const found = [...this.tagNews, ...this.loadMoreTagNews].find((a) => a.id === id);
+      const target = found && found.url ? found.url : `/article/${id}`;
+      this.$router.push(target);
     },
   },
 };

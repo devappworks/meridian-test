@@ -65,7 +65,8 @@ export default {
     },
     navigateToArticle() {
       if (this.article && this.article.id) {
-        this.$router.push(`/article/${this.article.id}`);
+        const target = this.article.url ? this.article.url : `/article/${this.article.id}`
+        this.$router.push(target);
       }
     },
   },

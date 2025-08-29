@@ -463,6 +463,7 @@ export default {
               article.images?.small?.url ||
               require("@/assets/images/image.jpg"),
             sport: sportCategory,
+            url: article.url || null,
           }));
         } else {
           // Fallback to category-based articles if no relatedArticles
@@ -512,6 +513,7 @@ export default {
             title: article.title,
             date: this.formatDate(article.date || article.publish_date),
             sport: sportCategory,
+            url: article.url || null,
           }));
         }
 
@@ -560,6 +562,7 @@ export default {
           title: article.title,
           image: article.feat_images?.small?.url || null,
           sport: sportCategory,
+          url: article.url || null,
         }));
 
         this.loading.otherNews = false;
@@ -671,7 +674,10 @@ export default {
       return `${day}.${month}.${year}. ${hours}:${minutes}`;
     },
     navigateToArticle(id) {
-      this.$router.push(`/article/${id}`);
+      const foundInJos = this.josVestiNews.find((a) => a.id === id)
+      const foundInRelated = this.relatedNews.find((a) => a.id === id)
+      const target = (foundInJos && foundInJos.url) || (foundInRelated && foundInRelated.url) || `/article/${id}`
+      this.$router.push(target)
     },
     navigateToTag(tagId, tagName) {
       this.$router.push(`/tag/${tagId}/${encodeURIComponent(tagName)}`);

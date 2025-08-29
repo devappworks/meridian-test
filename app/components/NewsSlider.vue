@@ -229,7 +229,8 @@ export default {
     },
     navigateToArticle(item) {
       if (item && item.id) {
-        this.$router.push(`/article/${item.id}`);
+        const target = item.url ? item.url : `/article/${item.id}`
+        this.$router.push(target);
       }
     },
   },

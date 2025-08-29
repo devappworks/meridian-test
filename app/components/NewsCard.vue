@@ -36,6 +36,10 @@ export default {
       type: [String, Number],
       required: true,
     },
+    url: {
+      type: String,
+      default: "",
+    },
     emitEvents: {
       type: Boolean,
       default: false,
@@ -51,7 +55,8 @@ export default {
         if (this.emitEvents) {
           this.$emit("article-clicked", this.id);
         } else {
-          this.$router.push(`/article/${this.id}`);
+          const target = this.url && typeof this.url === 'string' ? this.url : `/article/${this.id}`
+          this.$router.push(target);
         }
       }
     },
