@@ -110,36 +110,38 @@ useHead(() => {
 });
 import ArticlePage from "@/views/ArticlePage.vue";
 
-// If article is available and contains a canonical URL like /category/slug,
-// redirect to the pretty URL on client navigation.
+// Redirect legacy /article/:id routes to /:category/:slug as soon as data is available
 onMounted(() => {
   const a = article?.value
-  const raw = a && typeof a.url === 'string' ? a.url : null
-  if (!raw || typeof window === 'undefined') return
-  const current = window.location.pathname
+  if (!a || typeof window === 'undefined') return
 
-  function normalizeToInternal(pathlike) {
+  // Prefer explicit fields, fallback to parsing from URL
+  const slugSegment = (a.slug && String(a.slug)) || (typeof a.url === 'string' ? (() => {
     try {
-      const u = new URL(pathlike, window.location.origin)
-      const p = u.pathname || '/'
-      const m = p.match(/^\/article\/(\d+)(?:\/.+)?$/i)
-      if (m) return `/article/${m[1]}`
-      return p.startsWith('/') ? p : `/${p}`
+      const u = new URL(a.url, window.location.origin)
+      const parts = (u.pathname || '/').replace(/\/$/, '').split('/')
+      return parts[parts.length - 1] || ''
     } catch {
-      const p = pathlike.startsWith('/') ? pathlike : `/${pathlike}`
-      const m = p.match(/^\/article\/(\d+)(?:\/.+)?$/i)
-      if (m) return `/article/${m[1]}`
-      return p
+      const p = (a.url || '').replace(/^https?:\/\/[^/]+/i, '')
+      const parts = p.replace(/\/$/, '').split('/')
+      return parts[parts.length - 1] || ''
     }
-  }
+  })() : '')
 
-  // Only redirect if we are currently on /article/:id and the normalized
-  // target differs from current location.
-  if (current.startsWith('/article/')) {
-    const normalized = normalizeToInternal(raw)
-    if (normalized.toLowerCase() !== current.toLowerCase()) {
-      // Avoid redirecting to unsupported /article/:id/:slug by collapsing to /article/:id
-      navigateTo(normalized, { replace: true })
+  // Choose a category slug from article categories
+  const catSlug = (() => {
+    const list = Array.isArray(a.categories) ? a.categories : []
+    const withSlug = list.find((c) => c && typeof c.slug === 'string' && c.slug)
+    if (withSlug) return withSlug.slug
+    const withName = list.find((c) => c && typeof c.name === 'string' && c.name)
+    if (withName) return String(withName.name).toLowerCase()
+    return ''
+  })()
+
+  if (slugSegment && catSlug) {
+    const target = `/${catSlug}/${slugSegment}`
+    if (window.location.pathname.toLowerCase() !== target.toLowerCase()) {
+      navigateTo(target, { replace: true })
     }
   }
 })

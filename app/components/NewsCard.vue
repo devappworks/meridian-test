@@ -50,6 +50,22 @@ export default {
     },
   },
   methods: {
+    mapSportToCategorySlug(sport) {
+      // Map display sport to path slug
+      const map = {
+        FUDBAL: 'fudbal',
+        "DOMAĆI FUDBAL": 'fudbal',
+        REPREZENTACIJE: 'fudbal',
+        "EVROPSKA TAKMIČENJA": 'fudbal',
+        KOŠARKA: 'kosarka',
+        EVROBASKET: 'kosarka',
+        TENIS: 'tenis',
+        ODBOJKA: 'odbojka',
+        "OSTALE VESTI": 'ostali-sportovi',
+        "OSTALI SPORTOVI": 'ostali-sportovi',
+      }
+      return map[sport] || ''
+    },
     resolveArticleRoute(rawUrl, fallbackId) {
       // Normalize incoming URLs to internal app routes
       if (!rawUrl || rawUrl === '#') {
@@ -58,13 +74,25 @@ export default {
       try {
         const u = new URL(rawUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
         const p = u.pathname || '/';
-        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
-        if (match) return `/article/${match[1]}`;
+        const art = p.match(/^\/article\/(\d+)(?:\/([^/]+))?/i);
+        if (art) {
+          const id = art[1];
+          const slug = art[2] || '';
+          const cat = this.mapSportToCategorySlug(this.sport);
+          if (cat && slug) return `/${cat}/${slug}`;
+          return `/article/${id}`;
+        }
         return p.startsWith('/') ? p : `/${p}`;
       } catch {
         const p = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
-        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
-        if (match) return `/article/${match[1]}`;
+        const art = p.match(/^\/article\/(\d+)(?:\/([^/]+))?/i);
+        if (art) {
+          const id = art[1];
+          const slug = art[2] || '';
+          const cat = this.mapSportToCategorySlug(this.sport);
+          if (cat && slug) return `/${cat}/${slug}`;
+          return `/article/${id}`;
+        }
         return p;
       }
     },

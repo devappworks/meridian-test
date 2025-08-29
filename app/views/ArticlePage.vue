@@ -674,10 +674,23 @@ export default {
       return `${day}.${month}.${year}. ${hours}:${minutes}`;
     },
     navigateToArticle(id) {
-      const foundInJos = this.josVestiNews.find((a) => a.id === id)
-      const foundInRelated = this.relatedNews.find((a) => a.id === id)
-      const target = (foundInJos && foundInJos.url) || (foundInRelated && foundInRelated.url) || `/article/${id}`
-      this.$router.push(target)
+      const fromJos = this.josVestiNews.find((a) => a.id === id)
+      const fromRelated = this.relatedNews.find((a) => a.id === id)
+      const candidate = fromJos || fromRelated
+      if (candidate && candidate.url) {
+        try {
+          const u = new URL(candidate.url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost')
+          const parts = (u.pathname || '/').replace(/\/$/, '').split('/')
+          const slug = parts[parts.length - 1]
+          const cat = (this.article?.categories?.find((c) => c && c.slug)?.slug)
+            || (this.article?.categories?.find((c) => c && c.name)?.name?.toLowerCase())
+          if (slug && cat) {
+            this.$router.push(`/${cat}/${slug}`)
+            return
+          }
+        } catch {}
+      }
+      this.$router.push(`/article/${id}`)
     },
     navigateToTag(tagId, tagName) {
       this.$router.push(`/tag/${tagId}/${encodeURIComponent(tagName)}`);
