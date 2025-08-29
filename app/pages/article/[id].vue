@@ -14,12 +14,17 @@ function truncate(input, max = 160) {
   return input.slice(0, max - 1).trimEnd() + "…";
 }
 
-const { data: article, error } = await useAsyncData(`article-${id}`, () =>
-  $fetch(`/api/articles/${id}`)
-);
-if (error.value) {
-  throw createError({ statusCode: 404, statusMessage: "Article not found" });
-}
+const { data: article, error } = await useAsyncData(
+  `article-${id}`,
+  async () => {
+    try {
+      return await $fetch(`/api/articles/${id}`)
+    } catch (e) {
+      // Let the view handle error state; return null so page still renders
+      return null
+    }
+  }
+)
 
 useHead(() => {
   const a = article.value || {};

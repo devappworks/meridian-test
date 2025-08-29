@@ -16,7 +16,8 @@ export default defineEventHandler(async (event) => {
 		}
 		return article
 	} catch (err) {
-		if (isError(err) && err.statusCode) throw err
+		// Re-throw known HTTP errors, else normalize to 500
+		if (err && err.statusCode) throw err
 		throw createError({ statusCode: 500, statusMessage: 'Failed to fetch article' })
 	}
 })
