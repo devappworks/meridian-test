@@ -50,12 +50,32 @@ export default {
     },
   },
   methods: {
+    resolveArticleRoute(rawUrl, fallbackId) {
+      // Normalize incoming URLs to internal app routes
+      if (!rawUrl || rawUrl === '#') {
+        return fallbackId ? `/article/${fallbackId}` : '/';
+      }
+      try {
+        const u = new URL(rawUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+        const p = u.pathname || '/';
+        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
+        if (match) return `/article/${match[1]}`;
+        return p.startsWith('/') ? p : `/${p}`;
+      } catch {
+        const p = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
+        if (match) return `/article/${match[1]}`;
+        return p;
+      }
+    },
     navigateToArticle() {
       if (this.id) {
         if (this.emitEvents) {
           this.$emit("article-clicked", this.id);
         } else {
-          const target = this.url && typeof this.url === 'string' ? this.url : `/article/${this.id}`
+          const target = this.url && typeof this.url === 'string'
+            ? this.resolveArticleRoute(this.url, this.id)
+            : `/article/${this.id}`
           this.$router.push(target);
         }
       }

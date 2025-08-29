@@ -227,9 +227,29 @@ export default {
         this.swiper.slideNext();
       }
     },
+    resolveArticleRoute(rawUrl, fallbackId) {
+      // Normalize incoming URLs to internal app routes
+      if (!rawUrl || rawUrl === '#') {
+        return fallbackId ? `/article/${fallbackId}` : '/';
+      }
+      try {
+        const u = new URL(rawUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+        const p = u.pathname || '/';
+        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
+        if (match) return `/article/${match[1]}`;
+        return p.startsWith('/') ? p : `/${p}`;
+      } catch {
+        const p = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
+        if (match) return `/article/${match[1]}`;
+        return p;
+      }
+    },
     navigateToArticle(item) {
       if (item && item.id) {
-        const target = item.url ? item.url : `/article/${item.id}`
+        const target = item.url
+          ? this.resolveArticleRoute(item.url, item.id)
+          : `/article/${item.id}`
         this.$router.push(target);
       }
     },

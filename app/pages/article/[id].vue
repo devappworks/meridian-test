@@ -114,16 +114,32 @@ import ArticlePage from "@/views/ArticlePage.vue";
 // redirect to the pretty URL on client navigation.
 onMounted(() => {
   const a = article?.value
-  const targetPath = a && typeof a.url === 'string' ? a.url : null
-  if (targetPath && typeof window !== 'undefined') {
-    // Only redirect if we are currently on /article/:id
-    const current = window.location.pathname
-    if (current.startsWith('/article/')) {
-      const normalized = targetPath.startsWith('/') ? targetPath : `/${targetPath}`
-      // Avoid loops; only navigate if different
-      if (normalized.toLowerCase() !== current.toLowerCase()) {
-        navigateTo(normalized, { replace: true })
-      }
+  const raw = a && typeof a.url === 'string' ? a.url : null
+  if (!raw || typeof window === 'undefined') return
+  const current = window.location.pathname
+
+  function normalizeToInternal(pathlike) {
+    try {
+      const u = new URL(pathlike, window.location.origin)
+      const p = u.pathname || '/'
+      const m = p.match(/^\/article\/(\d+)(?:\/.+)?$/i)
+      if (m) return `/article/${m[1]}`
+      return p.startsWith('/') ? p : `/${p}`
+    } catch {
+      const p = pathlike.startsWith('/') ? pathlike : `/${pathlike}`
+      const m = p.match(/^\/article\/(\d+)(?:\/.+)?$/i)
+      if (m) return `/article/${m[1]}`
+      return p
+    }
+  }
+
+  // Only redirect if we are currently on /article/:id and the normalized
+  // target differs from current location.
+  if (current.startsWith('/article/')) {
+    const normalized = normalizeToInternal(raw)
+    if (normalized.toLowerCase() !== current.toLowerCase()) {
+      // Avoid redirecting to unsupported /article/:id/:slug by collapsing to /article/:id
+      navigateTo(normalized, { replace: true })
     }
   }
 })

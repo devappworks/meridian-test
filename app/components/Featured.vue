@@ -63,9 +63,30 @@ export default {
       };
       return sportMap[sport] || "other";
     },
+    resolveArticleRoute(rawUrl, fallbackId) {
+      // Normalize incoming URLs to internal app routes
+      if (!rawUrl || rawUrl === '#') {
+        return fallbackId ? `/article/${fallbackId}` : '/';
+      }
+      try {
+        const u = new URL(rawUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+        const p = u.pathname || '/';
+        // Collapse /article/:id/:slug to /article/:id for local route support
+        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
+        if (match) return `/article/${match[1]}`;
+        return p.startsWith('/') ? p : `/${p}`;
+      } catch {
+        const p = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
+        if (match) return `/article/${match[1]}`;
+        return p;
+      }
+    },
     navigateToArticle() {
       if (this.article && this.article.id) {
-        const target = this.article.url ? this.article.url : `/article/${this.article.id}`
+        const target = this.article.url
+          ? this.resolveArticleRoute(this.article.url, this.article.id)
+          : `/article/${this.article.id}`
         this.$router.push(target);
       }
     },
