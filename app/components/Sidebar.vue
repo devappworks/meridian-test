@@ -126,7 +126,7 @@ export default {
 }
 
 .sidebar-content .news-category.volleyball {
-  color: var(--purple-primary, #9c27b0);
+  color: var(--red-primary);
 }
 
 .sidebar-content .news-category.handball {
