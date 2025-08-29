@@ -25,6 +25,16 @@ const { data: article } = await useAsyncData(
     } catch (e) {
       return null
     }
+  },
+  {
+    // Avoid client revalidation flickers; trust SSR payload
+    server: true,
+    lazy: false,
+    immediate: true,
+    watch: false,
+    staleTime: Number.POSITIVE_INFINITY,
+    default: () => null,
+    dedupe: 'defer',
   }
 )
 
@@ -111,7 +121,7 @@ import ArticlePage from "@/views/ArticlePage.vue";
 </script>
 
 <template>
-  <ArticlePage :id="article?.id || ''" />
+  <ArticlePage v-if="article?.id" :id="String(article.id)" />
   <!-- When article cannot be resolved, ArticlePage will render its own error state -->
   <!-- We still pass an empty id to avoid runtime errors, ArticlePage guards requests -->
 </template>

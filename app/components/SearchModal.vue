@@ -177,8 +177,36 @@ export default {
     handleArticleClick(articleId) {
       this.closeSearch();
       const found = this.newsResults.find((a) => a.id === articleId)
-      const target = found && found.url ? found.url : `/article/${articleId}`
-      this.$router.push(target)
+      if (found && found.url) {
+        try {
+          const u = new URL(found.url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost')
+          const p = (u.pathname || '/').replace(/\/$/, '')
+          const parts = p.split('/')
+          const slug = parts[parts.length - 1]
+          // Try to extract category slug from article categories via sport mapping
+          const sport = found.sport || 'OSTALE VESTI'
+          const map = {
+            FUDBAL: 'fudbal',
+            "DOMAĆI FUDBAL": 'fudbal',
+            REPREZENTACIJE: 'fudbal',
+            "EVROPSKA TAKMIČENJA": 'fudbal',
+            KOŠARKA: 'kosarka',
+            EVROBASKET: 'kosarka',
+            TENIS: 'tenis',
+            ODBOJKA: 'odbojka',
+            "OSTALI SPORTOVI": 'ostali-sportovi',
+            "OSTALE VESTI": 'ostali-sportovi',
+          }
+          const cat = map[sport] || ''
+          if (cat && slug) {
+            this.$router.push(`/${cat}/${slug}`)
+            return
+          }
+        } catch {}
+        this.$router.push(found.url)
+        return
+      }
+      this.$router.push(`/article/${articleId}`)
     },
   },
   watch: {
