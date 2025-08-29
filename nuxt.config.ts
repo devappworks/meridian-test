@@ -6,9 +6,6 @@ import { config as loadDotenv } from 'dotenv'
 loadDotenv()
 
 export default defineNuxtConfig({
-  routeRules: {
-    '/**': { prerender: true }
-  },
   nitro: {
     prerender: {
       crawlLinks: true,
