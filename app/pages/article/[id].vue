@@ -146,5 +146,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <ArticlePage :id="id" />
+  <ArticlePage 
+    :category="article?.category?.slug || article?.categories?.[0]?.slug || ''" 
+    :slug="article?.slug || ''" 
+  />
 </template>

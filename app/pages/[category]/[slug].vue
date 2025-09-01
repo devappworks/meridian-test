@@ -111,9 +111,9 @@ import ArticlePage from "@/views/ArticlePage.vue";
 </script>
 
 <template>
-  <ArticlePage :id="article?.id || ''" />
+  <ArticlePage :category="category" :slug="slug" />
   <!-- When article cannot be resolved, ArticlePage will render its own error state -->
-  <!-- We still pass an empty id to avoid runtime errors, ArticlePage guards requests -->
+  <!-- ArticlePage now uses category and slug to fetch the article directly -->
 </template>
 
 

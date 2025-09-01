@@ -114,7 +114,7 @@
           <!-- Conditional rendering of article content or comments -->
           <div v-if="showComments">
             <CommentsPage
-              :article-id="id"
+              :article-id="article?.id || ''"
               :comments="comments"
               :pagination="commentsPagination"
               @comment-added="handleCommentAdded"
@@ -357,7 +357,11 @@ export default {
     SkeletonNewsGrid,
   },
   props: {
-    id: {
+    category: {
+      type: String,
+      required: true,
+    },
+    slug: {
       type: String,
       required: true,
     },
@@ -407,7 +411,20 @@ export default {
     await this.fetchComments();
   },
   watch: {
-    id: {
+    category: {
+      handler() {
+        window.scrollTo(0, 0);
+
+        this.loading.comments = true;
+        this.loading.relatedNews = true;
+        this.loading.otherNews = true;
+
+        this.fetchArticle();
+        this.fetchComments();
+      },
+      immediate: false,
+    },
+    slug: {
       handler() {
         window.scrollTo(0, 0);
 
@@ -427,8 +444,10 @@ export default {
       this.error = null;
 
       try {
-        const response = await fetchFromApi(`/getOneArticle/${this.id}`);
-        this.article = response.result.article;
+        const response = await fetchFromApi(`/getArticlesBySlug/${this.category}/${this.slug}`);
+        //const response = await fetchFromApi(`/getArticlesBySlug/${this.slug}`);
+        console.log(response, "response");
+        this.article = response.article;
         this.loading.article = false;
 
         await this.fetchRelatedNews();
@@ -450,7 +469,7 @@ export default {
           this.article.categories
         );
 
-        const articleResponse = await fetchFromApi(`/getOneArticle/${this.id}`);
+        const articleResponse = await fetchFromApi(`/getArticlesBySlug/${this.category}/${this.slug}`);
         console.log(articleResponse, "articleResponse");
         const relatedArticles = articleResponse.result.relatedArticles || [];
         console.log(relatedArticles, "relatedArticles");
@@ -478,7 +497,7 @@ export default {
             });
 
             const articles = (response.result.articles || []).filter(
-              (article) => article.id !== this.id
+              (article) => article.slug !== this.slug
             );
 
             this.josVestiNews = articles.slice(3, 7).map((article) => ({
@@ -505,7 +524,7 @@ export default {
           });
 
           const articles = (response.result.articles || []).filter(
-            (article) => article.id !== this.id
+            (article) => article.slug !== this.slug
           );
 
           this.relatedNews = articles.slice(0, 3).map((article) => ({
@@ -576,7 +595,13 @@ export default {
       this.loading.comments = true;
 
       try {
-        const response = await fetchFromApi(`/getComments/${this.id}`);
+        // We need the article id to fetch comments, so we need to fetch the article first
+        if (!this.article || !this.article.id) {
+          this.loading.comments = false;
+          return;
+        }
+        
+        const response = await fetchFromApi(`/getComments/${this.article.id}`);
         this.comments = response.result.comments || [];
         this.commentsPagination = response.result.pagination || null;
         this.totalComments = response.result.pagination?.total || 0;
