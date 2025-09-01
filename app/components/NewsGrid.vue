@@ -163,6 +163,10 @@ export default {
     },
     handleArticleClick(articleId) {
       if (this.emitClicks) {
+        console.log(articleId, "articleId");
+        // Find the entire article object
+        const article = this.news.find(item => item.id === articleId);
+        console.log(article, "entire article object");
         // Emit the event to parent components (like SearchModal)
         this.$emit("article-clicked", articleId);
       } else {
