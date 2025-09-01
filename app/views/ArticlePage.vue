@@ -444,6 +444,7 @@ export default {
       this.error = null;
 
       try {
+        console.log(this.category, this.slug, "this.category, this.slug");
         const response = await fetchFromApi(`/getArticlesBySlug/${this.category}/${this.slug}`);
         //const response = await fetchFromApi(`/getArticlesBySlug/${this.slug}`);
         console.log(response, "response");
