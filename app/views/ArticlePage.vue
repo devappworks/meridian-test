@@ -497,8 +497,7 @@ export default {
         );
 
         const articleResponse = await fetchFromApi(`/getArticlesBySlug/${this.category}/${this.slug}`);
-        console.log(articleResponse, "articleResponse");
-        const relatedArticles = articleResponse.result.relatedArticles || [];
+        const relatedArticles = articleResponse.relatedArticle || [];
         console.log(relatedArticles, "relatedArticles");
 
         if (relatedArticles.length > 0) {
@@ -510,6 +509,8 @@ export default {
               require("@/assets/images/image.jpg"),
             sport: sportCategory,
             url: article.url || null,
+            category: article.categories[0].slug,
+            slug: article.slug,
           }));
         } else {
           // Fallback to category-based articles if no relatedArticles
@@ -560,6 +561,8 @@ export default {
             date: this.formatDate(article.date || article.publish_date),
             sport: sportCategory,
             url: article.url || null,
+            category: article.categories[0].slug,
+            slug: article.slug,
           }));
         }
 
@@ -609,6 +612,8 @@ export default {
           image: article.feat_images?.small?.url || null,
           sport: sportCategory,
           url: article.url || null,
+          category: article.categories[0].slug,
+          slug: article.slug,
         }));
 
         this.loading.otherNews = false;
@@ -733,8 +738,12 @@ export default {
       });
       
       const foundInJos = this.josVestiNews.find((a) => a.id === id)
+      console.log(foundInJos, "FOUND IN JOS");
       const foundInRelated = this.relatedNews.find((a) => a.id === id)
-      const target = (foundInJos && foundInJos.url) || (foundInRelated && foundInRelated.url) || `/article/${id}`
+      console.log(foundInRelated, "FOUND IN RELATED");
+      //const target = (foundInJos && foundInJos.url) || (foundInRelated && foundInRelated.url) || `/${foundInJos.category}/${foundInJos.slug}` || `/${foundInRelated.category}/${foundInRelated.slug}`
+      const target = `/${foundInJos.category}/${foundInJos.slug}` || `/${foundInRelated.category}/${foundInRelated.slug}`
+      console.log(target, "TARGET");
       
       console.log("🔴 ArticlePage navigating to:", target);
       this.$router.push(target)
