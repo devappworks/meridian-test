@@ -28,6 +28,8 @@
           :sectionType="sport"
           :id="item.id"
           :url="item.url"
+          :category="item.category"
+          :slug="item.slug"
           :emitEvents="true"
           :forceShowSportTag="forceShowSportTag"
           @change-page="handlePageChange"

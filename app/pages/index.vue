@@ -214,6 +214,8 @@ export default {
       try {
         const featuredData = await fetchFromApi("/getHomepageFeaturedArticles");
         const featuredArticles = featuredData.result.articles;
+        console.log(featuredArticles, "featuredArticles");
+
 
         if (featuredArticles.length > 0) {
           this.featuredArticle = {
@@ -226,8 +228,13 @@ export default {
               ? featuredArticles[0].feat_images["large"].url
               : null,
             content: featuredArticles[0].contents,
+            category: featuredArticles[0].categories[0].slug,
+            slug: featuredArticles[0].slug,
           };
           this.loading.featured = false;
+
+          //console.log(this.featuredArticle, "featuredArticle");
+          //console.log(this.featuredArticle.category, "kategorija");
 
           this.latestNewsGrid = featuredArticles
             .slice(1, 9)
@@ -248,6 +255,8 @@ export default {
             image: article.feat_images["thumb"]
               ? article.feat_images["thumb"].url
               : null,
+            category: article.categories[0].slug,
+            slug: article.slug,
           }));
           this.loading.sidebar = false;
 
@@ -332,7 +341,7 @@ export default {
     },
 
     mapArticleData(article) {
-      return {
+      const data =  {
         id: article.id,
         title: article.title,
         sport: this.getSportFromCategories(article.categories),
@@ -341,7 +350,14 @@ export default {
         image: article.feat_images["medium"]
           ? article.feat_images["medium"].url
           : null,
+        category: article.categories[0].slug,
+        slug: article.slug,
       };
+
+      console.log(data.category, "data-cateogry");
+      console.log(data.slug, "data-slug");
+
+      return data;
     },
 
     resetAllNews() {

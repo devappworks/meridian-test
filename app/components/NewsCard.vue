@@ -40,6 +40,14 @@ export default {
       type: String,
       default: "",
     },
+    category: {
+      type: String,
+      default: "",
+    },
+    slug: {
+      type: String,
+      default: "",
+    },
     emitEvents: {
       type: Boolean,
       default: false,
@@ -73,8 +81,13 @@ export default {
         id: this.id,
         title: this.title,
         url: this.url,
-        sport: this.sport
+        sport: this.sport,
+        category: this.category,
+        slug: this.slug
       });
+      
+      console.log("🔵 NewsCard category:", this.category);
+      console.log("🔵 NewsCard slug:", this.slug);
       
       if (this.id) {
         if (this.emitEvents) {
