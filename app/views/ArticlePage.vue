@@ -331,7 +331,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import NewsletterForm from "@/components/Newsletter.vue";
 import AdBanners from "@/components/AdBanners.vue";
 import NewsGrid from "@/components/NewsGrid.vue";
@@ -344,480 +344,495 @@ import SkeletonNewsGrid from "@/components/skeletons/SkeletonNewsGrid.vue";
 
 import { fetchFromApi } from "@/services/api";
 
-export default {
-  name: "ArticlePage",
-  components: {
-    NewsletterForm,
-    AdBanners,
-    NewsGrid,
-    CommentsPage,
-    SkeletonArticleHeader,
-    SkeletonArticleContent,
-    SkeletonRelatedNews,
-    SkeletonNewsGrid,
+// Props
+const props = defineProps({
+  category: {
+    type: String,
+    required: true,
   },
-  props: {
-    category: {
-      type: String,
-      required: true,
-    },
-    slug: {
-      type: String,
-      required: true,
-    },
+  slug: {
+    type: String,
+    required: true,
   },
-  data() {
-    return {
-      showComments: false,
-      article: null,
-      loading: {
-        article: true,
-        comments: true,
-        relatedNews: true,
-        otherNews: true,
-      },
-      error: null,
-      comments: [],
-      commentsPagination: null,
-      totalComments: 0,
-      relatedNews: [],
-      josVestiNews: [],
-      otherNews: [],
-    };
-  },
-  computed: {
-    beforeFifthParagraph() {
-      if (!this.article || !this.article.contents) return "";
+});
 
-      const paragraphs = this.extractParagraphs(this.article.contents);
-      return paragraphs.slice(0, 4).join("");
-    },
-    fifthParagraph() {
-      if (!this.article || !this.article.contents) return "";
+// Reactive data
+const showComments = ref(false);
+const article = ref(null);
+const loading = ref({
+  article: true,
+  comments: true,
+  relatedNews: true,
+  otherNews: true,
+});
+const error = ref(null);
+const comments = ref([]);
+const commentsPagination = ref(null);
+const totalComments = ref(0);
+const relatedNews = ref([]);
+const josVestiNews = ref([]);
+const otherNews = ref([]);
 
-      const paragraphs = this.extractParagraphs(this.article.contents);
-      return paragraphs[4] || "";
-    },
-    afterFifthParagraph() {
-      if (!this.article || !this.article.contents) return "";
+// Template refs
+const mainColumn = ref(null);
 
-      const paragraphs = this.extractParagraphs(this.article.contents);
-      return paragraphs.slice(5).join("");
-    },
+// Computed properties
+const beforeFifthParagraph = computed(() => {
+  if (!article.value || !article.value.contents) return "";
+
+  const paragraphs = extractParagraphs(article.value.contents);
+  return paragraphs.slice(0, 4).join("");
+});
+
+const fifthParagraph = computed(() => {
+  if (!article.value || !article.value.contents) return "";
+
+  const paragraphs = extractParagraphs(article.value.contents);
+  return paragraphs[4] || "";
+});
+
+const afterFifthParagraph = computed(() => {
+  if (!article.value || !article.value.contents) return "";
+
+  const paragraphs = extractParagraphs(article.value.contents);
+  return paragraphs.slice(5).join("");
+});
+
+
+console.log(article.value, "THIS ONE ARTICLE")
+// Dynamic meta tags that update based on article data
+useSeoMeta({
+  title: () => article.value?.title || 'Article - Meridian',
+  description: () => {
+    if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
+    
+    // Extract text content from HTML and create a description
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = article.value.contents;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    // Return first 160 characters for SEO description
+    return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
   },
-  async mounted() {
-    console.log("🔴 ArticlePage mounted with props:", {
-      category: this.category,
-      slug: this.slug,
-      route: this.$route,
-      routePath: this.$route.path,
-      routeParams: this.$route.params
+  ogTitle: () => article.value?.title || 'Article - Meridian',
+  ogDescription: () => {
+    if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
+    
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = article.value.contents;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
+  },
+  ogImage: () => article.value?.images?.large?.url || '/meridian-logo.svg',
+  ogType: 'article',
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => article.value?.title || 'Article - Meridian',
+  twitterDescription: () => {
+    if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
+    
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = article.value.contents;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
+  },
+  twitterImage: () => article.value?.images?.large?.url || '/meridian-logo.svg',
+});
+
+// Methods
+const fetchArticle = async () => {
+  loading.value.article = true;
+  error.value = null;
+
+  try {
+    console.log("🔴 ArticlePage fetchArticle called with:", {
+      category: props.category,
+      slug: props.slug,
+      route: useRoute().path,
+      params: useRoute().params
     });
     
-    window.scrollTo(0, 0);
-    await this.fetchArticle();
-    await this.fetchComments();
-  },
-  watch: {
-    category: {
-      handler() {
-        window.scrollTo(0, 0);
-
-        this.loading.comments = true;
-        this.loading.relatedNews = true;
-        this.loading.otherNews = true;
-
-        this.fetchArticle();
-        this.fetchComments();
-      },
-      immediate: false,
-    },
-    slug: {
-      handler() {
-        window.scrollTo(0, 0);
-
-        this.loading.comments = true;
-        this.loading.relatedNews = true;
-        this.loading.otherNews = true;
-
-        this.fetchArticle();
-        this.fetchComments();
-      },
-      immediate: false,
-    },
-  },
-  methods: {
-    async fetchArticle() {
-      this.loading.article = true;
-      this.error = null;
-
-      try {
-        console.log("🔴 ArticlePage fetchArticle called with:", {
-          category: this.category,
-          slug: this.slug,
-          route: this.$route.path,
-          params: this.$route.params
-        });
-        
-        // Check if category and slug are valid before making API call
-        if (!this.category || !this.slug) {
-          console.error("🔴 ArticlePage: category or slug is missing!", {
-            category: this.category,
-            slug: this.slug
-          });
-          this.error = "Invalid article URL";
-          this.loading.article = false;
-          return;
-        }
-        
-        const response = await fetchFromApi(`/getArticlesBySlug/${this.category}/${this.slug}`);
-        //const response = await fetchFromApi(`/getArticlesBySlug/fudbal/srdan-babic-nokautirao-saigraca-i-zatvorio-mu-oko`);
-        //const response = await fetchFromApi(`/getArticlesBySlug/${this.slug}`);
-        console.log("🔴 ArticlePage API response:", response);
-        this.article = response.article;
-        this.loading.article = false;
-
-        await this.fetchRelatedNews();
-        await this.fetchOtherNews();
-      } catch (error) {
-        console.error("🔴 ArticlePage Error fetching article:", error);
-        this.error = "Failed to load article";
-        this.loading.article = false;
-      }
-    },
-    async fetchRelatedNews() {
-      if (!this.article || !this.article.categories) return;
-
-      this.loading.relatedNews = true;
-
-      try {
-        // Get the sport category from the article
-        const sportCategory = this.getSportFromCategories(
-          this.article.categories
-        );
-
-        const articleResponse = await fetchFromApi(`/getArticlesBySlug/${this.category}/${this.slug}`);
-        const relatedArticles = articleResponse.relatedArticle || [];
-        console.log(relatedArticles, "relatedArticles");
-
-        if (relatedArticles.length > 0) {
-          this.josVestiNews = relatedArticles.map((article) => ({
-            id: article.id,
-            title: article.title,
-            image:
-              article.images?.small?.url ||
-              require("@/assets/images/image.jpg"),
-            sport: sportCategory,
-            url: article.url || null,
-            category: article.categories[0].slug,
-            slug: article.slug,
-          }));
-        } else {
-          // Fallback to category-based articles if no relatedArticles
-          /* const categoryId = this.article.categories.find((cat) =>
-            ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
-          )?.id;
-
-          if (categoryId) {
-            const response = await fetchFromApi(`/getArticles`, {
-              "category[]": categoryId,
-              articleLimit: 8,
-            });
-
-            const articles = (response.result.articles || []).filter(
-              (article) => article.slug !== this.slug
-            );
-
-            this.josVestiNews = articles.slice(3, 7).map((article) => ({
-              id: article.id,
-              title: article.title,
-              image:
-                article.images?.small?.url ||
-                require("@/assets/images/image.jpg"),
-              sport: sportCategory,
-            }));
-          } */
-          this.josVestiNews = [];
-        }
-
-        // Still fetch category-based articles for sidebar related news
-        const categoryId = this.article.categories.find((cat) =>
-          ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
-        )?.id;
-
-        if (categoryId) {
-          const response = await fetchFromApi(`/getArticles`, {
-            "category[]": categoryId,
-            articleLimit: 8,
-          });
-
-          const articles = (response.result.articles || []).filter(
-            (article) => article.slug !== this.slug
-          );
-
-          this.relatedNews = articles.slice(0, 3).map((article) => ({
-            id: article.id,
-            title: article.title,
-            date: this.formatDate(article.date || article.publish_date),
-            sport: sportCategory,
-            url: article.url || null,
-            category: article.categories[0].slug,
-            slug: article.slug,
-          }));
-        }
-
-        this.loading.relatedNews = false;
-      } catch (error) {
-        console.error("Error fetching related news:", error);
-        this.relatedNews = [];
-        this.josVestiNews = [];
-        this.loading.relatedNews = false;
-      }
-    },
-    async fetchOtherNews() {
-      if (!this.article || !this.article.categories) return;
-
-      this.loading.otherNews = true;
-
-      try {
-        // Get the sport category from the article
-        const sportCategory = this.getSportFromCategories(
-          this.article.categories
-        );
-
-        // Find the category ID for API call
-        const categoryId = this.article.categories.find((cat) =>
-          ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
-        )?.id;
-
-        let response;
-        if (categoryId) {
-          response = await fetchFromApi(`/getArticles`, {
-            "category[]": categoryId,
-            articleLimit: 10,
-          });
-        } else {
-          response = await fetchFromApi(`/getArticles`, {
-            articleLimit: 10,
-          });
-        }
-
-        const articles = (response.result.articles || []).filter(
-          (article) => article.id !== this.article.id
-        );
-
-        this.otherNews = articles.slice(0, 8).map((article) => ({
-          id: article.id,
-          title: article.title,
-          image: article.feat_images?.small?.url || null,
-          sport: sportCategory,
-          url: article.url || null,
-          category: article.categories[0].slug,
-          slug: article.slug,
-        }));
-
-        this.loading.otherNews = false;
-      } catch (error) {
-        console.error("Error fetching other news:", error);
-        this.otherNews = [];
-        this.loading.otherNews = false;
-      }
-    },
-    async fetchComments() {
-      this.loading.comments = true;
-
-      try {
-        // We need the article id to fetch comments, so we need to fetch the article first
-        if (!this.article || !this.article.id) {
-          this.loading.comments = false;
-          return;
-        }
-        
-        const response = await fetchFromApi(`/getComments/${this.article.id}`);
-        this.comments = response.result.comments || [];
-        this.commentsPagination = response.result.pagination || null;
-        this.totalComments = response.result.pagination?.total || 0;
-        this.loading.comments = false;
-      } catch (error) {
-        console.error("Error fetching comments:", error);
-        this.comments = [];
-        this.commentsPagination = null;
-        this.totalComments = 0;
-        this.loading.comments = false;
-      }
-    },
-    async handleCommentAdded() {
-      await this.fetchComments();
-    },
-    toggleComments() {
-      this.showComments = !this.showComments;
-      this.$nextTick(() => {
-        const targetElement = this.$refs.mainColumn;
-        if (
-          targetElement &&
-          typeof targetElement.scrollIntoView === "function"
-        ) {
-          targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
-        } else {
-          try {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          } catch (e) {
-            window.scrollTo(0, 0);
-          }
-        }
+    // Check if category and slug are valid before making API call
+    if (!props.category || !props.slug) {
+      console.error("🔴 ArticlePage: category or slug is missing!", {
+        category: props.category,
+        slug: props.slug
       });
-    },
-    getSportFromCategories(categories) {
-      const sportMap = {
-        Fudbal: "FUDBAL",
-        Košarka: "KOŠARKA",
-        Tenis: "TENIS",
-        Odbojka: "ODBOJKA",
-      };
+      error.value = "Invalid article URL";
+      loading.value.article = false;
+      return;
+    }
+    
+    const response = await fetchFromApi(`/getArticlesBySlug/${props.category}/${props.slug}`);
+    console.log("🔴 ArticlePage API response:", response);
+    article.value = response.article;
+    loading.value.article = false;
 
-      const sportCategory = categories.find((cat) => sportMap[cat.name]);
-      return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
-    },
-    formatDate(dateString) {
-      console.log(dateString, "dateString");
-      // Robustly parse multiple possible input formats and avoid NaN
-      if (!dateString) return "";
-
-      let date;
-      if (typeof dateString === "number") {
-        // Treat numbers as epoch milliseconds or seconds
-        const ms = dateString > 1e12 ? dateString : dateString * 1000;
-        date = new Date(ms);
-      } else if (typeof dateString === "string") {
-        const trimmed = dateString.trim();
-        // Handle dd.MM.yyyy. HH:mm or dd.MM.yyyy HH:mm
-        const dmYhm = /^(\d{1,2})\.(\d{1,2})\.(\d{4})\.?\s+(\d{1,2}):(\d{2})$/;
-        const dmY = /^(\d{1,2})\.(\d{1,2})\.(\d{4})\.?$/;
-        // Handle dd/MM/yyyy[, HH:mm]
-        const dmySlash = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?$/;
-        // Handle MySQL style: YYYY-MM-DD HH:mm:ss (or with 'T')
-        const ymdHms = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/;
-        let m = trimmed.match(dmySlash);
-        if (m) {
-          const [_, d, mth, y, h, min] = m;
-          date = new Date(Number(y), Number(mth) - 1, Number(d), Number(h || 0), Number(min || 0));
-        } else if ((m = trimmed.match(dmYhm))) {
-          const [_, d, mth, y, h, min] = m;
-          date = new Date(Number(y), Number(mth) - 1, Number(d), Number(h), Number(min));
-        } else if ((m = trimmed.match(dmY))) {
-          const [_, d, mth, y] = m;
-          date = new Date(Number(y), Number(mth) - 1, Number(d));
-        } else if ((m = trimmed.match(ymdHms))) {
-          const [_, y, mth, d, h, min, s] = m;
-          date = new Date(Number(y), Number(mth) - 1, Number(d), Number(h), Number(min), Number(s || 0));
-        } else {
-          // Normalize ISO with microseconds to milliseconds (keep only 3 fractional digits)
-          const normalized = trimmed.replace(/\.(\d{3})\d+(Z|[+-]\d{2}:?\d{2})$/, ".$1$2");
-          // Fallback to native parser (ISO 8601, RFC 2822, etc.)
-          date = new Date(normalized);
-        }
-      } else {
-        date = new Date(dateString);
-      }
-
-      if (!(date instanceof Date) || isNaN(date.getTime())) return "";
-
-      const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const year = date.getFullYear();
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-
-      return `${day}.${month}.${year}. ${hours}:${minutes}`;
-    },
-    navigateToArticle(id) {
-      console.log("🔴 ArticlePage navigateToArticle called!", {
-        id,
-        category: this.category,
-        slug: this.slug
-      });
-      
-      const foundInJos = this.josVestiNews.find((a) => a.id === id)
-      console.log(foundInJos, "FOUND IN JOS");
-      const foundInRelated = this.relatedNews.find((a) => a.id === id)
-      console.log(foundInRelated, "FOUND IN RELATED");
-      //const target = (foundInJos && foundInJos.url) || (foundInRelated && foundInRelated.url) || `/${foundInJos.category}/${foundInJos.slug}` || `/${foundInRelated.category}/${foundInRelated.slug}`
-      const target = `/${foundInJos.category}/${foundInJos.slug}` || `/${foundInRelated.category}/${foundInRelated.slug}`
-      console.log(target, "TARGET");
-      
-      console.log("🔴 ArticlePage navigating to:", target);
-      this.$router.push(target)
-    },
-    navigateToTag(tagId, tagName) {
-      this.$router.push(`/tag/${tagId}/${encodeURIComponent(tagName)}`);
-    },
-    extractParagraphs(htmlContent) {
-      // Create a temporary DOM element to parse the HTML
-      const tempDiv = document.createElement("div");
-      tempDiv.innerHTML = htmlContent;
-
-      // Get all elements (paragraphs, headings, etc.)
-      const elements = Array.from(tempDiv.children);
-
-      // Convert each element back to HTML string
-      return elements.map((element) => element.outerHTML);
-    },
-    share(platform) {
-      const pageUrl = window.location.href;
-      const title = this.article?.title || document.title;
-      const url = encodeURIComponent(pageUrl);
-      const text = encodeURIComponent(title);
-
-      const open = (shareUrl) => {
-        window.open(shareUrl, "_blank", "noopener,noreferrer");
-      };
-
-      switch (platform) {
-        case "facebook":
-          open(`https://www.facebook.com/sharer/sharer.php?u=${url}`);
-          break;
-        case "twitter":
-          open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`);
-          break;
-        case "whatsapp":
-          open(`https://api.whatsapp.com/send?text=${text}%20${url}`);
-          break;
-        case "viber":
-          // Works on devices with Viber installed; desktop browsers may ignore
-          window.location.href = `viber://forward?text=${text}%20${url}`;
-          break;
-        case "instagram":
-          // No web share URL; try native share, else copy link
-          if (navigator.share) {
-            navigator
-              .share({ title, text: title, url: pageUrl })
-              .catch(() => {});
-          } else {
-            this.copyToClipboard(pageUrl);
-            alert(
-              "Link copied! Open Instagram and paste it where you want to share."
-            );
-          }
-          break;
-      }
-    },
-    copyToClipboard(value) {
-      if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(value);
-      } else {
-        const el = document.createElement("textarea");
-        el.value = value;
-        el.setAttribute("readonly", "");
-        el.style.position = "absolute";
-        el.style.left = "-9999px";
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand("copy");
-        document.body.removeChild(el);
-      }
-    },
-  },
+    await fetchRelatedNews();
+    await fetchOtherNews();
+  } catch (error) {
+    console.error("🔴 ArticlePage Error fetching article:", error);
+    error.value = "Failed to load article";
+    loading.value.article = false;
+  }
 };
+
+const fetchRelatedNews = async () => {
+  if (!article.value || !article.value.categories) return;
+
+  loading.value.relatedNews = true;
+
+  try {
+    // Get the sport category from the article
+    const sportCategory = getSportFromCategories(
+      article.value.categories
+    );
+
+    const articleResponse = await fetchFromApi(`/getArticlesBySlug/${props.category}/${props.slug}`);
+    const relatedArticles = articleResponse.relatedArticle || [];
+    console.log(relatedArticles, "relatedArticles");
+
+    if (relatedArticles.length > 0) {
+      josVestiNews.value = relatedArticles.map((article) => ({
+        id: article.id,
+        title: article.title,
+        image:
+          article.images?.small?.url ||
+          require("@/assets/images/image.jpg"),
+        sport: sportCategory,
+        url: article.url || null,
+        category: article.categories[0].slug,
+        slug: article.slug,
+      }));
+    } else {
+      josVestiNews.value = [];
+    }
+
+    // Still fetch category-based articles for sidebar related news
+    const categoryId = article.value.categories.find((cat) =>
+      ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
+    )?.id;
+
+    if (categoryId) {
+      const response = await fetchFromApi(`/getArticles`, {
+        "category[]": categoryId,
+        articleLimit: 8,
+      });
+
+      const articles = (response.result.articles || []).filter(
+        (article) => article.slug !== props.slug
+      );
+
+      relatedNews.value = articles.slice(0, 3).map((article) => ({
+        id: article.id,
+        title: article.title,
+        date: formatDate(article.date || article.publish_date),
+        sport: sportCategory,
+        url: article.url || null,
+        category: article.categories[0].slug,
+        slug: article.slug,
+      }));
+    }
+
+    loading.value.relatedNews = false;
+  } catch (error) {
+    console.error("Error fetching related news:", error);
+    relatedNews.value = [];
+    josVestiNews.value = [];
+    loading.value.relatedNews = false;
+  }
+};
+
+const fetchOtherNews = async () => {
+  if (!article.value || !article.value.categories) return;
+
+  loading.value.otherNews = true;
+
+  try {
+    // Get the sport category from the article
+    const sportCategory = getSportFromCategories(
+      article.value.categories
+    );
+
+    // Find the category ID for API call
+    const categoryId = article.value.categories.find((cat) =>
+      ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
+    )?.id;
+
+    let response;
+    if (categoryId) {
+      response = await fetchFromApi(`/getArticles`, {
+        "category[]": categoryId,
+        articleLimit: 10,
+      });
+    } else {
+      response = await fetchFromApi(`/getArticles`, {
+        articleLimit: 10,
+      });
+    }
+
+    const articles = (response.result.articles || []).filter(
+      (article) => article.id !== article.value.id
+    );
+
+    otherNews.value = articles.slice(0, 8).map((article) => ({
+      id: article.id,
+      title: article.title,
+      image: article.feat_images?.small?.url || null,
+      sport: sportCategory,
+      url: article.url || null,
+      category: article.categories[0].slug,
+      slug: article.slug,
+    }));
+
+    loading.value.otherNews = false;
+  } catch (error) {
+    console.error("Error fetching other news:", error);
+    otherNews.value = [];
+    loading.value.otherNews = false;
+  }
+};
+
+const fetchComments = async () => {
+  loading.value.comments = true;
+
+  try {
+    // We need the article id to fetch comments, so we need to fetch the article first
+    if (!article.value || !article.value.id) {
+      loading.value.comments = false;
+      return;
+    }
+    
+    const response = await fetchFromApi(`/getComments/${article.value.id}`);
+    comments.value = response.result.comments || [];
+    commentsPagination.value = response.result.pagination || null;
+    totalComments.value = response.result.pagination?.total || 0;
+    loading.value.comments = false;
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    comments.value = [];
+    commentsPagination.value = null;
+    totalComments.value = 0;
+    loading.value.comments = false;
+  }
+};
+
+const handleCommentAdded = async () => {
+  await fetchComments();
+};
+
+const toggleComments = () => {
+  showComments.value = !showComments.value;
+  nextTick(() => {
+    const targetElement = mainColumn.value;
+    if (
+      targetElement &&
+      typeof targetElement.scrollIntoView === "function"
+    ) {
+      targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      try {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (e) {
+        window.scrollTo(0, 0);
+      }
+    }
+  });
+};
+
+const getSportFromCategories = (categories) => {
+  const sportMap = {
+    Fudbal: "FUDBAL",
+    Košarka: "KOŠARKA",
+    Tenis: "TENIS",
+    Odbojka: "ODBOJKA",
+  };
+
+  const sportCategory = categories.find((cat) => sportMap[cat.name]);
+  return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
+};
+
+const formatDate = (dateString) => {
+  console.log(dateString, "dateString");
+  // Robustly parse multiple possible input formats and avoid NaN
+  if (!dateString) return "";
+
+  let date;
+  if (typeof dateString === "number") {
+    // Treat numbers as epoch milliseconds or seconds
+    const ms = dateString > 1e12 ? dateString : dateString * 1000;
+    date = new Date(ms);
+  } else if (typeof dateString === "string") {
+    const trimmed = dateString.trim();
+    // Handle dd.MM.yyyy. HH:mm or dd.MM.yyyy HH:mm
+    const dmYhm = /^(\d{1,2})\.(\d{1,2})\.(\d{4})\.?\s+(\d{1,2}):(\d{2})$/;
+    const dmY = /^(\d{1,2})\.(\d{1,2})\.(\d{4})\.?$/;
+    // Handle dd/MM/yyyy[, HH:mm]
+    const dmySlash = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?$/;
+    // Handle MySQL style: YYYY-MM-DD HH:mm:ss (or with 'T')
+    const ymdHms = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/;
+    let m = trimmed.match(dmySlash);
+    if (m) {
+      const [_, d, mth, y, h, min] = m;
+      date = new Date(Number(y), Number(mth) - 1, Number(d), Number(h || 0), Number(min || 0));
+    } else if ((m = trimmed.match(dmYhm))) {
+      const [_, d, mth, y, h, min] = m;
+      date = new Date(Number(y), Number(mth) - 1, Number(d), Number(h), Number(min));
+    } else if ((m = trimmed.match(dmY))) {
+      const [_, d, mth, y] = m;
+      date = new Date(Number(y), Number(mth) - 1, Number(d));
+    } else if ((m = trimmed.match(ymdHms))) {
+      const [_, y, mth, d, h, min, s] = m;
+      date = new Date(Number(y), Number(mth) - 1, Number(d), Number(h), Number(min), Number(s || 0));
+    } else {
+      // Normalize ISO with microseconds to milliseconds (keep only 3 fractional digits)
+      const normalized = trimmed.replace(/\.(\d{3})\d+(Z|[+-]\d{2}:?\d{2})$/, ".$1$2");
+      // Fallback to native parser (ISO 8601, RFC 2822, etc.)
+      date = new Date(normalized);
+    }
+  } else {
+    date = new Date(dateString);
+  }
+
+  if (!(date instanceof Date) || isNaN(date.getTime())) return "";
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${day}.${month}.${year}. ${hours}:${minutes}`;
+};
+
+const navigateToArticle = (id) => {
+  console.log("🔴 ArticlePage navigateToArticle called!", {
+    id,
+    category: props.category,
+    slug: props.slug
+  });
+  
+  const foundInJos = josVestiNews.value.find((a) => a.id === id)
+  console.log(foundInJos, "FOUND IN JOS");
+  const foundInRelated = relatedNews.value.find((a) => a.id === id)
+  console.log(foundInRelated, "FOUND IN RELATED");
+  const target = `/${foundInJos.category}/${foundInJos.slug}` || `/${foundInRelated.category}/${foundInRelated.slug}`
+  console.log(target, "TARGET");
+  
+  console.log("🔴 ArticlePage navigating to:", target);
+  useRouter().push(target)
+};
+
+const navigateToTag = (tagId, tagName) => {
+  useRouter().push(`/tag/${tagId}/${encodeURIComponent(tagName)}`);
+};
+
+const extractParagraphs = (htmlContent) => {
+  // Create a temporary DOM element to parse the HTML
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = htmlContent;
+
+  // Get all elements (paragraphs, headings, etc.)
+  const elements = Array.from(tempDiv.children);
+
+  // Convert each element back to HTML string
+  return elements.map((element) => element.outerHTML);
+};
+
+const share = (platform) => {
+  const pageUrl = window.location.href;
+  const title = article.value?.title || document.title;
+  const url = encodeURIComponent(pageUrl);
+  const text = encodeURIComponent(title);
+
+  const open = (shareUrl) => {
+    window.open(shareUrl, "_blank", "noopener,noreferrer");
+  };
+
+  switch (platform) {
+    case "facebook":
+      open(`https://www.facebook.com/sharer/sharer.php?u=${url}`);
+      break;
+    case "twitter":
+      open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`);
+      break;
+    case "whatsapp":
+      open(`https://api.whatsapp.com/send?text=${text}%20${url}`);
+      break;
+    case "viber":
+      // Works on devices with Viber installed; desktop browsers may ignore
+      window.location.href = `viber://forward?text=${text}%20${url}`;
+      break;
+    case "instagram":
+      // No web share URL; try native share, else copy link
+      if (navigator.share) {
+        navigator
+          .share({ title, text: title, url: pageUrl })
+          .catch(() => {});
+      } else {
+        copyToClipboard(pageUrl);
+        alert(
+          "Link copied! Open Instagram and paste it where you want to share."
+        );
+      }
+      break;
+  }
+};
+
+const copyToClipboard = (value) => {
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(value);
+  } else {
+    const el = document.createElement("textarea");
+    el.value = value;
+    el.setAttribute("readonly", "");
+    el.style.position = "absolute";
+    el.style.left = "-9999px";
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand("copy");
+    document.body.removeChild(el);
+  }
+};
+
+// Lifecycle hooks
+onMounted(async () => {
+  console.log("🔴 ArticlePage mounted with props:", {
+    category: props.category,
+    slug: props.slug,
+    route: useRoute(),
+    routePath: useRoute().path,
+    routeParams: useRoute().params
+  });
+  
+  window.scrollTo(0, 0);
+  await fetchArticle();
+  await fetchComments();
+});
+
+// Watchers
+watch(() => props.category, () => {
+  window.scrollTo(0, 0);
+
+  loading.value.comments = true;
+  loading.value.relatedNews = true;
+  loading.value.otherNews = true;
+
+  fetchArticle();
+  fetchComments();
+});
+
+watch(() => props.slug, () => {
+  window.scrollTo(0, 0);
+
+  loading.value.comments = true;
+  loading.value.relatedNews = true;
+  loading.value.otherNews = true;
+
+  fetchArticle();
+  fetchComments();
+});
 </script>
 
 <style scoped>
