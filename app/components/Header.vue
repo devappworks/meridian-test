@@ -164,7 +164,7 @@
                   :key="item.id"
                 >
                   <router-link
-                    :to="generateHelperRouteFromTitle(item.title, item)"
+                    :to="generateHelperRouteFromTitle(item.title, item).path"
                     class="category"
                     @click="onSportCategoryClick"
                   >
@@ -589,27 +589,38 @@ export default {
     },
 
     generateHelperRouteFromTitle(title, item) {
+      console.log(title, "TITLE");
+      console.log(item, "ITEM");
       // Map to existing sport pages first (these have dedicated components)
       const dedicatedSportPages = {
         FUDBAL: "/fudbal",
         KOŠARKA: "/kosarka",
         ODBOJKA: "/odbojka",
-        TENIS: "/tenis",
+        TENIS: "/tenis",   
       };
 
       // If we have a dedicated sport page, use it
       if (dedicatedSportPages[title]) {
-        return dedicatedSportPages[title];
+        return {
+          path: dedicatedSportPages[title],
+          query: {
+            title: title,
+          },
+        };
       }
 
       // For all other categories, create dynamic routes
       if (item && item.web_categories && item.web_categories.length > 0) {
+        console.log(item, "ITEM");
         const categoryId = item.web_categories[0];
         const slug = this.generateSlugFromTitle(title);
 
+        console.log(categoryId, "CATEGORY ID");
+        console.log(slug, "SLUG");
+
         // Use dynamic route with category data in query params
         return {
-          path: `/sport/${slug}`,
+          path: `/${slug}`,
           query: {
             categoryId: categoryId,
             title: title,
@@ -619,9 +630,10 @@ export default {
 
       // Categories without specific IDs (like team pages that might not have articles)
       const slug = this.generateSlugFromTitle(title);
+      console.log(slug, "SLUG");
 
       return {
-        path: `/sport/${slug}`,
+        path: `/${slug}`,
         query: {
           title: title,
         },
