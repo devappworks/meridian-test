@@ -89,15 +89,24 @@ export default {
       console.log("🔵 NewsCard category:", this.category);
       console.log("🔵 NewsCard slug:", this.slug);
 
-      // If emitEvents is true, emit the event and let parent handle navigation
-      if (this.emitEvents) {
-        console.log("🔵 NewsCard emitting event to parent");
-        this.$emit("article-clicked", this.id);
-        return; // Exit early, let parent handle navigation
-      }
-
-      // Only navigate directly if emitEvents is false
       this.$router.push(`/${this.category}/${this.slug}`);
+      window.reload();
+      //window.location.href = `/${this.category}/${this.slug}`;
+      let hack = false;
+      if (hack) {
+      if (this.id) {
+        if (this.emitEvents) {
+          console.log("🔵 NewsCard emitting event to parent");
+          this.$emit("article-clicked", this.id);
+        } else {
+          const target = this.url && typeof this.url === 'string'
+            ? this.resolveArticleRoute(this.url, this.id)
+            : `/article/${this.id}`
+          console.log("🔵 NewsCard navigating to:", target);
+          this.$router.push(target);
+        }
+        }
+      }
     },
   },
   computed: {
