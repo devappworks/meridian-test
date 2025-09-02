@@ -93,7 +93,7 @@ export default {
       
       //window.location.href = `/${this.category}/${this.slug}`;
       let hack = false;
-      if (hack) {
+      
       if (this.id) {
         if (this.emitEvents) {
           console.log("🔵 NewsCard emitting event to parent");
@@ -103,7 +103,7 @@ export default {
           console.log("🔵 NewsCard navigating to:", target);
           this.$router.push(target);
         }
-        }
+        
       }
     },
   },
