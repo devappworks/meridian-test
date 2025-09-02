@@ -84,9 +84,10 @@ export default {
     },
     navigateToArticle() {
       if (this.article && this.article.id) {
-        const target = this.article.url
+        /* const target = this.article.url
           ? this.resolveArticleRoute(this.article.url, this.article.id)
-          : `/article/${this.article.id}`
+          : `/article/${this.article.id}` */
+        const target = `/${this.article.category}/${this.article.slug}`
         this.$router.push(target);
       }
     },
