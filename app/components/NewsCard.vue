@@ -90,7 +90,7 @@ export default {
       console.log("🔵 NewsCard slug:", this.slug);
 
       this.$router.push(`/${this.category}/${this.slug}`);
-      window.reload();
+      
       //window.location.href = `/${this.category}/${this.slug}`;
       let hack = false;
       if (hack) {

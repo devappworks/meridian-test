@@ -94,7 +94,7 @@ export default {
       type: Boolean,
       default: false,
     },
-    /* category: {
+    category: {
       type: String,
       required: true,
       default: "",
@@ -103,7 +103,7 @@ export default {
       type: String,
       required: true,
       default: "",
-    }, */
+    },
   },
   data() {
     return {
