@@ -6,22 +6,24 @@ import { config as loadDotenv } from 'dotenv'
 loadDotenv()
 
 export default defineNuxtConfig({
-  // Force SSR mode
-  ssr: true,
+  // Static site for Apache hosting
+  ssr: false,
   
-  // Disable any static generation
   nitro: {
-    preset: 'node-server', // Force server-side rendering
+    preset: 'static',
+    output: {
+      dir: 'dist',        // Build directly to 'dist' folder
+      publicDir: 'dist'   // Put all files in 'dist' (no subdirectories)
+    },
     prerender: {
-      routes: [] // No prerendering
-    },
-    // Ensure all routes are server-side rendered
-    routeRules: {
-      '/**': { ssr: true, prerender: false },
-    },
-    // Server configuration
-    experimental: {
-      wasm: false
+      crawlLinks: true,
+      routes: [
+        '/',
+        '/fudbal',
+        '/kosarka', 
+        '/tenis',
+        '/odbojka'
+      ]
     }
   },
   compatibilityDate: '2025-07-15',
