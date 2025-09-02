@@ -88,6 +88,9 @@ export default {
       
       console.log("🔵 NewsCard category:", this.category);
       console.log("🔵 NewsCard slug:", this.slug);
+
+      this.$router.push(`/${this.category}/${this.slug}`);
+      return;
       
       if (this.id) {
         if (this.emitEvents) {
