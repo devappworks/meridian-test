@@ -50,7 +50,7 @@ export default {
     },
     emitEvents: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     forceShowSportTag: {
       type: Boolean,
