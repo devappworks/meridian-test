@@ -6,14 +6,16 @@ import { config as loadDotenv } from 'dotenv'
 loadDotenv()
 
 export default defineNuxtConfig({
+  // Keep SSR for proper routing
+  ssr: true,
+  
   nitro: {
+    preset: 'node-server',
     prerender: {
-      crawlLinks: true,
-      // Add any dynamic routes that can't be discovered via links:
-      routes: [
-        // '/article/1',
-        // '/sport/fudbal',
-      ]
+      routes: []
+    },
+    routeRules: {
+      '/**': { ssr: true, prerender: false },
     }
   },
   compatibilityDate: '2025-07-15',
