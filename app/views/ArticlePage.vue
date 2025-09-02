@@ -445,8 +445,8 @@ export default {
 
       try {
         console.log(this.category, this.slug, "this.category, this.slug");
-        //const response = await fetchFromApi(`/getArticlesBySlug/${this.category}/${this.slug}`);
-        const response = await fetchFromApi(`/getArticlesBySlug/fudbal/srdan-babic-nokautirao-saigraca-i-zatvorio-mu-oko`);
+        const response = await fetchFromApi(`/getArticlesBySlug/${this.category}/${this.slug}`);
+        //const response = await fetchFromApi(`/getArticlesBySlug/fudbal/srdan-babic-nokautirao-saigraca-i-zatvorio-mu-oko`);
         //const response = await fetchFromApi(`/getArticlesBySlug/${this.slug}`);
         console.log(response, "response");
         this.article = response.article;

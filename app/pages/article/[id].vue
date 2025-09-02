@@ -111,7 +111,7 @@ useHead(() => {
 import ArticlePage from "@/views/ArticlePage.vue";
 
 // If article is available and contains a canonical URL like /category/slug,
-// redirect to the pretty URL on client navigation.
+// redirect to the pretty URL on client and server.
 onMounted(() => {
   const a = article?.value
   const raw = a && typeof a.url === 'string' ? a.url : null
@@ -122,27 +122,32 @@ onMounted(() => {
     try {
       const u = new URL(pathlike, window.location.origin)
       const p = u.pathname || '/'
-      const m = p.match(/^\/article\/(\d+)(?:\/.+)?$/i)
-      if (m) return `/article/${m[1]}`
+      // Don't return /article/ URLs, return the pretty URLs instead
       return p.startsWith('/') ? p : `/${p}`
     } catch {
       const p = pathlike.startsWith('/') ? pathlike : `/${pathlike}`
-      const m = p.match(/^\/article\/(\d+)(?:\/.+)?$/i)
-      if (m) return `/article/${m[1]}`
       return p
     }
   }
 
-  // Only redirect if we are currently on /article/:id and the normalized
-  // target differs from current location.
+  // Always redirect from /article/:id to the pretty URL if available
   if (current.startsWith('/article/')) {
-    const normalized = normalizeToInternal(raw)
-    if (normalized.toLowerCase() !== current.toLowerCase()) {
-      // Avoid redirecting to unsupported /article/:id/:slug by collapsing to /article/:id
-      navigateTo(normalized, { replace: true })
+    const prettyUrl = normalizeToInternal(raw)
+    // Only redirect if we have a pretty URL that's different from current
+    if (prettyUrl && prettyUrl !== current && !prettyUrl.startsWith('/article/')) {
+      console.log(`Redirecting from ${current} to ${prettyUrl}`)
+      navigateTo(prettyUrl, { replace: true })
     }
   }
 })
+
+// Server-side redirect as well  
+if (process.server && article.value?.url) {
+  const prettyUrl = article.value.url
+  if (prettyUrl && !prettyUrl.startsWith('/article/') && route.path.startsWith('/article/')) {
+    await navigateTo(prettyUrl, { redirectCode: 301 })
+  }
+}
 </script>
 
 <template>
