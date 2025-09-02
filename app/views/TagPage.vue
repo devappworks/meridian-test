@@ -166,6 +166,8 @@ export default {
         date: this.formatDate(article.publish_date),
         url: article.url,
         image: article.feat_images?.medium?.url || null,
+        category: article.categories[0].slug,
+        slug: article.slug,
       };
     },
 
@@ -176,6 +178,8 @@ export default {
         title: article.title,
         sport: this.tagTitle,
         date: this.formatDate(article.publish_date),
+        category: article.categories[0].slug,
+        slug: article.slug,
       };
     },
 
@@ -207,6 +211,8 @@ export default {
             image: articles[0].feat_images?.large?.url || null,
             content: articles[0].contents,
             featured: true,
+            category: articles[0].categories[0].slug,
+            slug: articles[0].slug,
           };
 
           this.tagNews = articles.slice(1, 17).map(this.mapArticle);
@@ -270,6 +276,8 @@ export default {
           date: this.formatDate(article.publish_date),
           url: article.url,
           image: article.feat_images?.medium?.url || null,
+          category: article.categories[0].slug,
+          slug: article.slug,
         }));
       } catch (error) {
         console.error("Error fetching other news:", error);
@@ -406,7 +414,7 @@ export default {
 
     navigateToArticle(id) {
       const found = [...this.tagNews, ...this.loadMoreTagNews].find((a) => a.id === id);
-      const target = found && found.url ? found.url : `/article/${id}`;
+      const target = `/${found.category}/${found.slug}`;
       this.$router.push(target);
     },
   },

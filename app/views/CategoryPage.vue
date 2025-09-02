@@ -299,6 +299,8 @@ export default {
         image: article.feat_images["medium"]
           ? article.feat_images["medium"].url
           : null,
+        category: article.categories[0].slug,
+        slug: article.slug,
       };
     },
 
@@ -308,6 +310,8 @@ export default {
         title: article.title,
         sport: this.getSportFromCategories(article.categories),
         date: article.date,
+        category: article.categories[0].slug,
+        slug: article.slug,
       };
     },
 
@@ -513,8 +517,8 @@ export default {
     },
 
     navigateToArticle(articleId) {
-      const found = [...this.categoryNews, ...this.loadMoreCategoryNews].find((a) => a.id === articleId);
-      const target = found && found.url ? found.url : `/article/${articleId}`;
+      const found = [...this.categoryNews, ...this.loadMoreCategoryNews, ...this.relatedNews].find((a) => a.id === articleId);
+      const target = `/${found.category}/${found.slug}`;
       this.$router.push(target);
     },
   },

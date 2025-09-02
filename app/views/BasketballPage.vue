@@ -130,8 +130,19 @@ export default {
       isSwitchingCategory: false,
     };
   },
+  props: {
+    category: {
+      type: String,
+      default: "",
+    },
+    slug: {
+      type: String,
+      default: "",
+    },
+  },
   methods: {
     mapArticle(article) {
+      console.log(article, "ARTICLE");
       return {
         id: article.id,
         title: article.title,
@@ -141,6 +152,8 @@ export default {
         image: article.feat_images["medium"]
           ? article.feat_images["medium"].url
           : null,
+        category: article.categories[0].slug,
+        slug: article.slug,
       };
     },
 
@@ -240,10 +253,14 @@ export default {
 
     // Helper function to map sidebar article data
     mapSidebarArticle(article) {
+      console.log(article, "SIDEBAR ARTICLE");
       return {
+        id: article.id,
         title: article.title,
         sport: "KOŠARKA",
         date: article.date,
+        category: article.categories[0].slug,
+        slug: article.slug,
       };
     },
 
@@ -274,6 +291,7 @@ export default {
 
         const allArticles = basketballData.result.articles;
         const filteredArticles = this.filterArticlesBySubcategory(allArticles);
+        console.log(filteredArticles, "FILTERED ARTICLES");
 
         if (filteredArticles.length > 0) {
           this.featuredArticle = {
@@ -287,11 +305,15 @@ export default {
               : null,
             content: filteredArticles[0].contents,
             featured: true,
+            category: filteredArticles[0].categories[0].slug,
+            slug: filteredArticles[0].slug,
           };
 
           this.basketballNews = filteredArticles
             .slice(1, 17)
             .map(this.mapArticle);
+
+          console.log(this.basketballNews, "BASKETBALL NEWS");
           this.loadMoreBasketballNews = filteredArticles
             .slice(17, 29)
             .map(this.mapArticle);
@@ -299,6 +321,7 @@ export default {
           this.relatedNews = filteredArticles
             .slice(-3)
             .map(this.mapSidebarArticle);
+          console.log(this.relatedNews, "RELATED NEWS");
 
           const articlesUsed = 40;
           if (this.currentCategory === this.mainBasketballCategory) {
@@ -436,9 +459,24 @@ export default {
     },
 
     navigateToArticle(articleId) {
-      const found = [...this.basketballNews, ...this.loadMoreBasketballNews].find((a) => a.id === articleId);
-      const target = found && found.url ? found.url : `/article/${articleId}`;
-      this.$router.push(target);
+      const found = [...this.basketballNews, ...this.loadMoreBasketballNews, ...this.relatedNews].find((a) => a.id === articleId);
+      console.log(found, "FOUND");
+      console.log(this.basketballNews[0]?.slug, "BASKETBALL SLUG");
+      console.log(this.basketballNews[0]?.sport?.toLowerCase(), "BASKETBALL CATEGORY");
+      console.log(this.loadMoreBasketballNews, "LOAD MORE BASKETBALL NEWS");
+      console.log(this.relatedNews, "RELATED NEWS");
+      
+      if (found) {
+        const target = `/${found.sport.toLowerCase()}/${found.slug}`;
+        this.$router.push(target);
+      } else {
+        console.error("Article not found:", articleId);
+        console.log("Available articles:", {
+          basketballNews: this.basketballNews.length,
+          loadMoreBasketballNews: this.loadMoreBasketballNews.length,
+          relatedNews: this.relatedNews.length
+        });
+      }
     },
   },
   async mounted() {

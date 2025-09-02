@@ -123,6 +123,16 @@ export default {
       hasMorePages: false,
     };
   },
+  props: {
+    category: {
+      type: String,
+      default: "",
+    },
+    slug: {
+      type: String,
+      default: "",
+    },
+  },
   computed: {
     hasSelectedCategories() {
       return this.selectedCategories.length > 0;
@@ -364,14 +374,17 @@ export default {
         id: article.id,
         title: article.title,
         sport: sportTag,
+        categoryName: categoryName,
         date: article.date,
         url: article.url,
         image:
           article.feat_images && article.feat_images["medium"]
             ? article.feat_images["medium"].url
             : NewsImage,
-        category: sportTag, // Use the computed sport tag as category too
+        //category: sportTag, // Use the computed sport tag as category too
         categoryName: categoryName,
+        category: article.categories[0].slug,
+        slug: article.slug,
       };
     },
 
@@ -411,8 +424,10 @@ export default {
       return {
         id: article.id,
         title: article.title,
-        category: sportTag,
+        sport: sportTag,
         date: article.date,
+        category: article.categories[0].slug,
+        slug: article.slug,
       };
     },
 
@@ -478,8 +493,11 @@ export default {
           ...categoryParams,
         });
 
+        console.log(response, "RESPONSE");
+
         if (response.success && response.result.articles) {
           const allArticles = response.result.articles;
+          console.log(allArticles, "ALL ARTICLES");
 
           // Map articles to the required format
           this.newsItems = allArticles.slice(0, 32).map(this.mapArticle);
@@ -521,6 +539,8 @@ export default {
           page: nextPage,
           ...categoryParams,
         });
+
+        console.log(response, "RESPONSE");
 
         if (response.success && response.result.articles) {
           const newArticles = response.result.articles;
@@ -573,7 +593,10 @@ export default {
       }
     },
     navigateToArticle(articleId) {
-      this.$router.push(`/article/${articleId}`);
+      const found = [...this.newsItems, ...this.otherNewsItems, ...this.relatedNews].find((a) => a.id === articleId);
+      console.log(found, "FOUND");
+      const target = `/${found.category}/${found.slug}`;
+      this.$router.push(target);
     },
   },
 };

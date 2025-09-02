@@ -92,7 +92,6 @@ export default {
       this.$router.push(`/${this.category}/${this.slug}`);
       
       //window.location.href = `/${this.category}/${this.slug}`;
-      let hack = false;
       
       if (this.id) {
         if (this.emitEvents) {

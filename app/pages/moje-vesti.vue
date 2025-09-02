@@ -71,8 +71,8 @@ useHead({ title: "Moje vesti" });
             >
               <div class="number">{{ index + 1 }}</div>
               <div class="content">
-                <div class="category" :class="getSportCssClass(news.category)">
-                  {{ news.category }}
+                <div class="category" :class="getSportCssClass(news.sport)">
+                  {{ news.sport }}
                 </div>
                 <h3>{{ news.title }}</h3>
                 <div class="timestamp">
@@ -374,8 +374,10 @@ export default {
           article.feat_images && article.feat_images["medium"]
             ? article.feat_images["medium"].url
             : NewsImage,
-        category: sportTag, // Use the computed sport tag as category too
+        //category: sportTag, // Use the computed sport tag as category too
         categoryName: categoryName,
+        category: article.categories[0].slug,
+        slug: article.slug,
       };
     },
 
@@ -415,8 +417,10 @@ export default {
       return {
         id: article.id,
         title: article.title,
-        category: sportTag,
+        sport: sportTag,
+        category: article.categories[0].slug,
         date: article.date,
+        slug: article.slug,
       };
     },
 
@@ -438,6 +442,7 @@ export default {
 
     // Convert sport tags to CSS class names
     getSportCssClass(sportTag) {
+      console.log(sportTag, "SPORT TAG");
       const classMap = {
         FUDBAL: "fudbal",
         "DOMAĆI FUDBAL": "fudbal",
@@ -489,6 +494,7 @@ export default {
           this.newsItems = allArticles.slice(0, 32).map(this.mapArticle);
           this.otherNewsItems = allArticles.slice(32, 40).map(this.mapArticle);
           this.relatedNews = allArticles.slice(-6).map(this.mapSidebarArticle);
+          console.log(this.relatedNews, "RELATED NEWS");
 
           this.hasMorePages = allArticles.length >= 50;
           this.page = 1;
@@ -577,9 +583,9 @@ export default {
       }
     },
     navigateToArticle(articleId) {
-      const found = this.newsResults?.find?.((a) => a.id === articleId) || this.news?.find?.((a) => a.id === articleId) || null
-      const target = found && found.url ? found.url : `/article/${articleId}`
-      this.$router.push(target)
+      const found = [...this.newsItems, ...this.otherNewsItems, ...this.relatedNews].find((a) => a.id === articleId)
+      const target = `/${found.sport.toLowerCase()}/${found.slug}`
+      this.$router.push(target);
     },
   },
 };

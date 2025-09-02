@@ -107,6 +107,16 @@ export default {
       },
     };
   },
+  props: {
+    category: {
+      type: String,
+      default: "",
+    },
+    slug: {
+      type: String,
+      default: "",
+    },
+  },
   methods: {
     async fetchOtherArticles() {
       this.loading = {
@@ -144,6 +154,8 @@ export default {
             image: article.feat_images["medium"]
               ? article.feat_images["medium"].url
               : null,
+            category: article.categories[0].slug,
+            slug: article.slug,
           }));
 
           this.loadMoreOtherNews = filteredArticles
@@ -157,6 +169,8 @@ export default {
               image: article.feat_images["medium"]
                 ? article.feat_images["medium"].url
                 : null,
+              category: article.categories[0].slug,
+              slug: article.slug,
             }));
 
           // Additional other news
@@ -171,6 +185,8 @@ export default {
               image: article.feat_images["medium"]
                 ? article.feat_images["medium"].url
                 : null,
+              category: article.categories[0].slug,
+              slug: article.slug,
             }));
 
           // Related news sidebar
@@ -179,6 +195,8 @@ export default {
             title: article.title,
             sport: "OSTALE VESTI",
             date: article.date,
+            category: article.categories[0].slug,
+            slug: article.slug,
           }));
 
           // Check if we have more pages
@@ -249,6 +267,8 @@ export default {
               image: article.feat_images["medium"]
                 ? article.feat_images["medium"].url
                 : null,
+              category: article.categories[0].slug,
+              slug: article.slug,
             }));
 
             if (mappedArticles.length > 0) {
@@ -308,8 +328,8 @@ export default {
     },
 
     navigateToArticle(articleId) {
-      const found = [...this.otherNews, ...this.loadMoreOtherNews].find((a) => a.id === articleId);
-      const target = found && found.url ? found.url : `/article/${articleId}`;
+      const found = [...this.otherNews, ...this.loadMoreOtherNews, ...this.relatedNews].find((a) => a.id === articleId);
+      const target = `/${found.category}/${found.slug}`;
       this.$router.push(target);
     },
   },

@@ -151,6 +151,8 @@ export default {
         date: article.date,
         url: article.url,
         image: article.feat_images?.medium?.url || null,
+        category: article.categories[0].slug,
+        slug: article.slug,
       };
     },
 
@@ -243,9 +245,12 @@ export default {
     // Helper function to map sidebar article data
     mapSidebarArticle(article) {
       return {
+        id: article.id,
         title: article.title,
         sport: "ODBOJKA",
         date: article.date,
+        category: article.categories[0].slug,
+        slug: article.slug,
       };
     },
 
@@ -289,6 +294,8 @@ export default {
               : null,
             content: filteredArticles[0].contents,
             featured: true,
+            category: filteredArticles[0].categories[0].slug,
+            slug: filteredArticles[0].slug,
           };
 
           this.volleyballNews = filteredArticles
@@ -440,8 +447,8 @@ export default {
     },
 
     navigateToArticle(articleId) {
-      const found = [...this.volleyballNews, ...this.loadMoreVolleyballNews].find((a) => a.id === articleId);
-      const target = found && found.url ? found.url : `/article/${articleId}`;
+      const found = [...this.volleyballNews, ...this.loadMoreVolleyballNews, ...this.relatedNews].find((a) => a.id === articleId);
+      const target = `/${found.sport.toLowerCase()}/${found.slug}`;
       this.$router.push(target);
     },
   },

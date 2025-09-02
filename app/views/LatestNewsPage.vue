@@ -137,6 +137,8 @@ export default {
             image: article.feat_images["medium"]
               ? article.feat_images["medium"].url
               : null,
+            category: article.categories[0].slug,
+            slug: article.slug,
           }));
 
           this.loadMoreLatestNews = articles.slice(12, 24).map((article) => ({
@@ -148,6 +150,8 @@ export default {
             image: article.feat_images["medium"]
               ? article.feat_images["medium"].url
               : null,
+            category: article.categories[0].slug,
+            slug: article.slug,
           }));
 
           // Other latest news
@@ -160,6 +164,8 @@ export default {
             image: article.feat_images["medium"]
               ? article.feat_images["medium"].url
               : null,
+            category: article.categories[0].slug,
+            slug: article.slug,
           }));
 
           // Related news sidebar
@@ -168,6 +174,8 @@ export default {
             title: article.title,
             sport: this.getSportFromCategories(article.categories) || "VESTI",
             date: article.date,
+            category: article.categories[0].slug,
+            slug: article.slug,
           }));
 
           // Check if we have more pages
@@ -237,6 +245,8 @@ export default {
               image: article.feat_images["medium"]
                 ? article.feat_images["medium"].url
                 : null,
+              category: article.categories[0].slug,
+              slug: article.slug,
             }));
 
             if (mappedArticles.length > 0) {
@@ -310,8 +320,9 @@ export default {
     },
 
     navigateToArticle(articleId) {
-      const found = this.latestNews.find((a) => a.id === articleId);
-      const target = found && found.url ? found.url : `/article/${articleId}`;
+      const found = [...this.latestNews, ...this.loadMoreLatestNews, ...this.relatedNews].find((a) => a.id === articleId);
+      console.log(found, "FOUND");
+      const target = `/${found.category}/${found.slug}`;
       this.$router.push(target);
     },
   },
