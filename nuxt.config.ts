@@ -6,16 +6,22 @@ import { config as loadDotenv } from 'dotenv'
 loadDotenv()
 
 export default defineNuxtConfig({
-  // Keep SSR for proper routing
+  // Force SSR mode
   ssr: true,
   
+  // Disable any static generation
   nitro: {
-    preset: 'node-server',
+    preset: 'node-server', // Force server-side rendering
     prerender: {
-      routes: []
+      routes: [] // No prerendering
     },
+    // Ensure all routes are server-side rendered
     routeRules: {
       '/**': { ssr: true, prerender: false },
+    },
+    // Server configuration
+    experimental: {
+      wasm: false
     }
   },
   compatibilityDate: '2025-07-15',
