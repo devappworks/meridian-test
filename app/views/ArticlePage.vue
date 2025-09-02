@@ -482,7 +482,7 @@ const fetchArticle = async () => {
       return;
     }
     
-    const response = await fetchFromApi(`/getArticlesBySlug/${props.category}/${props.slug}`);
+    const response = await useAsyncData(`/getArticlesBySlug/${props.category}/${props.slug}`, () => fetchFromApi(`/getArticlesBySlug/${props.category}/${props.slug}`));
     console.log("🔴 ArticlePage API response:", response);
     article.value = response.article;
     loading.value.article = false;
