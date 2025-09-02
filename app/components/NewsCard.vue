@@ -69,13 +69,22 @@ export default {
       }
     },
     navigateToArticle() {
+      console.log("🔵 NewsCard clicked!", {
+        id: this.id,
+        title: this.title,
+        url: this.url,
+        sport: this.sport
+      });
+      
       if (this.id) {
         if (this.emitEvents) {
+          console.log("🔵 NewsCard emitting event to parent");
           this.$emit("article-clicked", this.id);
         } else {
           const target = this.url && typeof this.url === 'string'
             ? this.resolveArticleRoute(this.url, this.id)
             : `/article/${this.id}`
+          console.log("🔵 NewsCard navigating to:", target);
           this.$router.push(target);
         }
       }

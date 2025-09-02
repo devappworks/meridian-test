@@ -246,10 +246,18 @@ export default {
       }
     },
     navigateToArticle(item) {
+      console.log("🟡 NewsSlider card clicked!", {
+        id: item?.id,
+        title: item?.title,
+        url: item?.url,
+        sport: item?.sport || item?.category
+      });
+      
       if (item && item.id) {
         const target = item.url
           ? this.resolveArticleRoute(item.url, item.id)
           : `/article/${item.id}`
+        console.log("🟡 NewsSlider navigating to:", target);
         this.$router.push(target);
       }
     },

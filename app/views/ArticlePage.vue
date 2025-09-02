@@ -406,6 +406,14 @@ export default {
     },
   },
   async mounted() {
+    console.log("🔴 ArticlePage mounted with props:", {
+      category: this.category,
+      slug: this.slug,
+      route: this.$route,
+      routePath: this.$route.path,
+      routeParams: this.$route.params
+    });
+    
     window.scrollTo(0, 0);
     await this.fetchArticle();
     await this.fetchComments();
@@ -444,18 +452,35 @@ export default {
       this.error = null;
 
       try {
-        console.log(this.category, this.slug, "this.category, this.slug");
+        console.log("🔴 ArticlePage fetchArticle called with:", {
+          category: this.category,
+          slug: this.slug,
+          route: this.$route.path,
+          params: this.$route.params
+        });
+        
+        // Check if category and slug are valid before making API call
+        if (!this.category || !this.slug) {
+          console.error("🔴 ArticlePage: category or slug is missing!", {
+            category: this.category,
+            slug: this.slug
+          });
+          this.error = "Invalid article URL";
+          this.loading.article = false;
+          return;
+        }
+        
         const response = await fetchFromApi(`/getArticlesBySlug/${this.category}/${this.slug}`);
         //const response = await fetchFromApi(`/getArticlesBySlug/fudbal/srdan-babic-nokautirao-saigraca-i-zatvorio-mu-oko`);
         //const response = await fetchFromApi(`/getArticlesBySlug/${this.slug}`);
-        console.log(response, "response");
+        console.log("🔴 ArticlePage API response:", response);
         this.article = response.article;
         this.loading.article = false;
 
         await this.fetchRelatedNews();
         await this.fetchOtherNews();
       } catch (error) {
-        console.error("Error fetching article:", error);
+        console.error("🔴 ArticlePage Error fetching article:", error);
         this.error = "Failed to load article";
         this.loading.article = false;
       }
@@ -701,9 +726,17 @@ export default {
       return `${day}.${month}.${year}. ${hours}:${minutes}`;
     },
     navigateToArticle(id) {
+      console.log("🔴 ArticlePage navigateToArticle called!", {
+        id,
+        category: this.category,
+        slug: this.slug
+      });
+      
       const foundInJos = this.josVestiNews.find((a) => a.id === id)
       const foundInRelated = this.relatedNews.find((a) => a.id === id)
       const target = (foundInJos && foundInJos.url) || (foundInRelated && foundInRelated.url) || `/article/${id}`
+      
+      console.log("🔴 ArticlePage navigating to:", target);
       this.$router.push(target)
     },
     navigateToTag(tagId, tagName) {
