@@ -181,7 +181,7 @@ export default {
         this.$emit("article-clicked", articleId);
       } else {
         // Navigate directly to the article
-        this.$router.push(`/article/${articleId}`);
+        this.$router.push(`/${article.category}/${article.slug}`);
       }
     },
     beforeEnter(el) {
