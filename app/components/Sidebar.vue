@@ -26,6 +26,14 @@ export default {
       type: Array,
       default: () => [],
     },
+    category: {
+      type: String,
+      default: "",
+    },
+    slug: {
+      type: String,
+      default: "",
+    },
   },
   methods: {
     sportClass(sport) {
@@ -60,7 +68,7 @@ export default {
     },
     navigateToArticle(item) {
       if (item && item.id) {
-        const target = item.url ? item.url : `/article/${item.id}`
+        const target = `/${item.category}/${item.slug}`
         this.$router.push(target);
       }
     },
