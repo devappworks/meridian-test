@@ -6,13 +6,13 @@ import { config as loadDotenv } from 'dotenv'
 loadDotenv()
 
 export default defineNuxtConfig({
-  // Static site for Apache hosting
-  ssr: false,
+  // Enable SSR for static generation with content
+  ssr: true,
   
   nitro: {
     preset: 'static',
     output: {
-      dir: 'dist',        // Build directly to 'dist' folder
+      dir: 'dist',        // Build directly to 'dist' folder  
       publicDir: 'dist'   // Put all files in 'dist' (no subdirectories)
     },
     prerender: {
@@ -22,8 +22,21 @@ export default defineNuxtConfig({
         '/fudbal',
         '/kosarka', 
         '/tenis',
-        '/odbojka'
+        '/odbojka',
+        '/najnovije-vesti'
       ]
+    },
+    // Route rules for proper static generation
+    routeRules: {
+      // Pre-render homepage at build time
+      '/': { prerender: true },
+      // Pre-render category pages
+      '/fudbal/**': { prerender: true },
+      '/kosarka/**': { prerender: true },
+      '/tenis/**': { prerender: true },
+      '/odbojka/**': { prerender: true },
+      // Fallback to SPA for other routes
+      '/**': { ssr: false }
     }
   },
   compatibilityDate: '2025-07-15',
