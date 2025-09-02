@@ -94,6 +94,16 @@ export default {
       type: Boolean,
       default: false,
     },
+    /* category: {
+      type: String,
+      required: true,
+      default: "",
+    },
+    slug: {
+      type: String,
+      required: true,
+      default: "",
+    }, */
   },
   data() {
     return {
@@ -121,6 +131,7 @@ export default {
           page: 1,
         });
         this.newsResults = response.result.articles;
+        console.log(this.newsResults, "newsResults");
 
         if (this.newsResults.length > 0) {
           this.newsResults = this.newsResults.map((article) => {
@@ -144,6 +155,11 @@ export default {
                 : null) ||
               null;
 
+              console.log(article, "ARTICLE");
+
+              console.log(article.categories[0].slug, "CATEGORY");
+              console.log(article.slug, "SLUG");
+
             return {
               id: article.id,
               title: article.title,
@@ -151,6 +167,8 @@ export default {
               date: article.date,
               url: article.url,
               image,
+              category: article.categories[0].slug,
+              slug: article.slug,
             };
           });
         }
@@ -176,8 +194,10 @@ export default {
     },
     handleArticleClick(articleId) {
       this.closeSearch();
-      const found = this.newsResults.find((a) => a.id === articleId)
-      const target = found && found.url ? found.url : `/article/${articleId}`
+      const found = this.newsResults.find((a) => a.id === articleId);
+      console.log(found, "FOUND ARTICLE");
+      const target = found && found.url ? found.url : `/${found.category}/${found.slug}`
+      console.log(target, "target");
       this.$router.push(target)
     },
   },

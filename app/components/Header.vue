@@ -205,7 +205,10 @@
       </div>
     </div>
     <!-- Search Modal -->
-    <SearchModal :isOpen="isSearchOpen" @close-search="closeSearch" />
+    <SearchModal 
+      :isOpen="isSearchOpen"
+      @close-search="closeSearch" 
+    />
   </header>
 </template>
 

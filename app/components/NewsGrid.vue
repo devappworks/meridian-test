@@ -104,6 +104,14 @@ export default {
       type: Boolean,
       default: false,
     },
+    category: {
+      type: String,
+      default: "",
+    },
+    slug: {
+      type: String,
+      default: "",
+    },
   },
   computed: {
     responsiveColumns() {
