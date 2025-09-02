@@ -293,6 +293,8 @@ export default {
             image: article.feat_images["medium"]
               ? article.feat_images["medium"].url
               : null,
+            category: article.categories[0].slug,
+            slug: article.slug,
           }));
         this.loading.football = false;
 
@@ -307,6 +309,8 @@ export default {
             image: article.feat_images["medium"]
               ? article.feat_images["medium"].url
               : null,
+            category: article.categories[0].slug,
+            slug: article.slug,
           }));
         this.loading.basketball = false;
 
@@ -321,6 +325,8 @@ export default {
             image: article.feat_images["medium"]
               ? article.feat_images["medium"].url
               : null,
+            category: article.categories[0].slug,
+            slug: article.slug,
           }));
         this.loading.tennis = false;
       } catch (error) {
