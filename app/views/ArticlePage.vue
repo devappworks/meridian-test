@@ -344,6 +344,24 @@ import SkeletonNewsGrid from "@/components/skeletons/SkeletonNewsGrid.vue";
 
 import { fetchFromApi } from "@/services/api";
 
+// Nuxt composables
+const nuxtApp = useNuxtApp();
+
+// SSR Detection - This runs on both server and client
+console.log("🟢 ArticlePage setup() - SSR check:", {
+  server: process.server,
+  client: process.client,
+  timestamp: new Date().toISOString()
+});
+
+if (process.server) {
+  console.log("🟢 This is running on the SERVER! SSR is working!");
+}
+
+if (process.client) {
+  console.log("🟢 This is running on the CLIENT! Hydration happening!");
+}
+
 // Props
 const props = defineProps({
   category: {
@@ -803,7 +821,16 @@ onMounted(async () => {
     slug: props.slug,
     route: useRoute(),
     routePath: useRoute().path,
-    routeParams: useRoute().params
+    routeParams: useRoute().params,
+    isSSR: process.server,
+    isClient: process.client
+  });
+  
+  // SSR Debug - this should show true on server, false on client
+  console.log("🔴 SSR Status:", {
+    server: process.server,
+    client: process.client,
+    isHydrating: nuxtApp.isHydrating
   });
   
   window.scrollTo(0, 0);
