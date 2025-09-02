@@ -99,9 +99,7 @@ export default {
           console.log("🔵 NewsCard emitting event to parent");
           this.$emit("article-clicked", this.id);
         } else {
-          const target = this.url && typeof this.url === 'string'
-            ? this.resolveArticleRoute(this.url, this.id)
-            : `/article/${this.id}`
+          const target = `/${this.category}/${this.slug}`
           console.log("🔵 NewsCard navigating to:", target);
           this.$router.push(target);
         }
