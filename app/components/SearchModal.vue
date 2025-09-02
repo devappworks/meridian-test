@@ -196,7 +196,7 @@ export default {
       this.closeSearch();
       const found = this.newsResults.find((a) => a.id === articleId);
       console.log(found, "FOUND ARTICLE");
-      const target = found && found.url ? found.url : `/${found.category}/${found.slug}`
+      const target = `/${found.category}/${found.slug}`
       console.log(target, "target");
       this.$router.push(target)
     },
