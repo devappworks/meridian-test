@@ -28,15 +28,8 @@ export default defineNuxtConfig({
     },
     // Route rules for proper static generation
     routeRules: {
-      // Pre-render homepage at build time
-      '/': { prerender: true },
-      // Pre-render category pages
-      '/fudbal/**': { prerender: true },
-      '/kosarka/**': { prerender: true },
-      '/tenis/**': { prerender: true },
-      '/odbojka/**': { prerender: true },
-      // Fallback to SPA for other routes
-      '/**': { ssr: false }
+      // Pre-render all routes that can be discovered
+      '/**': { prerender: true }
     }
   },
   compatibilityDate: '2025-07-15',
