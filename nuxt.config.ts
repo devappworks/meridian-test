@@ -6,37 +6,23 @@ import { config as loadDotenv } from 'dotenv'
 loadDotenv()
 
 export default defineNuxtConfig({
-  // Enable SSR for static generation with content
+  // Enable SSR for all routes
   ssr: true,
   
   nitro: {
-    preset: 'static',
-    output: {
-      dir: 'dist',        // Build directly to 'dist' folder  
-      publicDir: 'dist'   // Put all files in 'dist' (no subdirectories)
-    },
-    prerender: {
-      crawlLinks: true,
-      failOnError: false,    // Don't stop build on prerender errors
-      routes: [
-        '/',
-        '/fudbal',
-        '/kosarka', 
-        '/tenis',
-        '/najnovije-vesti'
-        // Remove /odbojka for now since it's causing errors
-      ]
-    },
-    // Route rules for proper static generation
+    preset: 'node-server',
+    // Remove static output configuration for SSR
+    // Server will generate HTML at runtime instead of build time
     routeRules: {
-      // Only prerender specific working routes
-      '/': { prerender: true },
-      '/fudbal': { prerender: true },
-      '/kosarka': { prerender: true },
-      '/tenis': { prerender: true },
-      '/najnovije-vesti': { prerender: true },
-      // Fallback to SPA for problematic routes
-      '/**': { ssr: false }
+      // Enable SSR for all main routes
+      '/': { ssr: true },
+      '/fudbal': { ssr: true },
+      '/kosarka': { ssr: true },
+      '/tenis': { ssr: true },
+      '/najnovije-vesti': { ssr: true },
+      '/odbojka': { ssr: true },
+      // Enable SSR for all routes by default
+      '/**': { ssr: true }
     }
   },
   compatibilityDate: '2025-07-15',
