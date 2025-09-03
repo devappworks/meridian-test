@@ -8,6 +8,7 @@
     "generate": "nuxt generate",
     "build:static": "nuxt generate",
     "preview": "nuxt preview",
+    "start": "nuxt preview",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
