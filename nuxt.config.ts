@@ -13,6 +13,11 @@ export default defineNuxtConfig({
     preset: 'node-server',
     // Remove static output configuration for SSR
     // Server will generate HTML at runtime instead of build time
+    experimental: {
+      wasm: true
+    },
+    // Disable build manifest to avoid 500 errors
+    buildDir: '.output',
     routeRules: {
       // Enable SSR for all main routes
       '/': { ssr: true },
