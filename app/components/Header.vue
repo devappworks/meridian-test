@@ -1118,7 +1118,7 @@ a:hover {
   transition: var(--transition);
 }
 
-.user-icon svg {
+.user-icon i {
   font-size: 24px;
   color: var(--text-white);
 }
