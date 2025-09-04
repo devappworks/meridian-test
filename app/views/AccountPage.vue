@@ -56,9 +56,9 @@
               style="display: none"
             />
           </div>
-          <p class="max-size-text">Max size: 123 MB</p>
+          <p class="max-size-text">Maksimalna veličina: 123 MB</p>
           <p class="gravatar-text">
-            You can change your profile picture on
+            Možete promeniti svoju profilnu sliku na
             <a href="#" class="gravatar-link">Gravatar</a>.
           </p>
         </div>
@@ -112,7 +112,7 @@
         <div class="password-form-section">
           <div class="form-row">
             <FormField
-              label="Current Password"
+              label="Trenutna lozinka"
               v-model="passwordData.currentPassword"
               type="password"
               placeholder=""
@@ -122,13 +122,13 @@
 
           <div class="form-row">
             <FormField
-              label="New Password"
+              label="Nova lozinka"
               v-model="passwordData.newPassword"
               type="password"
               placeholder=""
             />
             <FormField
-              label="Confirm New Password"
+              label="Potvrdi novu lozinku"
               v-model="passwordData.confirmPassword"
               type="password"
               placeholder=""
@@ -251,25 +251,25 @@ export default {
           profileData.phoneNumber = this.formData.phoneNumber.trim();
 
         if (Object.keys(profileData).length === 0) {
-          alert("Please enter at least one field to update");
+          alert("Molimo unesite barem jedno polje za ažuriranje");
           return;
         }
 
         const response = await updateUserProfile(profileData, jwtToken);
 
         if (response.success || response.status === "success") {
-          alert("Profile updated successfully!");
+          alert("Profil je uspešno ažuriran!");
         } else {
-          alert("Failed to update profile. Please try again.");
+          alert("Neuspešno ažuriranje profila. Molimo pokušajte ponovo.");
         }
       } catch (error) {
         console.error("Error updating profile:", error);
 
         if (error.response && error.response.status === 401) {
-          alert("Your session has expired. Please log in again.");
+          alert("Vaša sesija je istekla. Molimo prijavite se ponovo.");
         } else {
           alert(
-            "An error occurred while updating your profile. Please try again."
+            "Došlo je do greške prilikom ažuriranja profila. Molimo pokušajte ponovo."
           );
         }
       } finally {
@@ -284,14 +284,14 @@ export default {
           localStorage.getItem("token") || sessionStorage.getItem("token");
 
         if (!jwtToken) {
-          alert("Please log in to change your password");
+          alert("Molimo prijavite se da biste promenili lozinku");
           return;
         }
 
         const response = await updateUserPassword(this.passwordData, jwtToken);
 
         if (response.success || response.status === "success") {
-          alert("Password changed successfully!");
+          alert("Lozinka je uspešno promenjena!");
 
           this.passwordData = {
             currentPassword: "",
