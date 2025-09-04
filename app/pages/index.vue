@@ -1,4 +1,21 @@
 <script setup>
+import FeaturedArticle from "@/components/Featured.vue";
+import NewsGrid from "@/components/NewsGrid.vue";
+import NewsSlider from "@/components/NewsSlider.vue";
+import NewsSidebar from "@/components/Sidebar.vue";
+import LiveStream from "@/components/LiveStream.vue";
+import YouTubeSection from "@/components/YouTube.vue";
+import NewsletterForm from "@/components/Newsletter.vue";
+import AdBanners from "@/components/AdBanners.vue";
+import { fetchFromApi } from "@/services/api";
+
+// Import skeleton components
+import SkeletonFeatured from "@/components/skeletons/SkeletonFeatured.vue";
+import SkeletonNewsGrid from "@/components/skeletons/SkeletonNewsGrid.vue";
+import SkeletonNewsSlider from "@/components/skeletons/SkeletonNewsSlider.vue";
+import SkeletonSidebar from "@/components/skeletons/SkeletonSidebar.vue";
+
+// SEO and Meta setup
 const config = useRuntimeConfig();
 
 function stripHtml(input) {
@@ -57,6 +74,270 @@ useHead(() => ({
     },
   ],
 }));
+
+// Reactive state
+const loading = ref({
+  matches: false,
+  featured: false,
+  latestGrid: false,
+  football: false,
+  basketball: false,
+  tennis: false,
+  other: false,
+  sidebar: false,
+});
+
+const featuredArticle = ref(null);
+const latestNewsGrid = ref([]);
+const latestNews = ref([]);
+const footballNews = ref([]);
+const basketballNews = ref([]);
+const tennisNews = ref([]);
+const otherNews = ref([]);
+
+const tipovi = ref([
+  {
+    title:
+      "NAVIJAČU GA TERAJU, ON SE OGLASIO NA INSTAGRAMU: Poruka Nemanje Nedovića!   Poruka Nemanje Nedovića!  Poruka Nemanje Ned",
+    sport: "FUDBAL",
+    time: "10 feb 17:34",
+  },
+  {
+    title:
+      "NAVIJAČU GA TERAJU, ON SE OGLASIO NA INSTAGRAMU: Poruka Nemanje Nedovića!   Poruka Nemanje Nedovića!  Poruka Nemanje Ned",
+    sport: "KOŠARKA",
+    time: "10 feb 17:34",
+  },
+  {
+    title:
+      "NAVIJAČU GA TERAJU, ON SE OGLASIO NA INSTAGRAMU: Poruka Nemanje Nedovića!   Poruka Nemanje Nedovića!  Poruka Nemanje Ned",
+    sport: "TENIS",
+    time: "10 feb 17:34",
+  },
+]);
+
+const matches = ref([
+  {
+    date: "03.02. 16:00",
+    homeTeam: "Manchester United",
+    awayTeam: "Wolverhampton Wanderers",
+    odds: ["1.32", "1.32", "1.32"],
+  },
+  {
+    date: "03.02. 16:00",
+    homeTeam: "Manchester United",
+    awayTeam: "Wolverhampton Wanderers",
+    odds: ["1.32", "1.32", "1.32"],
+  },
+  {
+    date: "03.02. 16:00",
+    homeTeam: "Manchester United",
+    awayTeam: "Wolverhampton Wanderers",
+    odds: ["1.32", "1.32", "1.32"],
+  },
+  {
+    date: "03.02. 16:00",
+    homeTeam: "Manchester United",
+    awayTeam: "Wolverhampton Wanderers",
+    odds: ["1.32", "1.32", "1.32"],
+  },
+]);
+
+// Helper functions
+const mapArticleData = (article) => {
+  return {
+    id: article.id,
+    title: article.title,
+    sport: getSportFromCategories(article.categories),
+    date: article.date,
+    url: article.url,
+    image: article.feat_images["medium"]?.url || null,
+    category: article.categories[0].slug,
+    slug: article.slug,
+  };
+};
+
+const getSportFromCategories = (categories) => {
+  const sportMap = {
+    Fudbal: "FUDBAL",
+    Košarka: "KOŠARKA",
+    Tenis: "TENIS",
+    Odbojka: "ODBOJKA",
+  };
+
+  const sportCategory = categories.find((cat) => sportMap[cat.name]);
+  return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
+};
+
+const sportClass = (sport) => {
+  const sportMap = {
+    FUDBAL: "football",
+    KOŠARKA: "basketball",
+    TENIS: "tennis",
+    ODBOJKA: "volleyball",
+  };
+  return sportMap[sport] || "";
+};
+
+// SSR Data Fetching
+const { data: featuredData, pending: featuredPending } = await useAsyncData('homepage-featured', () => 
+  fetchFromApi('/getHomepageFeaturedArticles')
+);
+
+const { data: latestArticlesData, pending: latestPending } = await useAsyncData('homepage-latest', () => 
+  fetchFromApi('/getArticles')
+);
+
+const [
+  { data: tennisData },
+  { data: basketballData },
+  { data: footballData }
+] = await Promise.all([
+  useAsyncData('homepage-tennis', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 41 })),
+  useAsyncData('homepage-basketball', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 25 })),
+  useAsyncData('homepage-football', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 28 }))
+]);
+
+// Process featured articles from SSR
+if (featuredData.value?.result.articles?.length > 0) {
+  const featuredArticles = featuredData.value.result.articles;
+  
+  featuredArticle.value = {
+    id: featuredArticles[0].id,
+    title: featuredArticles[0].title,
+    sport: getSportFromCategories(featuredArticles[0].categories),
+    date: featuredArticles[0].date,
+    url: featuredArticles[0].url,
+    image: featuredArticles[0].feat_images["large"]?.url || null,
+    content: featuredArticles[0].contents,
+    category: featuredArticles[0].categories[0].slug,
+    slug: featuredArticles[0].slug,
+  };
+  
+  latestNewsGrid.value = featuredArticles.slice(1, 9).map(mapArticleData);
+}
+
+// Process latest articles from SSR
+if (latestArticlesData.value?.result.articles?.length > 0) {
+  const articles = latestArticlesData.value.result.articles;
+  
+  latestNews.value = articles.slice(0, 8).map((article) => ({
+    id: article.id,
+    title: article.title,
+    sport: getSportFromCategories(article.categories),
+    date: article.date,
+    url: article.url,
+    image: article.feat_images["thumb"]?.url || null,
+    category: article.categories[0].slug,
+    slug: article.slug,
+  }));
+  
+  otherNews.value = articles.slice(8, 16).map(mapArticleData);
+}
+
+// Process sport-specific articles from SSR
+if (footballData.value?.result.articles?.length > 0) {
+  footballNews.value = footballData.value.result.articles.slice(0, 8).map((article) => ({
+    id: article.id,
+    title: article.title,
+    sport: "FUDBAL",
+    date: article.date,
+    url: article.url,
+    image: article.feat_images["medium"]?.url || null,
+    category: article.categories[0].slug,
+    slug: article.slug,
+  }));
+}
+
+if (basketballData.value?.result.articles?.length > 0) {
+  basketballNews.value = basketballData.value.result.articles.slice(0, 12).map((article) => ({
+    id: article.id,
+    title: article.title,
+    sport: "KOŠARKA",
+    date: article.date,
+    url: article.url,
+    image: article.feat_images["medium"]?.url || null,
+    category: article.categories[0].slug,
+    slug: article.slug,
+  }));
+}
+
+if (tennisData.value?.result.articles?.length > 0) {
+  tennisNews.value = tennisData.value.result.articles.slice(0, 12).map((article) => ({
+    id: article.id,
+    title: article.title,
+    sport: "TENIS",
+    date: article.date,
+    url: article.url,
+    image: article.feat_images["medium"]?.url || null,
+    category: article.categories[0].slug,
+    slug: article.slug,
+  }));
+}
+
+// Compute pending states for template
+const homepagePending = computed(() => {
+  return featuredPending.value || latestPending.value;
+});
+
+// Set matches loading state timeout (since they're static)
+const isDragging = ref(false);
+const startX = ref(0);
+const scrollLeft = ref(0);
+const currentSlide = ref(0);
+
+onMounted(() => {
+  setTimeout(() => {
+    loading.value.matches = false;
+  }, 500);
+});
+
+// Client-side functions for match odds slider
+const startDragging = (e) => {
+  isDragging.value = true;
+  const slider = document.querySelector('.match-odds-container');
+  startX.value = e.type === "mousedown" ? e.pageX : e.touches[0].pageX;
+  scrollLeft.value = slider.scrollLeft;
+  slider.style.cursor = "grabbing";
+  slider.style.userSelect = "none";
+};
+
+const drag = (e) => {
+  if (!isDragging.value) return;
+  e.preventDefault();
+  const slider = document.querySelector('.match-odds-container');
+  const x = e.type === "mousemove" ? e.pageX : e.touches[0].pageX;
+  const walk = (x - startX.value) * 2;
+  slider.scrollLeft = scrollLeft.value - walk;
+};
+
+const stopDragging = () => {
+  isDragging.value = false;
+  const slider = document.querySelector('.match-odds-container');
+  slider.style.cursor = "grab";
+  slider.style.removeProperty("user-select");
+
+  // Snap to closest item
+  const itemWidth = slider.querySelector(".match-odds").offsetWidth + 8; // 8px is the gap
+  const scrollPosition = slider.scrollLeft;
+  const nearestItem = Math.round(scrollPosition / itemWidth);
+
+  slider.scrollTo({
+    left: nearestItem * itemWidth,
+    behavior: "smooth",
+  });
+};
+
+const slideMatchOdds = (direction) => {
+  const slider = document.querySelector('.match-odds-container');
+  const itemWidth = slider.querySelector(".match-odds").offsetWidth + 8; // 8px is the gap
+
+  if (direction === "next") {
+    slider.scrollBy({ left: itemWidth, behavior: "smooth" });
+  } else {
+    slider.scrollBy({ left: -itemWidth, behavior: "smooth" });
+  }
+};
 </script>
 
 <template>
@@ -67,22 +348,22 @@ useHead(() => ({
     <!-- End of match odds section -->
     <div class="main-column">
       <!-- Featured Article with Loading State -->
-      <SkeletonFeatured v-if="loading.featured" />
+      <SkeletonFeatured v-if="homepagePending || !featuredArticle" />
       <FeaturedArticle v-else :article="featuredArticle" />
 
       <!-- Latest News Grid with Loading State -->
-      <SkeletonNewsGrid v-if="loading.latestGrid" />
+      <SkeletonNewsGrid v-if="homepagePending || latestNewsGrid.length === 0" />
       <NewsGrid v-else :news="latestNewsGrid" />
 
       <LiveStream />
 
       <!-- Football News with Loading State -->
-      <SkeletonNewsGrid v-if="loading.football" title="FUDBAL" sport="FUDBAL" />
+      <SkeletonNewsGrid v-if="homepagePending || footballNews.length === 0" title="FUDBAL" sport="FUDBAL" />
       <NewsGrid v-else title="FUDBAL" sport="FUDBAL" :news="footballNews" />
 
       <!-- Basketball News with Loading State -->
       <SkeletonNewsSlider
-        v-if="loading.basketball"
+        v-if="homepagePending || basketballNews.length === 0"
         title="KOŠARKA"
         sport="KOŠARKA"
       />
@@ -94,14 +375,14 @@ useHead(() => ({
       />
 
       <!-- Tennis News with Loading State -->
-      <SkeletonNewsSlider v-if="loading.tennis" title="TENIS" sport="TENIS" />
+      <SkeletonNewsSlider v-if="homepagePending || tennisNews.length === 0" title="TENIS" sport="TENIS" />
       <NewsSlider v-else title="TENIS" sport="TENIS" :news="tennisNews" />
 
       <YouTubeSection />
 
       <!-- Other News with Loading State -->
       <SkeletonNewsGrid
-        v-if="loading.other"
+        v-if="homepagePending || otherNews.length === 0"
         title="OSTALE VESTI"
         sport="OSTALE VESTI"
       />
@@ -110,7 +391,7 @@ useHead(() => ({
         title="OSTALE VESTI"
         sport="OSTALE VESTI"
         :news="otherNews"
-        :background="true"
+        :background=true
       />
     </div>
 
@@ -121,7 +402,7 @@ useHead(() => ({
           <NuxtLink to="/najnovije-vesti" class="see-all">Sve vesti</NuxtLink>
         </div>
         <!-- Sidebar News with Loading State -->
-        <SkeletonSidebar v-if="loading.sidebar" />
+        <SkeletonSidebar v-if="homepagePending || latestNews.length === 0" />
         <NewsSidebar v-else :latestNews="latestNews" />
       </div>
 
@@ -155,393 +436,7 @@ useHead(() => ({
   </div>
 </template>
 
-<script>
-import FeaturedArticle from "@/components/Featured.vue";
-import NewsGrid from "@/components/NewsGrid.vue";
-import NewsSlider from "@/components/NewsSlider.vue";
-import NewsSidebar from "@/components/Sidebar.vue";
-import LiveStream from "@/components/LiveStream.vue";
-import YouTubeSection from "@/components/YouTube.vue";
-import NewsletterForm from "@/components/Newsletter.vue";
-import AdBanners from "@/components/AdBanners.vue";
-/* import MatchOddsSlider from '@/components/MatchOddsSlider.vue' */
-import { fetchFromApi } from "@/services/api";
 
-// Import skeleton components
-import SkeletonFeatured from "@/components/skeletons/SkeletonFeatured.vue";
-import SkeletonNewsGrid from "@/components/skeletons/SkeletonNewsGrid.vue";
-import SkeletonNewsSlider from "@/components/skeletons/SkeletonNewsSlider.vue";
-import SkeletonSidebar from "@/components/skeletons/SkeletonSidebar.vue";
-/* import SkeletonMatchOdds from '@/components/skeletons/SkeletonMatchOdds.vue' */
-
-export default {
-  name: "HomePage",
-  components: {
-    FeaturedArticle,
-    NewsGrid,
-    NewsSlider,
-    NewsSidebar,
-    LiveStream,
-    YouTubeSection,
-    NewsletterForm,
-    AdBanners,
-    /* MatchOddsSlider, */
-    SkeletonFeatured,
-    SkeletonNewsGrid,
-    SkeletonNewsSlider,
-    SkeletonSidebar,
-    /* SkeletonMatchOdds */
-  },
-  methods: {
-    async fetchArticles() {
-      // Set all loading states to true
-      this.loading = {
-        matches: true,
-        featured: true,
-        latestGrid: true,
-        football: true,
-        basketball: true,
-        tennis: true,
-        other: true,
-        sidebar: true,
-      };
-
-      // Add a small delay for the matches (since they're static data)
-      setTimeout(() => {
-        this.loading.matches = false;
-      }, 500);
-
-      try {
-        const featuredData = await fetchFromApi("/getHomepageFeaturedArticles");
-        const featuredArticles = featuredData.result.articles;
-        console.log(featuredArticles, "featuredArticles");
-
-
-        if (featuredArticles.length > 0) {
-          this.featuredArticle = {
-            id: featuredArticles[0].id,
-            title: featuredArticles[0].title,
-            sport: this.getSportFromCategories(featuredArticles[0].categories),
-            date: featuredArticles[0].date,
-            url: featuredArticles[0].url,
-            image: featuredArticles[0].feat_images["large"]
-              ? featuredArticles[0].feat_images["large"].url
-              : null,
-            content: featuredArticles[0].contents,
-            category: featuredArticles[0].categories[0].slug,
-            slug: featuredArticles[0].slug,
-          };
-          this.loading.featured = false;
-
-
-          this.latestNewsGrid = featuredArticles
-            .slice(1, 9)
-            .map(this.mapArticleData);
-          this.loading.latestGrid = false;
-        }
-
-        const data = await fetchFromApi("/getArticles");
-        const articles = data.result.articles;
-
-        if (articles.length > 0) {
-          this.latestNews = articles.slice(0, 8).map((article) => ({
-            id: article.id,
-            title: article.title,
-            sport: this.getSportFromCategories(article.categories),
-            date: article.date,
-            url: article.url,
-            image: article.feat_images["thumb"]
-              ? article.feat_images["thumb"].url
-              : null,
-            category: article.categories[0].slug,
-            slug: article.slug,
-          }));
-          this.loading.sidebar = false;
-
-          this.otherNews = articles.slice(8, 16).map(this.mapArticleData);
-          this.loading.other = false;
-        }
-
-        // Fetch sport-specific articles in parallel
-        const [tennisArticles, basketballArticles, footballArticles] =
-          await Promise.all([
-            fetchFromApi("/getArticles", {
-              articleLimit: 50,
-              "category[]": 41,
-            }),
-            fetchFromApi("/getArticles", {
-              articleLimit: 50,
-              "category[]": 25,
-            }),
-            fetchFromApi("/getArticles", {
-              articleLimit: 50,
-              "category[]": 28,
-            }),
-          ]);
-
-        // Process sport-specific sections
-        this.footballNews = footballArticles.result.articles
-          .slice(0, 8)
-          .map((article) => ({
-            id: article.id,
-            title: article.title,
-            sport: "FUDBAL",
-            date: article.date,
-            url: article.url,
-            image: article.feat_images["medium"]
-              ? article.feat_images["medium"].url
-              : null,
-            category: article.categories[0].slug,
-            slug: article.slug,
-          }));
-        this.loading.football = false;
-
-        this.basketballNews = basketballArticles.result.articles
-          .slice(0, 12)
-          .map((article) => ({
-            id: article.id,
-            title: article.title,
-            sport: "KOŠARKA",
-            date: article.date,
-            url: article.url,
-            image: article.feat_images["medium"]
-              ? article.feat_images["medium"].url
-              : null,
-            category: article.categories[0].slug,
-            slug: article.slug,
-          }));
-        this.loading.basketball = false;
-
-        this.tennisNews = tennisArticles.result.articles
-          .slice(0, 12)
-          .map((article) => ({
-            id: article.id,
-            title: article.title,
-            sport: "TENIS",
-            date: article.date,
-            url: article.url,
-            image: article.feat_images["medium"]
-              ? article.feat_images["medium"].url
-              : null,
-            category: article.categories[0].slug,
-            slug: article.slug,
-          }));
-        this.loading.tennis = false;
-      } catch (error) {
-        console.error("Error fetching articles:", error);
-        this.resetAllNews();
-        // Turn off all loading states on error
-        this.loading = {
-          matches: false,
-          featured: false,
-          latestGrid: false,
-          football: false,
-          basketball: false,
-          tennis: false,
-          other: false,
-          sidebar: false,
-        };
-      }
-    },
-
-    mapArticleData(article) {
-      const data =  {
-        id: article.id,
-        title: article.title,
-        sport: this.getSportFromCategories(article.categories),
-        date: article.date,
-        url: article.url,
-        image: article.feat_images["medium"]
-          ? article.feat_images["medium"].url
-          : null,
-        category: article.categories[0].slug,
-        slug: article.slug,
-      };
-
-      console.log(data.category, "data-cateogry");
-      console.log(data.slug, "data-slug");
-
-      return data;
-    },
-
-    resetAllNews() {
-      this.featuredArticle = null;
-      this.latestNewsGrid = [];
-      this.latestNews = [];
-      this.footballNews = [];
-      this.basketballNews = [];
-      this.tennisNews = [];
-      this.otherNews = [];
-    },
-
-    groupArticlesBySport(articles) {
-      const groups = {
-        FUDBAL: [],
-        KOŠARKA: [],
-        TENIS: [],
-        ODBOJKA: [],
-        "OSTALE VESTI": [],
-      };
-
-      articles.forEach((article) => {
-        const sport = this.getSportFromCategories(article.categories);
-        if (groups[sport]) {
-          groups[sport].push(article);
-        } else {
-          groups["OSTALE VESTI"].push(article);
-        }
-      });
-
-      return groups;
-    },
-
-    getSportFromCategories(categories) {
-      // Map category names to sport types
-      const sportMap = {
-        Fudbal: "FUDBAL",
-        Košarka: "KOŠARKA",
-        Tenis: "TENIS",
-        Odbojka: "ODBOJKA",
-      };
-
-      // Find the sport category
-      const sportCategory = categories.find((cat) => sportMap[cat.name]);
-      return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
-    },
-
-    sportClass(sport) {
-      const sportMap = {
-        FUDBAL: "football",
-        KOŠARKA: "basketball",
-        TENIS: "tennis",
-        ODBOJKA: "volleyball",
-      };
-      return sportMap[sport] || "";
-    },
-
-    startDragging(e) {
-      this.isDragging = true;
-      const slider = this.$refs.slider;
-      this.startX = e.type === "mousedown" ? e.pageX : e.touches[0].pageX;
-      this.scrollLeft = slider.scrollLeft;
-      slider.style.cursor = "grabbing";
-      slider.style.userSelect = "none";
-    },
-
-    drag(e) {
-      if (!this.isDragging) return;
-      e.preventDefault();
-      const slider = this.$refs.slider;
-      const x = e.type === "mousemove" ? e.pageX : e.touches[0].pageX;
-      const walk = (x - this.startX) * 2;
-      slider.scrollLeft = this.scrollLeft - walk;
-    },
-
-    stopDragging() {
-      this.isDragging = false;
-      const slider = this.$refs.slider;
-      slider.style.cursor = "grab";
-      slider.style.removeProperty("user-select");
-
-      // Snap to closest item
-      const itemWidth = slider.querySelector(".match-odds").offsetWidth + 8; // 8px is the gap
-      const scrollPosition = slider.scrollLeft;
-      const nearestItem = Math.round(scrollPosition / itemWidth);
-
-      slider.scrollTo({
-        left: nearestItem * itemWidth,
-        behavior: "smooth",
-      });
-    },
-
-    slideMatchOdds(direction) {
-      const slider = this.$refs.slider;
-      const itemWidth = slider.querySelector(".match-odds").offsetWidth + 8; // 8px is the gap
-
-      if (direction === "next") {
-        slider.scrollBy({ left: itemWidth, behavior: "smooth" });
-      } else {
-        slider.scrollBy({ left: -itemWidth, behavior: "smooth" });
-      }
-    },
-  },
-  data() {
-    return {
-      currentPage: "home",
-      latestNews: [],
-      featuredArticle: null,
-      latestNewsGrid: [],
-      footballNews: [],
-      basketballNews: [],
-      tennisNews: [],
-      otherNews: [],
-      tipovi: [
-        {
-          title:
-            "NAVIJAČU GA TERAJU, ON SE OGLASIO NA INSTAGRAMU: Poruka Nemanje Nedovića!   Poruka Nemanje Nedovića!  Poruka Nemanje Ned",
-          sport: "FUDBAL",
-          time: "10 feb 17:34",
-        },
-        {
-          title:
-            "NAVIJAČU GA TERAJU, ON SE OGLASIO NA INSTAGRAMU: Poruka Nemanje Nedovića!   Poruka Nemanje Nedovića!  Poruka Nemanje Ned",
-          sport: "KOŠARKA",
-          time: "10 feb 17:34",
-        },
-        {
-          title:
-            "NAVIJAČU GA TERAJU, ON SE OGLASIO NA INSTAGRAMU: Poruka Nemanje Nedovića!   Poruka Nemanje Nedovića!  Poruka Nemanje Ned",
-          sport: "TENIS",
-          time: "10 feb 17:34",
-        },
-      ],
-      isDragging: false,
-      startX: 0,
-      scrollLeft: 0,
-      currentSlide: 0,
-      matches: [
-        {
-          date: "03.02. 16:00",
-          homeTeam: "Manchester United",
-          awayTeam: "Wolverhampton Wanderers",
-          odds: ["1.32", "1.32", "1.32"],
-        },
-        {
-          date: "03.02. 16:00",
-          homeTeam: "Manchester United",
-          awayTeam: "Wolverhampton Wanderers",
-          odds: ["1.32", "1.32", "1.32"],
-        },
-        {
-          date: "03.02. 16:00",
-          homeTeam: "Manchester United",
-          awayTeam: "Wolverhampton Wanderers",
-          odds: ["1.32", "1.32", "1.32"],
-        },
-        {
-          date: "03.02. 16:00",
-          homeTeam: "Manchester United",
-          awayTeam: "Wolverhampton Wanderers",
-          odds: ["1.32", "1.32", "1.32"],
-        },
-      ],
-      loading: {
-        matches: true,
-        featured: true,
-        latestGrid: true,
-        football: true,
-        basketball: true,
-        tennis: true,
-        other: true,
-        sidebar: true,
-      },
-    };
-  },
-  mounted() {
-    this.fetchArticles();
-  },
-};
-</script>
 
 <style scoped>
 .main-column {
