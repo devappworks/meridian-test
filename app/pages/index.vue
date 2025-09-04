@@ -233,8 +233,6 @@ export default {
           };
           this.loading.featured = false;
 
-          //console.log(this.featuredArticle, "featuredArticle");
-          //console.log(this.featuredArticle.category, "kategorija");
 
           this.latestNewsGrid = featuredArticles
             .slice(1, 9)
