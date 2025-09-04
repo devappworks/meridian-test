@@ -690,6 +690,7 @@ export default {
     },
     toggleMobileMenu() {
       this.isMobileMenuOpen = !this.isMobileMenuOpen;
+      this.mobileMenuOpen();
 
       // Setup mobile navigation underline when menu is opened
       if (this.isMobileMenuOpen) {
@@ -698,8 +699,16 @@ export default {
         });
       }
     },
+    mobileMenuOpen() {
+      if (this.isMobileMenuOpen) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "auto";
+      }
+    },
     closeMobileMenu() {
       this.isMobileMenuOpen = false;
+      this.mobileMenuOpen();
     },
     showTooltip() {
       this.isTooltipVisible = true;
@@ -995,6 +1004,10 @@ export default {
 };
 </script>
 <style scoped>
+body {
+  overflow: auto;
+}
+
 header {
   position: sticky;
   top: 0;

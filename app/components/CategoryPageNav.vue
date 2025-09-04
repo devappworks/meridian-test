@@ -258,4 +258,10 @@ a.nav-item:active {
     display: none;
   }
 }
+
+@media screen and (max-width: 958px) {
+  .category-page-nav {
+    display: none;
+  }
+}
 </style>
