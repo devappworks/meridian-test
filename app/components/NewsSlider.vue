@@ -4,7 +4,7 @@
       <div class="section-title" :class="sportClass">
         <h2>{{ title }}</h2>
       </div>
-      <NuxtLink :to="categoryRoute" class="view-all">Sve vesti</NuxtLink>
+      <NuxtLink :to="`/${category}/${slug}`" class="view-all">Sve vesti</NuxtLink>
     </div>
     <div class="slider-container">
       <div class="slider-fade-left" v-show="canScrollLeft"></div>
@@ -110,6 +110,14 @@ export default {
     sport: {
       type: String,
       default: "NAJNOVIJE",
+    },
+    category: {
+      type: String,
+      default: "",
+    },
+    slug: {
+      type: String,
+      default: "",
     },
   },
   data() {
@@ -250,14 +258,28 @@ export default {
         id: item?.id,
         title: item?.title,
         url: item?.url,
-        sport: item?.sport || item?.category
+        sport: item?.sport || item?.category,
+        category: item?.category,
+        slug: item?.slug,
+        sliderSport: this.sport
       });
       
       if (item && item.id) {
-        const target = item.url
-          ? this.resolveArticleRoute(item.url, item.id)
-          : `/article/${item.id}`
-        console.log("🟡 NewsSlider navigating to:", target);
+        // Map slider sport to URL category
+        const sportToCategory = {
+          'FUDBAL': 'fudbal',
+          'KOŠARKA': 'kosarka', 
+          'TENIS': 'tenis',
+          'ODBOJKA': 'odbojka',
+          'NAJNOVIJE': 'najnovije-vesti',
+          'OSTALE VESTI': 'ostali-sportovi'
+        };
+        
+        const categorySlug = sportToCategory[this.sport] || 'najnovije-vesti';
+        console.log(this.sport, "CATEGORY SLUG");
+        const target = `/${categorySlug}/${item.slug}`;
+        
+        console.log("🟡 NewsSlider navigating to:", target, "from sport:", this.sport);
         this.$router.push(target);
       }
     },
