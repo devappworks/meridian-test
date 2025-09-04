@@ -111,9 +111,8 @@ import ArticlePage from "@/views/ArticlePage.vue";
 </script>
 
 <template>
-  <ArticlePage :category="category" :slug="slug" />
-  <!-- When article cannot be resolved, ArticlePage will render its own error state -->
-  <!-- ArticlePage now uses category and slug to fetch the article directly -->
+  <ArticlePage :category="category" :slug="slug" :article="article" />
+  <!-- Article data is now passed from server-side useAsyncData to prevent hydration mismatch -->
 </template>
 
 

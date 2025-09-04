@@ -96,12 +96,12 @@ export default {
     },
     category: {
       type: String,
-      required: true,
+      required: false,
       default: "",
     },
     slug: {
       type: String,
-      required: true,
+      required: false,
       default: "",
     },
   },

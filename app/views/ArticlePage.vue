@@ -350,8 +350,7 @@ const nuxtApp = useNuxtApp();
 // SSR Detection - This runs on both server and client
 console.log("🟢 ArticlePage setup() - SSR check:", {
   server: process.server,
-  client: process.client,
-  timestamp: new Date().toISOString()
+  client: process.client
 });
 
 if (process.server) {
@@ -372,13 +371,17 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  article: {
+    type: Object,
+    default: null,
+  },
 });
 
 // Reactive data
 const showComments = ref(false);
-const article = ref(null);
+const article = ref(props.article || null);
 const loading = ref({
-  article: true,
+  article: !props.article, // Don't show loading if we already have article data
   comments: true,
   relatedNews: true,
   otherNews: true,
@@ -424,10 +427,17 @@ useSeoMeta({
   description: () => {
     if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
     
-    // Extract text content from HTML and create a description
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = article.value.contents;
-    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    // Extract text content from HTML and create a description - SSR safe
+    let textContent;
+    if (typeof document === 'undefined') {
+      // Server-side: strip HTML tags with regex
+      textContent = article.value.contents.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    } else {
+      // Client-side: use DOM parsing
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = article.value.contents;
+      textContent = tempDiv.textContent || tempDiv.innerText || '';
+    }
     
     // Return first 160 characters for SEO description
     return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
@@ -436,9 +446,17 @@ useSeoMeta({
   ogDescription: () => {
     if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
     
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = article.value.contents;
-    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    // SSR-safe text extraction
+    let textContent;
+    if (typeof document === 'undefined') {
+      // Server-side: strip HTML tags with regex
+      textContent = article.value.contents.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    } else {
+      // Client-side: use DOM parsing
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = article.value.contents;
+      textContent = tempDiv.textContent || tempDiv.innerText || '';
+    }
     
     return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
   },
@@ -449,9 +467,17 @@ useSeoMeta({
   twitterDescription: () => {
     if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
     
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = article.value.contents;
-    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    // SSR-safe text extraction
+    let textContent;
+    if (typeof document === 'undefined') {
+      // Server-side: strip HTML tags with regex
+      textContent = article.value.contents.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    } else {
+      // Client-side: use DOM parsing
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = article.value.contents;
+      textContent = tempDiv.textContent || tempDiv.innerText || '';
+    }
     
     return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
   },
@@ -747,18 +773,26 @@ const navigateToTag = (tagId, tagName) => {
 };
 
 const extractParagraphs = (htmlContent) => {
-  // Create a temporary DOM element to parse the HTML
+  // Server-side safe paragraph extraction
+  if (typeof document === 'undefined') {
+    // On server side, use simple regex to split by paragraph tags
+    return htmlContent.split(/<\/(?:p|h[1-6]|div)>/i)
+      .map(part => part.trim())
+      .filter(part => part && part.includes('<'))
+      .map(part => part + (part.match(/<(?:p|h[1-6]|div)/i) ? part.match(/<\/(?:p|h[1-6]|div)>/i)?.[0] || '</p>' : '</p>'));
+  }
+  
+  // Client side with proper DOM parsing
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = htmlContent;
-
-  // Get all elements (paragraphs, headings, etc.)
   const elements = Array.from(tempDiv.children);
-
-  // Convert each element back to HTML string
   return elements.map((element) => element.outerHTML);
 };
 
 const share = (platform) => {
+  // Client-side only function
+  if (typeof window === 'undefined') return;
+  
   const pageUrl = window.location.href;
   const title = article.value?.title || document.title;
   const url = encodeURIComponent(pageUrl);
@@ -799,6 +833,9 @@ const share = (platform) => {
 };
 
 const copyToClipboard = (value) => {
+  // Client-side only function
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  
   if (navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(value);
   } else {
@@ -833,14 +870,23 @@ onMounted(async () => {
     isHydrating: nuxtApp.isHydrating
   });
   
-  window.scrollTo(0, 0);
-  await fetchArticle();
+  // Only scroll on client side to prevent SSR mismatch
+  if (typeof window !== 'undefined') {
+    window.scrollTo(0, 0);
+  }
+  
+  // Only fetch article if we don't already have it from SSR
+  if (!props.article) {
+    await fetchArticle();
+  }
   await fetchComments();
 });
 
 // Watchers
 watch(() => props.category, () => {
-  window.scrollTo(0, 0);
+  if (typeof window !== 'undefined') {
+    window.scrollTo(0, 0);
+  }
 
   loading.value.comments = true;
   loading.value.relatedNews = true;
@@ -851,7 +897,9 @@ watch(() => props.category, () => {
 });
 
 watch(() => props.slug, () => {
-  window.scrollTo(0, 0);
+  if (typeof window !== 'undefined') {
+    window.scrollTo(0, 0);
+  }
 
   loading.value.comments = true;
   loading.value.relatedNews = true;
