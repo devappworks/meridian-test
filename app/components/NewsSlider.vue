@@ -4,7 +4,7 @@
       <div class="section-title" :class="sportClass">
         <h2>{{ title }}</h2>
       </div>
-      <NuxtLink :to="`/${category}/${slug}`" class="view-all">Sve vesti</NuxtLink>
+      <NuxtLink :to="`${categoryRoute}`" class="view-all">Sve vesti</NuxtLink>
     </div>
     <div class="slider-container">
       <div class="slider-fade-left" v-show="canScrollLeft"></div>
