@@ -533,9 +533,7 @@ const fetchRelatedNews = async () => {
       article.value.categories
     );
 
-    const articleResponse = await fetchFromApi(`/getArticlesBySlug/${props.category}/${props.slug}`);
-    const relatedArticles = articleResponse.relatedArticle || [];
-    console.log(relatedArticles, "relatedArticles");
+    const relatedArticles = article.value.relatedArticle || [];
 
     if (relatedArticles.length > 0) {
       josVestiNews.value = relatedArticles.map((article) => ({
@@ -617,7 +615,7 @@ const fetchOtherNews = async () => {
     }
 
     const articles = (response.result.articles || []).filter(
-      (article) => article.id !== article.value.id
+      (articleItem) => articleItem.id !== article.value.id
     );
 
     otherNews.value = articles.slice(0, 8).map((article) => ({
@@ -878,6 +876,10 @@ onMounted(async () => {
   // Only fetch article if we don't already have it from SSR
   if (!props.article) {
     await fetchArticle();
+  } else {
+    // If we have article data from props, still need to fetch related content
+    await fetchRelatedNews();
+    await fetchOtherNews();
   }
   await fetchComments();
 });
