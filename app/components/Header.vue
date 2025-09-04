@@ -354,8 +354,19 @@ export default {
       return this.swiper && !this.isEnd;
     },
     isCategoryPage() {
-      const categoryRoutes = ["/fudbal", "/kosarka", "/odbojka", "/tenis"];
-      return categoryRoutes.includes(this.$route.path);
+      /* const categoryRoutes = ["/fudbal", "/kosarka", "/odbojka", "/tenis"];
+      return categoryRoutes.includes(this.$route.path); */
+      const categoryRoutes = this.navigationItems.map(item => item.href);
+      // Check if current route is a category route
+      const routeSlug = this.$route.path.split("/").pop();
+      const isCurrentRouteCategoryRoute = categoryRoutes.includes(routeSlug);
+      // Check if the category route exists in the top navbar
+      const isCategoryRouteInNavbar = this.navigationItems.some(item => {
+        const routePath = item.href;
+        return categoryRoutes.includes(routePath.split("/").pop());
+      });
+      
+      return isCurrentRouteCategoryRoute && isCategoryRouteInNavbar;
     },
     currentSport() {
       const sportMap = {
