@@ -235,8 +235,8 @@ if (latestArticlesData.value?.result.articles?.length > 0) {
     date: article.date,
     url: article.url,
     image: article.feat_images["thumb"]?.url || null,
-    category: article.categories[0].slug,
-    slug: article.slug,
+    category: article.categories[0]?.slug,
+    slug: article?.slug,
   }));
   
   otherNews.value = articles.slice(8, 16).map(mapArticleData);
@@ -251,8 +251,8 @@ if (footballData.value?.result.articles?.length > 0) {
     date: article.date,
     url: article.url,
     image: article.feat_images["medium"]?.url || null,
-    category: article.categories[0].slug,
-    slug: article.slug,
+    category: article.categories[0]?.slug,
+    slug: article?.slug,
   }));
 }
 
@@ -264,8 +264,8 @@ if (basketballData.value?.result.articles?.length > 0) {
     date: article.date,
     url: article.url,
     image: article.feat_images["medium"]?.url || null,
-    category: article.categories[0].slug,
-    slug: article.slug,
+    category: article.categories[0]?.slug,
+    slug: article?.slug,
   }));
 }
 
@@ -277,8 +277,8 @@ if (tennisData.value?.result.articles?.length > 0) {
     date: article.date,
     url: article.url,
     image: article.feat_images["medium"]?.url || null,
-    category: article.categories[0].slug,
-    slug: article.slug,
+    category: article.categories[0]?.slug,
+    slug: article?.slug,
   }));
 }
 
