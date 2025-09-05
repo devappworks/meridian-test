@@ -38,9 +38,9 @@
             <!-- Article meta -->
             <div class="article-meta">
               <div class="author-date">
-                <p>
-                  <span class="author" v-if="article.author"
-                    >Od {{ article.author }}</span
+                <p>Od
+                  <span class="author" v-if="article.authors[0].name"
+                    > {{ article.authors[0].name }}</span
                   ><span v-else>Redakcija</span> -
                   {{ formatDate(article.date || article.publish_date) }}
                 </p>
@@ -511,6 +511,8 @@ const fetchArticle = async () => {
     const response = await fetchFromApi(`/getArticlesBySlug/${props.category}/${props.slug}`);
     console.log("🔴 ArticlePage API response:", response);
     article.value = response.article;
+    console.log(article.value, "FETCHED ARTICLE VALUE");
+    console.log(article.value.relatedArticle, "FETCHED ARTICLE RELATED ARTICLE");
     loading.value.article = false;
 
     await fetchRelatedNews();
@@ -759,7 +761,7 @@ const navigateToArticle = (id) => {
   console.log(foundInJos, "FOUND IN JOS");
   const foundInRelated = relatedNews.value.find((a) => a.id === id)
   console.log(foundInRelated, "FOUND IN RELATED");
-  const target = `/${foundInJos.category}/${foundInJos.slug}` || `/${foundInRelated.category}/${foundInRelated.slug}`
+  const target = `/${foundInRelated.category}/${foundInRelated.slug}` || `/${foundInJos.category}/${foundInJos.slug}`
   console.log(target, "TARGET");
   
   console.log("🔴 ArticlePage navigating to:", target);
