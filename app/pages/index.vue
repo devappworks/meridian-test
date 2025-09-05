@@ -145,15 +145,18 @@ const matches = ref([
 
 // Helper functions
 const mapArticleData = (article) => {
+  if (!article || !article.categories || article.categories.length === 0) {
+    return null;
+  }
   return {
     id: article.id,
     title: article.title,
     sport: getSportFromCategories(article.categories),
     date: article.date,
     url: article.url,
-    image: article.feat_images["medium"]?.url || null,
-    category: article.categories[0].slug,
-    slug: article.slug,
+    image: article.feat_images?.["medium"]?.url || null,
+    category: article.categories?.[0]?.slug || '',
+    slug: article.slug || '',
   };
 };
 
@@ -200,21 +203,25 @@ const [
 
 // Process featured articles from SSR
 if (featuredData.value?.result.articles?.length > 0) {
-  const featuredArticles = featuredData.value.result.articles;
+  const featuredArticles = featuredData.value.result.articles.filter(article => 
+    article && article.categories && article.categories.length > 0
+  );
   
-  featuredArticle.value = {
-    id: featuredArticles[0].id,
-    title: featuredArticles[0].title,
-    sport: getSportFromCategories(featuredArticles[0].categories),
-    date: featuredArticles[0].date,
-    url: featuredArticles[0].url,
-    image: featuredArticles[0].feat_images["large"]?.url || null,
-    content: featuredArticles[0].contents,
-    category: featuredArticles[0].categories[0].slug,
-    slug: featuredArticles[0].slug,
-  };
-  
-  latestNewsGrid.value = featuredArticles.slice(1, 9).map(mapArticleData);
+  if (featuredArticles.length > 0) {
+    featuredArticle.value = {
+      id: featuredArticles[0].id,
+      title: featuredArticles[0].title,
+      sport: getSportFromCategories(featuredArticles[0].categories),
+      date: featuredArticles[0].date,
+      url: featuredArticles[0].url,
+      image: featuredArticles[0].feat_images?.["large"]?.url || null,
+      content: featuredArticles[0].contents,
+      category: featuredArticles[0].categories?.[0]?.slug || '',
+      slug: featuredArticles[0].slug || '',
+    };
+    
+    latestNewsGrid.value = featuredArticles.slice(1, 9).map(mapArticleData).filter(Boolean);
+  }
 }
 
 // Process latest articles from SSR
