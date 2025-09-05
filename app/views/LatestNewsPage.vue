@@ -45,9 +45,10 @@
           </div>
           <SkeletonRelatedNews v-if="latestNewsPending || relatedNews.length === 0" />
           <div v-else class="related-news-list">
-            <div
+            <NuxtLink
               v-for="(news, index) in relatedNews"
               :key="news.id"
+              :to="`/${news.category}/${news.slug}`"
               class="related-news-item"
             >
               <div class="number">{{ index + 1 }}</div>
@@ -61,7 +62,7 @@
                   <div class="divider"></div>
                 </div>
               </div>
-            </div>
+            </NuxtLink>
           </div>
         </div>
         <NewsletterForm />
@@ -106,7 +107,7 @@ const mapArticle = (article) => ({
   date: article.date,
   url: article.url,
   image: article.feat_images["medium"]?.url || null,
-  category: article.categories[0].slug,
+  category: article.categories[0]?.slug,
   slug: article.slug,
 });
 
@@ -237,8 +238,8 @@ const loadMore = async () => {
   line-height: 36px;
   letter-spacing: -0.25px;
   text-transform: uppercase;
-  color: var(--yellow-primary);
-  border-left: 4px solid var(--yellow-primary);
+  color: var(--text-white);
+  border-left: 4px solid var(--text-white);
   padding-left: 12px;
 }
 
@@ -261,6 +262,8 @@ const loadMore = async () => {
   gap: 10px;
   cursor: pointer;
   transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
 }
 
 .related-news-item:hover {
@@ -301,6 +304,11 @@ const loadMore = async () => {
 
 .related-news-item .category.latest {
   color: var(--yellow-primary);
+}
+
+div.sidebar-header h3.latest {
+  color: var(--text-white);
+  border-left-color: var(--text-white);
 }
 
 .related-news-item h3 {

@@ -54,9 +54,10 @@
           </div>
           <SkeletonRelatedNews v-if="basketballPending || relatedNews.length === 0" />
           <div v-else class="related-news-list">
-            <div
+            <NuxtLink
               v-for="(news, index) in relatedNews"
               :key="news.id"
+              :to="`/${news.category}/${news.slug}`"
               class="related-news-item"
             >
               <div class="number">{{ index + 1 }}</div>
@@ -68,7 +69,7 @@
                   <div class="divider"></div>
                 </div>
               </div>
-            </div>
+            </NuxtLink>
           </div>
         </div>
         <NewsletterForm />
@@ -397,6 +398,8 @@ onBeforeUnmount(() => {
   gap: 10px;
   cursor: pointer;
   transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
 }
 
 .related-news-item:hover {
