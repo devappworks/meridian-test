@@ -387,7 +387,7 @@ export default {
 
     // Fetch navigation data
     this.fetchNavigationData();
-    this.fetchHelperNavigationData(); // Add this line
+    this.fetchHelperNavigationData();
 
     // Listen for category updates from all sport pages
     window.addEventListener(
@@ -774,12 +774,12 @@ export default {
       // Get current route path
       const currentPath = this.$route.path;
 
-      // First try to find the active link using router-link active class
-      let activeLink = navContainer.querySelector("a.router-link-active");
+      // First try to find the active link using router-link exact-active class
+      let activeLink = navContainer.querySelector("a.router-link-exact-active");
 
-      // If no active link found, try router-link-exact-active
+      // If no exact active link found, try router-link-active
       if (!activeLink) {
-        activeLink = navContainer.querySelector("a.router-link-exact-active");
+        activeLink = navContainer.querySelector("a.router-link-active");
       }
 
       // If still no active link found, manually find the matching link
@@ -814,6 +814,17 @@ export default {
       } else {
         this.hideUnderline();
       }
+    },
+    setupSlidingUnderline() {
+      const navContainer = this.$refs.navContainer;
+      if (!navContainer) return;
+
+      this.setContainer(navContainer);
+
+      // Use requestAnimationFrame for better timing
+      requestAnimationFrame(() => {
+        this.updateActiveUnderline();
+      });
     },
     setupSportCategoriesUnderline() {
       const sportContainer = this.$refs.sportCategoriesContainer;
@@ -985,22 +996,32 @@ export default {
       }
       // Update underline position when route changes
       this.$nextTick(() => {
-        // Add a small delay to ensure router-link classes are applied
-        setTimeout(() => {
+        // Use requestAnimationFrame for better timing
+        requestAnimationFrame(() => {
           this.updateActiveUnderline();
           this.updateSportActiveUnderline();
           this.updateMobileActiveUnderline();
-        }, 100);
+        });
       });
     },
     navigationItems() {
       // Update underline when navigation items are loaded
       this.$nextTick(() => {
-        this.setupSlidingUnderline();
-        this.setupSportCategoriesUnderline();
-        this.setupMobileNavUnderline();
+        requestAnimationFrame(() => {
+          this.setupSlidingUnderline();
+          this.setupSportCategoriesUnderline();
+          this.setupMobileNavUnderline();
+        });
       });
     },
+  },
+  beforeUnmount() {
+    // Clean up listeners
+    this.removeResizeListener();
+    this.removeSportResizeListener();
+    this.removeMobileResizeListener();
+    window.removeEventListener("resize", this.updateVisibility);
+    window.removeEventListener("storage", this.checkUserLoggedIn);
   },
 };
 </script>
