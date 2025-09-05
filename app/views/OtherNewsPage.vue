@@ -7,16 +7,17 @@
         </div>
 
         <!-- Main Other News Grid -->
-        <SkeletonNewsGrid v-if="loading.main" :columns="4" />
+        <SkeletonNewsGrid v-if="otherPending || otherNews.length === 0" :columns="4" />
         <NewsGrid v-else sport="OSTALE VESTI" :news="otherNews" />
 
         <LiveStream />
 
-        <div v-if="!loading.main">
+        <SkeletonNewsGrid v-if="otherPending || loadMoreOtherNews.length === 0" :columns="4" />
+        <div v-else>
           <NewsGrid
             sport="OSTALE VESTI"
             :news="loadMoreOtherNews"
-            showLoadMore="true"
+            showLoadMore=true
             :loading="isLoading"
             @load-more="loadMore"
           />
@@ -26,13 +27,13 @@
         <LiveStream />
 
         <!-- Additional News Section -->
-        <SkeletonNewsGrid v-if="loading.other" :columns="4" />
+        <SkeletonNewsGrid v-if="otherPending || additionalNews.length === 0" :columns="4" />
         <NewsGrid
           v-else
           title="DODATNE VESTI"
           sport="OSTALE VESTI"
           :news="additionalNews"
-          background="true"
+          background=true
         />
       </div>
 
@@ -44,13 +45,13 @@
           </div>
 
           <!-- Related news skeleton -->
-          <SkeletonRelatedNews v-if="loading.sidebar" />
+          <SkeletonRelatedNews v-if="otherPending || relatedNews.length === 0" />
           <div v-else class="related-news-list">
-            <div
+            <NuxtLink
               v-for="(news, index) in relatedNews"
               :key="news.id"
+              :to="`/${news.category}/${news.slug}`"
               class="related-news-item"
-              @click="navigateToArticle(news.id)"
             >
               <div class="number">{{ index + 1 }}</div>
               <div class="content">
@@ -61,7 +62,7 @@
                   <div class="divider"></div>
                 </div>
               </div>
-            </div>
+            </NuxtLink>
           </div>
         </div>
         <NewsletterForm />
@@ -71,7 +72,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import NewsletterForm from "@/components/Newsletter.vue";
 import AdBanners from "@/components/AdBanners.vue";
 import LiveStream from "@/components/LiveStream.vue";
@@ -80,262 +81,139 @@ import SkeletonNewsGrid from "@/components/skeletons/SkeletonNewsGrid.vue";
 import SkeletonRelatedNews from "@/components/skeletons/SkeletonRelatedNews.vue";
 import { fetchFromApi } from "@/services/api";
 
-export default {
-  name: "OtherNewsPage",
-  components: {
-    NewsGrid,
-    NewsletterForm,
-    AdBanners,
-    LiveStream,
-    SkeletonNewsGrid,
-    SkeletonRelatedNews,
-  },
-  data() {
-    return {
-      otherNews: [],
-      loadMoreOtherNews: [],
-      additionalNews: [],
-      relatedNews: [],
-      currentPage: 1,
-      isLoading: false,
-      hasMorePages: true,
-      loading: {
-        main: true,
-        loadMore: false,
-        other: true,
-        sidebar: true,
-      },
-    };
-  },
-  props: {
-    category: {
-      type: String,
-      default: "",
-    },
-    slug: {
-      type: String,
-      default: "",
-    },
-  },
-  methods: {
-    async fetchOtherArticles() {
-      this.loading = {
-        main: true,
-        loadMore: false,
-        other: true,
-        sidebar: true,
-      };
+// Reactive state
+const loading = ref({
+  main: true,
+  loadMore: false,
+  other: true,
+  sidebar: true,
+});
 
-      try {
-        // Fetch "other" news articles
-        // Option 1: Use specific category ID for "other news" (uncomment and adjust ID):
-        // 'category[]': 1, // Replace 1 with the actual "other news" category ID
+const otherNews = ref([]);
+const loadMoreOtherNews = ref([]);
+const additionalNews = ref([]);
+const relatedNews = ref([]);
+const currentPage = ref(1);
+const isLoading = ref(false);
+const hasMorePages = ref(true);
 
-        // Option 2: Fetch all articles and filter out sports categories in the mapping
-        // (This is currently used - you may want to adjust based on your needs)
-        const otherData = await fetchFromApi("/getArticles", {
-          articleLimit: 53,
-          page: 1,
-        });
+// Helper functions
+const mapArticle = (article) => ({
+  id: article.id,
+  title: article.title,
+  sport: "OSTALE VESTI",
+  date: article.date,
+  url: article.url,
+  image: article.feat_images["medium"]?.url || null,
+  category: article.categories[0]?.slug,
+  slug: article.slug,
+});
 
-        const articles = otherData.result.articles;
+const mapSidebarArticle = (article) => ({
+  id: article.id,
+  title: article.title,
+  sport: "OSTALE VESTI",
+  date: article.date,
+  category: article.categories[0]?.slug,
+  slug: article.slug,
+});
 
-        if (articles.length > 0) {
-          // Filter out sports articles if fetching from all categories
-          const filteredArticles = this.filterOutSportsArticles(articles);
+const filterOutSportsArticles = (articles) => {
+  // Option 1: Filter out sports articles (uncomment the next two lines)
+  // const sportsCategories = [28, 25, 24, 26]; // Football, Basketball, Volleyball, Tennis
+  // return articles.filter(article => !sportsCategories.includes(article.category_id));
 
-          // Main other news grid (first 12 articles)
-          this.otherNews = filteredArticles.slice(0, 12).map((article) => ({
-            id: article.id,
-            title: article.title,
-            sport: "OSTALE VESTI",
-            date: article.date,
-            url: article.url,
-            image: article.feat_images["medium"]
-              ? article.feat_images["medium"].url
-              : null,
-            category: article.categories[0].slug,
-            slug: article.slug,
-          }));
+  // Option 2: Return all articles (current approach)
+  return articles;
+};
 
-          this.loadMoreOtherNews = filteredArticles
-            .slice(12, 24)
-            .map((article) => ({
-              id: article.id,
-              title: article.title,
-              sport: "OSTALE VESTI",
-              date: article.date,
-              url: article.url,
-              image: article.feat_images["medium"]
-                ? article.feat_images["medium"].url
-                : null,
-              category: article.categories[0].slug,
-              slug: article.slug,
-            }));
+// SSR Data Fetching
+const { data: otherData, pending: otherPending } = await useAsyncData('other-news-articles', () => 
+  fetchFromApi('/getArticles', {
+    articleLimit: 53,
+    page: 1
+  })
+);
 
-          // Additional other news
-          this.additionalNews = filteredArticles
-            .slice(24, 48)
-            .map((article) => ({
-              id: article.id,
-              title: article.title,
-              sport: "OSTALE VESTI",
-              date: article.date,
-              url: article.url,
-              image: article.feat_images["medium"]
-                ? article.feat_images["medium"].url
-                : null,
-              category: article.categories[0].slug,
-              slug: article.slug,
-            }));
+// Process other news articles from SSR
+if (otherData.value?.result.articles?.length > 0) {
+  const articles = otherData.value.result.articles;
+  const filteredArticles = filterOutSportsArticles(articles);
+  
+  if (filteredArticles.length > 0) {
+    // Main other news grid (first 12 articles)
+    otherNews.value = filteredArticles.slice(0, 12).map(mapArticle);
+    loadMoreOtherNews.value = filteredArticles.slice(12, 24).map(mapArticle);
+    additionalNews.value = filteredArticles.slice(24, 48).map(mapArticle);
+    relatedNews.value = filteredArticles.slice(48, 53).map(mapSidebarArticle);
+    
+    // Check if we have more pages
+    hasMorePages.value = filteredArticles.length >= 53;
+  }
+}
 
-          // Related news sidebar
-          this.relatedNews = filteredArticles.slice(48, 53).map((article) => ({
-            id: article.id,
-            title: article.title,
-            sport: "OSTALE VESTI",
-            date: article.date,
-            category: article.categories[0].slug,
-            slug: article.slug,
-          }));
+// Client-side functions
+const loadMore = async () => {
+  if (isLoading.value || !hasMorePages.value) return;
 
-          // Check if we have more pages
-          this.hasMorePages = filteredArticles.length >= 53;
+  isLoading.value = true;
+  loading.value.loadMore = true;
 
-          // Hide all loading states
-          this.loading = {
-            main: false,
-            loadMore: false,
-            other: false,
-            sidebar: false,
-          };
+  try {
+    let foundNewArticles = false;
+    let currentPageNum = currentPage.value + 1;
+
+    // Keep trying pages until we find unique articles or run out of pages
+    while (!foundNewArticles && hasMorePages.value) {
+      const response = await fetchFromApi("/getArticles", {
+        articleLimit: 12,
+        page: currentPageNum,
+      });
+
+      const newArticles = response.result.articles || [];
+
+      if (newArticles.length > 0) {
+        // Get all existing URLs to check for duplicates
+        const existingUrls = new Set([
+          ...otherNews.value.map((article) => article.url),
+          ...loadMoreOtherNews.value.map((article) => article.url),
+        ]);
+
+        // Filter out any articles that we've already shown
+        const uniqueNewArticles = newArticles.filter(
+          (article) => !existingUrls.has(article.url)
+        );
+
+        const mappedArticles = uniqueNewArticles.map(mapArticle);
+
+        if (mappedArticles.length > 0) {
+          // Found unique articles, add them and exit the loop
+          loadMoreOtherNews.value = [
+            ...loadMoreOtherNews.value,
+            ...mappedArticles,
+          ];
+          currentPage.value = currentPageNum;
+          hasMorePages.value = newArticles.length >= 12;
+          foundNewArticles = true;
+        } else {
+          // All articles were duplicates, try the next page
+          currentPageNum++;
+          hasMorePages.value = newArticles.length >= 12;
         }
-      } catch (error) {
-        console.error("Error fetching other articles:", error);
-        this.resetNews();
-        // Hide loading states on error
-        this.loading = {
-          main: false,
-          loadMore: false,
-          other: false,
-          sidebar: false,
-        };
+      } else {
+        hasMorePages.value = false;
       }
-    },
-
-    async loadMore() {
-      if (this.isLoading || !this.hasMorePages) return;
-
-      try {
-        this.isLoading = true;
-        this.loading.loadMore = true;
-
-        // Store current scroll position to prevent jumping
-        const scrollY = window.scrollY;
-
-        let foundNewArticles = false;
-        let currentPage = this.currentPage + 1;
-
-        // Keep trying pages until we find unique articles or run out of pages
-        while (!foundNewArticles && this.hasMorePages) {
-          const response = await fetchFromApi("/getArticles", {
-            articleLimit: 12,
-            // Match the same approach as fetchOtherArticles
-            page: currentPage,
-          });
-
-          const newArticles = response.result.articles;
-
-          if (newArticles.length > 0) {
-            // Get all existing URLs to check for duplicates
-            const existingUrls = new Set([
-              ...this.otherNews.map((article) => article.url),
-              ...this.loadMoreOtherNews.map((article) => article.url),
-            ]);
-
-            // Filter out any articles that we've already shown
-            const uniqueNewArticles = newArticles.filter(
-              (article) => !existingUrls.has(article.url)
-            );
-
-            const mappedArticles = uniqueNewArticles.map((article) => ({
-              id: article.id,
-              title: article.title,
-              sport: "OSTALE VESTI",
-              date: article.date,
-              url: article.url,
-              image: article.feat_images["medium"]
-                ? article.feat_images["medium"].url
-                : null,
-              category: article.categories[0].slug,
-              slug: article.slug,
-            }));
-
-            if (mappedArticles.length > 0) {
-              // Found unique articles, add them and exit the loop
-              this.loadMoreOtherNews = [
-                ...this.loadMoreOtherNews,
-                ...mappedArticles,
-              ];
-              this.currentPage = currentPage;
-              this.hasMorePages = newArticles.length >= 12;
-              foundNewArticles = true;
-            } else {
-              // All articles were duplicates, try the next page
-              currentPage++;
-              this.hasMorePages = newArticles.length >= 12;
-            }
-          } else {
-            this.hasMorePages = false;
-          }
-        }
-        if (!foundNewArticles) {
-          this.hasMorePages = false;
-        }
-
-        // Wait for DOM update, then restore scroll position
-        this.$nextTick(() => {
-          window.scrollTo(0, scrollY);
-        });
-      } catch (error) {
-        console.error("Error loading more articles:", error);
-      } finally {
-        this.isLoading = false;
-        this.loading.loadMore = false;
-      }
-    },
-
-    resetNews() {
-      this.otherNews = [];
-      this.loadMoreOtherNews = [];
-      this.additionalNews = [];
-      this.relatedNews = [];
-      this.currentPage = 1;
-      this.hasMorePages = true;
-    },
-
-    filterOutSportsArticles(articles) {
-      // If you want to show only truly uncategorized articles, filter out sports categories
-      // If you want to show all non-sports articles, return the articles as-is
-      // Comment/uncomment the lines below based on your preference:
-
-      // Option 1: Filter out sports articles (uncomment the next two lines)
-      // const sportsCategories = [28, 25, 24, 26]; // Football, Basketball, Volleyball, Tennis
-      // return articles.filter(article => !sportsCategories.includes(article.category_id));
-
-      // Option 2: Return all articles (current approach)
-      return articles;
-    },
-
-    navigateToArticle(articleId) {
-      const found = [...this.otherNews, ...this.loadMoreOtherNews, ...this.relatedNews].find((a) => a.id === articleId);
-      const target = `/${found.category}/${found.slug}`;
-      this.$router.push(target);
-    },
-  },
-  mounted() {
-    this.fetchOtherArticles();
-  },
+    }
+    
+    if (!foundNewArticles) {
+      hasMorePages.value = false;
+    }
+  } catch (error) {
+    console.error("Error loading more articles:", error);
+  } finally {
+    isLoading.value = false;
+    loading.value.loadMore = false;
+  }
 };
 </script>
 
@@ -475,6 +353,8 @@ export default {
   margin-bottom: 24px;
   cursor: pointer;
   transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
 }
 
 .related-news-item:hover {
