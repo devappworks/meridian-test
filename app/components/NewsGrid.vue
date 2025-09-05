@@ -63,7 +63,7 @@ export default {
   },
   data() {
     return {
-      windowWidth: typeof window !== "undefined" ? window.innerWidth : 1200,
+      windowWidth: typeof window !== "undefined" ? window.innerWidth : 1400,
     };
   },
   props: {
