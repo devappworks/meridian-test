@@ -244,7 +244,7 @@
                     :news="otherNews"
                     sport="OSTALE VESTI"
                     :columns="3"
-                    background="true"
+                    background=true
                   />
                 </div>
               </div>

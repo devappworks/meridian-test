@@ -49,7 +49,7 @@
         title="OSTALE VESTI"
         sport="OSTALE VESTI"
         :news="otherNews"
-        background="true"
+        background=true
       />
     </div>
 

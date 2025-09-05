@@ -16,7 +16,7 @@
           <NewsGrid
             :sport="displayTitle"
             :news="loadMoreCategoryNews"
-            showLoadMore="true"
+            showLoadMore=true
             :loading="isLoading"
             @load-more="loadMore"
           />
@@ -32,7 +32,7 @@
           title="OSTALE VESTI"
           sport="OSTALE VESTI"
           :news="otherNews"
-          background="true"
+          background=true
         />
       </div>
 

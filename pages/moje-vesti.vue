@@ -31,7 +31,7 @@ useHead({ title: "Moje vesti" });
             v-else
             :news="firstGridItems"
             :loading="isLoading"
-            :showLoadMore="false"
+            :showLoadMore=false
           />
 
           <LiveStream v-if="hasSelectedCategories" />
@@ -41,7 +41,7 @@ useHead({ title: "Moje vesti" });
           <NewsGrid
             :news="secondGridItems"
             :loading="isLoading"
-            :showLoadMore="true"
+            :showLoadMore=true
             @load-more="loadMore"
           />
         </div>

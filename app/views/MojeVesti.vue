@@ -27,7 +27,7 @@
             v-else
             :news="firstGridItems"
             :loading="isLoading"
-            :showLoadMore="false"
+            :showLoadMore=false
           />
 
           <LiveStream v-if="hasSelectedCategories" />
@@ -37,7 +37,7 @@
           <NewsGrid
             :news="secondGridItems"
             :loading="isLoading"
-            :showLoadMore="true"
+            :showLoadMore=true
             @load-more="loadMore"
           />
         </div>
@@ -48,7 +48,7 @@
             title="OSTALE VESTI"
             sport="OSTALE VESTI"
             :news="otherNewsItems"
-            background="true"
+            background=true
           />
         </div>
       </div>
