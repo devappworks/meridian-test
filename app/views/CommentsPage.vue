@@ -11,7 +11,7 @@
             <div class="comment-form">
               <div class="form-row"></div>
               <div class="form-group">
-                <label>Message</label>
+                <label>Poruka</label>
                 <textarea
                   class="form-input message"
                   v-model="newComment.message"
@@ -24,7 +24,7 @@
                   submittingComment || !isLoggedIn || !newComment.message
                 "
               >
-                {{ submittingComment ? "SENDING..." : "SEND MESSAGE" }}
+                {{ submittingComment ? "SLANJE..." : "POŠALJI" }}
               </button>
               <p
                 v-if="!isLoggedIn"
@@ -95,7 +95,7 @@
                 >
                   <div class="reply-form">
                     <div class="form-group">
-                      <label>Reply</label>
+                      <label>Odgovor</label>
                       <textarea
                         class="form-input message"
                         v-model="replyComment.message"
@@ -111,10 +111,10 @@
                           !replyComment.message
                         "
                       >
-                        {{ submittingReply ? "SENDING..." : "SEND REPLY" }}
+                        {{ submittingReply ? "SLANJE..." : "POŠALJI" }}
                       </button>
                       <button class="cancel-reply-btn" @click="cancelReply">
-                        CANCEL
+                        ODUSTANI
                       </button>
                     </div>
                   </div>
