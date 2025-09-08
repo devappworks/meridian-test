@@ -15,6 +15,8 @@
                 <textarea
                   class="form-input message"
                   v-model="newComment.message"
+                  @input="hideCommentMessage"
+                  placeholder="Unesite vaš komentar..."
                 ></textarea>
               </div>
               <button
@@ -26,8 +28,17 @@
               >
                 {{ submittingComment ? "SLANJE..." : "POŠALJI" }}
               </button>
+              
+              <!-- Inline message for comment form -->
+              <div
+                v-if="commentMessage.visible"
+                :class="['inline-message', commentMessage.type]"
+              >
+                {{ commentMessage.text }}
+              </div>
+              
               <p
-                v-if="!isLoggedIn"
+                v-if="!isLoggedIn && !commentMessage.visible"
                 style="color: #cacaca; margin: 8px 0 0 2px; font-size: 13px"
               >
                 Morate biti prijavljeni da ostavite komentar.
@@ -74,7 +85,10 @@
                   </button>
                 </div>
                 <div class="comment-content">
-                  <p>{{ comment.message }}</p>
+                  <p 
+                    :id="`comment-text-${comment.id}`"
+                    :class="['comment-text', isExpanded(comment.id) ? 'expanded' : 'clipped']"
+                  >{{ comment.message }}</p>
                 </div>
                 <div class="comment-actions">
                   <div class="vote-buttons">
@@ -85,7 +99,13 @@
                       <img src="@/assets/icons/thumbs-down.svg" alt="Dislike" />
                     </button>
                   </div>
-                  <button class="read-more">Pročitaj više</button>
+                  <button 
+                    :id="`comment-read-more-${comment.id}`"
+                    class="read-more hidden"
+                    @click="toggleReadMore(comment.id)"
+                  >
+                    {{ isExpanded(comment.id) ? 'Sakrij' : 'Pročitaj više' }}
+                  </button>
                 </div>
 
                 <!-- Reply form for this comment -->
@@ -99,6 +119,8 @@
                       <textarea
                         class="form-input message"
                         v-model="replyComment.message"
+                        @input="hideReplyMessage"
+                        placeholder="Unesite vaš odgovor..."
                       ></textarea>
                     </div>
                     <div class="reply-actions">
@@ -116,6 +138,14 @@
                       <button class="cancel-reply-btn" @click="cancelReply">
                         ODUSTANI
                       </button>
+                    </div>
+                    
+                    <!-- Inline message for reply form -->
+                    <div
+                      v-if="replyMessage.visible"
+                      :class="['inline-message', replyMessage.type]"
+                    >
+                      {{ replyMessage.text }}
                     </div>
                   </div>
                 </div>
@@ -152,7 +182,10 @@
                     </button>
                   </div>
                   <div class="comment-content">
-                    <p>{{ reply.message }}</p>
+                    <p 
+                      :id="`reply-text-${reply.id}`"
+                      :class="['comment-text', isExpanded(reply.id, true) ? 'expanded' : 'clipped']"
+                    >{{ reply.message }}</p>
                   </div>
                   <div class="comment-actions">
                     <div class="vote-buttons">
@@ -166,12 +199,33 @@
                         />
                       </button>
                     </div>
-                    <button class="read-more">Pročitaj više</button>
+                    <button 
+                      :id="`reply-read-more-${reply.id}`"
+                      class="read-more hidden"
+                      @click="toggleReadMore(reply.id, true)"
+                    >
+                      {{ isExpanded(reply.id, true) ? 'Sakrij' : 'Pročitaj više' }}
+                    </button>
                   </div>
                 </div>
               </template>
             </template>
           </div>
+        </div>
+        <!-- Load all comments button -->
+        <div v-if="hasMultiplePages" class="load-all-comments-section">
+          <div class="pagination-info">
+            <span v-if="pagination">
+              Prikazano {{ pagination.per_page }} od {{ pagination.total }} komentara
+            </span>
+          </div>
+          <button 
+            class="load-all-comments-btn" 
+            @click="handleLoadAllComments"
+            :disabled="loadingAllComments"
+          >
+            {{ loadingAllComments ? "UČITAVANJE..." : "UČITAJ SVE KOMENTARE" }}
+          </button>
         </div>
       </div>
     </div>
@@ -196,6 +250,18 @@ export default {
       type: Object,
       default: null,
     },
+    hasMultiplePages: {
+      type: Boolean,
+      default: false,
+    },
+    loadingAllComments: {
+      type: Boolean,
+      default: false,
+    },
+    showingAllComments: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -213,6 +279,20 @@ export default {
       replyingTo: null,
       submittingComment: false,
       submittingReply: false,
+      // Track expanded state for each comment and reply
+      expandedComments: new Set(),
+      expandedReplies: new Set(),
+      // Inline messages for forms
+      commentMessage: {
+        text: '',
+        type: '', // 'success' or 'error'
+        visible: false
+      },
+      replyMessage: {
+        text: '',
+        type: '', // 'success' or 'error'
+        visible: false
+      },
     };
   },
   mounted() {
@@ -221,6 +301,11 @@ export default {
 
     // React to login/logout in other tabs
     window.addEventListener("storage", this.checkAuthAndPrefill);
+
+    // Check for text overflow after component is mounted
+    this.$nextTick(() => {
+      this.checkAllCommentsForOverflow();
+    });
   },
   beforeUnmount() {
     window.removeEventListener("storage", this.checkAuthAndPrefill);
@@ -253,6 +338,17 @@ export default {
 
       return topLevelComments;
     },
+  },
+  watch: {
+    // Watch for changes in comments and check for text overflow
+    formattedComments: {
+      handler() {
+        this.$nextTick(() => {
+          this.checkAllCommentsForOverflow();
+        });
+      },
+      deep: true
+    }
   },
   methods: {
     checkAuthAndPrefill() {
@@ -295,9 +391,19 @@ export default {
       }
     },
     async submitComment() {
+      // Clear any existing messages
+      this.hideCommentMessage();
+      
       if (!this.isLoggedIn) {
-        alert("Morate biti prijavljeni da biste ostavili komentar.");
-        this.$router.push("/prijava");
+        this.showCommentMessage("Morate biti prijavljeni da biste ostavili komentar.", "error");
+        setTimeout(() => {
+          this.$router.push("/prijava");
+        }, 2000);
+        return;
+      }
+
+      if (!this.newComment.message.trim()) {
+        this.showCommentMessage("Poruka je obavezna.", "error");
         return;
       }
 
@@ -324,24 +430,29 @@ export default {
         this.$emit("comment-added");
 
         // Show success message
-        alert("Comment posted successfully!");
+        this.showCommentMessage("Komentar je uspešno poslat!", "success");
       } catch (error) {
         console.error("Error posting comment:", error);
-        alert("Failed to post comment. Please try again.");
+        this.showCommentMessage("Greška pri slanju komentara. Molimo pokušajte ponovo.", "error");
       } finally {
         this.submittingComment = false;
       }
     },
 
     async submitReply(commentId) {
+      // Clear any existing messages
+      this.hideReplyMessage();
+      
       if (!this.isLoggedIn) {
-        alert("Morate biti prijavljeni da biste odgovorili na komentar.");
-        this.$router.push("/prijava");
+        this.showReplyMessage("Morate biti prijavljeni da biste odgovorili na komentar.", "error");
+        setTimeout(() => {
+          this.$router.push("/prijava");
+        }, 2000);
         return;
       }
 
-      if (!this.replyComment.message) {
-        alert("Poruka je obavezna");
+      if (!this.replyComment.message.trim()) {
+        this.showReplyMessage("Poruka je obavezna.", "error");
         return;
       }
 
@@ -358,22 +469,25 @@ export default {
 
         await postComment(this.articleId, replyData);
 
-        // Clear the reply form and hide it
-        this.replyComment = {
-          name: this.replyComment.name,
-          email: this.replyComment.email,
-          message: "",
-        };
-        this.replyingTo = null;
+        // Show success message before clearing form
+        this.showReplyMessage("Odgovor je uspešno poslat!", "success");
+        
+        // Clear the reply form and hide it after a short delay
+        setTimeout(() => {
+          this.replyComment = {
+            name: this.replyComment.name,
+            email: this.replyComment.email,
+            message: "",
+          };
+          this.replyingTo = null;
+          this.hideReplyMessage();
+        }, 2000);
 
         // Emit event to parent to refresh comments
         this.$emit("comment-added");
-
-        // Show success message
-        alert("Reply posted successfully!");
       } catch (error) {
         console.error("Error posting reply:", error);
-        alert("Failed to post reply. Please try again.");
+        this.showReplyMessage("Greška pri slanju odgovora. Molimo pokušajte ponovo.", "error");
       } finally {
         this.submittingReply = false;
       }
@@ -381,16 +495,22 @@ export default {
 
     startReply(commentId) {
       if (!this.isLoggedIn) {
-        alert("Morate biti prijavljeni da biste odgovorili na komentar.");
+        this.showCommentMessage("Morate biti prijavljeni da biste odgovorili na komentar.", "error");
+        setTimeout(() => {
+          this.$router.push("/prijava");
+        }, 2000);
         return;
       }
 
+      // Clear any existing messages when starting a reply
+      this.hideReplyMessage();
       this.replyingTo = commentId;
     },
 
     cancelReply() {
       this.replyingTo = null;
       this.replyComment = { name: "", email: "", message: "" };
+      this.hideReplyMessage();
     },
 
     formatDate(dateString) {
@@ -448,6 +568,116 @@ export default {
       const div = document.createElement("div");
       div.innerHTML = html;
       return div.textContent || div.innerText || "";
+    },
+
+    // Check if comment text needs "read more" button
+    needsReadMore(commentId, isReply = false) {
+      this.$nextTick(() => {
+        const elementId = isReply ? `reply-text-${commentId}` : `comment-text-${commentId}`;
+        const element = document.getElementById(elementId);
+        if (element) {
+          // Check if content overflows 3 lines
+          const lineHeight = parseFloat(window.getComputedStyle(element).lineHeight);
+          const maxHeight = lineHeight * 3;
+          const actualHeight = element.scrollHeight;
+          
+          const readMoreBtn = document.getElementById(
+            isReply ? `reply-read-more-${commentId}` : `comment-read-more-${commentId}`
+          );
+          
+          if (readMoreBtn) {
+            if (actualHeight > maxHeight + 2) { // +2px tolerance
+              readMoreBtn.classList.remove('hidden');
+            } else {
+              readMoreBtn.classList.add('hidden');
+            }
+          }
+        }
+      });
+    },
+
+    // Toggle read more for comments
+    toggleReadMore(commentId, isReply = false) {
+      if (isReply) {
+        if (this.expandedReplies.has(commentId)) {
+          this.expandedReplies.delete(commentId);
+        } else {
+          this.expandedReplies.add(commentId);
+        }
+      } else {
+        if (this.expandedComments.has(commentId)) {
+          this.expandedComments.delete(commentId);
+        } else {
+          this.expandedComments.add(commentId);
+        }
+      }
+    },
+
+    // Check if comment is expanded
+    isExpanded(commentId, isReply = false) {
+      return isReply 
+        ? this.expandedReplies.has(commentId)
+        : this.expandedComments.has(commentId);
+    },
+
+    // Check all comments and replies for text overflow
+    checkAllCommentsForOverflow() {
+      this.formattedComments.forEach(comment => {
+        this.needsReadMore(comment.id);
+        
+        if (comment.replies && comment.replies.length > 0) {
+          comment.replies.forEach(reply => {
+            this.needsReadMore(reply.id, true);
+          });
+        }
+      });
+    },
+
+    // Show inline message for comment form
+    showCommentMessage(text, type) {
+      this.commentMessage = {
+        text,
+        type,
+        visible: true
+      };
+      
+      // Auto-hide success messages after 5 seconds
+      if (type === 'success') {
+        setTimeout(() => {
+          this.hideCommentMessage();
+        }, 5000);
+      }
+    },
+
+    // Hide comment form message
+    hideCommentMessage() {
+      this.commentMessage.visible = false;
+    },
+
+    // Show inline message for reply form
+    showReplyMessage(text, type) {
+      this.replyMessage = {
+        text,
+        type,
+        visible: true
+      };
+      
+      // Auto-hide success messages after 5 seconds
+      if (type === 'success') {
+        setTimeout(() => {
+          this.hideReplyMessage();
+        }, 5000);
+      }
+    },
+
+    // Hide reply form message
+    hideReplyMessage() {
+      this.replyMessage.visible = false;
+    },
+
+    // Handle load all comments button click
+    handleLoadAllComments() {
+      this.$emit('load-all-comments');
     },
   },
 };
@@ -664,6 +894,24 @@ export default {
   color: var(--text-white);
 }
 
+.comment-text {
+  margin: 0;
+}
+
+.comment-text.clipped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+.comment-text.expanded {
+  display: block;
+  overflow: visible;
+}
+
 .comment-actions {
   display: flex;
   justify-content: space-between;
@@ -713,6 +961,15 @@ export default {
   line-height: 150%;
   color: var(--text-25);
   cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.read-more:hover {
+  color: var(--yellow-primary);
+}
+
+.read-more.hidden {
+  display: none;
 }
 
 /* Reply form styles */
@@ -774,5 +1031,74 @@ export default {
 .cancel-reply-btn:hover {
   background: var(--bg-20);
   transition: var(--transition);
+}
+
+/* Inline message styles */
+.inline-message {
+  margin: 8px 0 0 2px;
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.inline-message.success {
+  color: #4ade80;
+  background-color: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.inline-message.error {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.inline-message.hidden {
+  display: none;
+}
+
+/* Load all comments section styles */
+.load-all-comments-section {
+  background: var(--bg-80);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  text-align: center;
+}
+
+.pagination-info {
+  color: var(--text-25);
+  font-size: 14px;
+  line-height: 150%;
+}
+
+.load-all-comments-btn {
+  background: var(--yellow-primary);
+  color: var(--text-90);
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-family: var(--sport-category-tags);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 19px;
+  cursor: pointer;
+  box-shadow: -2px 2px 3px rgba(0, 0, 0, 0.25);
+  transition: opacity 0.2s ease;
+}
+
+.load-all-comments-btn:hover:not(:disabled) {
+  opacity: var(--hover);
+}
+
+.load-all-comments-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 </style>

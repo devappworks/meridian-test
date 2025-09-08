@@ -117,7 +117,11 @@
               :article-id="article?.id || ''"
               :comments="comments"
               :pagination="commentsPagination"
+              :has-multiple-pages="hasMultipleCommentPages"
+              :loading-all-comments="loading.allComments"
+              :showing-all-comments="showingAllComments"
               @comment-added="handleCommentAdded"
+              @load-all-comments="loadAllComments"
             />
           </div>
           <div v-else>
@@ -342,7 +346,7 @@ import SkeletonArticleContent from "@/components/skeletons/SkeletonArticleConten
 import SkeletonRelatedNews from "@/components/skeletons/SkeletonRelatedNews.vue";
 import SkeletonNewsGrid from "@/components/skeletons/SkeletonNewsGrid.vue";
 
-import { fetchFromApi } from "@/services/api";
+import { fetchFromApi, fetchAllComments } from "@/services/api";
 
 // Nuxt composables
 const nuxtApp = useNuxtApp();
@@ -385,11 +389,13 @@ const loading = ref({
   comments: true,
   relatedNews: true,
   otherNews: true,
+  allComments: false, // Loading state for fetching all comments
 });
 const error = ref(null);
 const comments = ref([]);
 const commentsPagination = ref(null);
 const totalComments = ref(0);
+const showingAllComments = ref(false); // Track if all comments are loaded
 const relatedNews = ref([]);
 const josVestiNews = ref([]);
 const otherNews = ref([]);
@@ -417,6 +423,13 @@ const afterFifthParagraph = computed(() => {
 
   const paragraphs = extractParagraphs(article.value.contents);
   return paragraphs.slice(5).join("");
+});
+
+// Check if there are multiple pages of comments
+const hasMultipleCommentPages = computed(() => {
+  return commentsPagination.value && 
+         commentsPagination.value.last_page > 1 && 
+         !showingAllComments.value;
 });
 
 
@@ -663,7 +676,37 @@ const fetchComments = async () => {
 };
 
 const handleCommentAdded = async () => {
-  await fetchComments();
+  // If we're showing all comments, refetch all, otherwise just fetch first page
+  if (showingAllComments.value) {
+    await loadAllComments();
+  } else {
+    await fetchComments();
+  }
+};
+
+// Function to load all comments from all pages
+const loadAllComments = async () => {
+  loading.value.allComments = true;
+
+  try {
+    // We need the article id to fetch comments
+    if (!article.value || !article.value.id) {
+      loading.value.allComments = false;
+      return;
+    }
+    
+    const response = await fetchAllComments(article.value.id);
+    comments.value = response.result.comments || [];
+    commentsPagination.value = response.result.pagination || null;
+    totalComments.value = response.result.pagination?.total || 0;
+    showingAllComments.value = true;
+    loading.value.allComments = false;
+  } catch (error) {
+    console.error("Error fetching all comments:", error);
+    // Fall back to regular comment fetching
+    await fetchComments();
+    loading.value.allComments = false;
+  }
 };
 
 const toggleComments = () => {

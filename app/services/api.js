@@ -246,3 +246,48 @@ export const addNewsletterEmail = async (email) => {
   }
 };
 
+// Fetch all comments from all pages for a given article
+export const fetchAllComments = async (articleId) => {
+  try {
+    let allComments = [];
+    let currentPage = 1;
+    let hasMorePages = true;
+    let totalComments = 0;
+    let pagination = null;
+
+    // Fetch comments page by page until we get all
+    while (hasMorePages) {
+      const response = await fetchFromApi(`/getComments/${articleId}`, { page: currentPage });
+      
+      if (response.result && response.result.comments) {
+        allComments = [...allComments, ...response.result.comments];
+        pagination = response.result.pagination;
+        totalComments = pagination?.total || 0;
+        
+        // Check if there are more pages
+        hasMorePages = pagination && 
+                     pagination.current_page < pagination.last_page;
+        
+        currentPage++;
+      } else {
+        hasMorePages = false;
+      }
+    }
+
+    return {
+      result: {
+        comments: allComments,
+        pagination: {
+          ...pagination,
+          current_page: 1,
+          per_page: allComments.length,
+          total: totalComments
+        }
+      }
+    };
+  } catch (error) {
+    console.error(`Error fetching all comments for article ${articleId}:`, error);
+    throw error;
+  }
+};
+
