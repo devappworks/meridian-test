@@ -244,7 +244,7 @@ export default {
       updateUnderlinePosition,
       addResizeListener,
       removeResizeListener,
-    } = useSlidingUnderline();
+    } = useSlidingUnderline('main');
 
     // Sport categories underline
     const {
@@ -255,7 +255,7 @@ export default {
       updateUnderlinePosition: updateSportUnderlinePosition,
       addResizeListener: addSportResizeListener,
       removeResizeListener: removeSportResizeListener,
-    } = useSlidingUnderline();
+    } = useSlidingUnderline('sport');
 
     // Mobile navigation underline
     const {
@@ -266,7 +266,7 @@ export default {
       updateUnderlinePosition: updateMobileUnderlinePosition,
       addResizeListener: addMobileResizeListener,
       removeResizeListener: removeMobileResizeListener,
-    } = useSlidingUnderline();
+    } = useSlidingUnderline('mobile');
 
     const toggleMyNews = () => {
       // Check if user is logged in before allowing navigation
@@ -388,6 +388,13 @@ export default {
     // Fetch navigation data
     this.fetchNavigationData();
     this.fetchHelperNavigationData();
+
+    // Setup main navigation underline after mount (like CategoryPageNav)
+    this.$nextTick(() => {
+      setTimeout(() => {
+        this.setupSlidingUnderline();
+      }, 100);
+    });
 
     // Listen for category updates from all sport pages
     window.addEventListener(
@@ -542,10 +549,7 @@ export default {
         ];
       } finally {
         this.isNavigationLoading = false;
-        // Setup underline after navigation data is loaded and DOM is updated
-        this.$nextTick(() => {
-          this.setupSlidingUnderline();
-        });
+        // Don't setup underline here - it's handled in mounted() now
       }
     },
     async fetchHelperNavigationData() {
@@ -590,9 +594,6 @@ export default {
     },
 
     generateHelperRouteFromTitle(title, item) {
-      console.log(title, "TITLE");
-      console.log(item, "ITEM");
-      // Map to existing sport pages first (these have dedicated components)
       const dedicatedSportPages = {
         FUDBAL: "/fudbal",
         KOŠARKA: "/kosarka",
@@ -612,12 +613,9 @@ export default {
 
       // For all other categories, create dynamic routes
       if (item && item.web_categories && item.web_categories.length > 0) {
-        console.log(item, "ITEM");
         const categoryId = item.web_categories[0];
         const slug = this.generateSlugFromTitle(title);
 
-        console.log(categoryId, "CATEGORY ID");
-        console.log(slug, "SLUG");
 
         // Use dynamic route with category data in query params
         return {
@@ -631,7 +629,6 @@ export default {
 
       // Categories without specific IDs (like team pages that might not have articles)
       const slug = this.generateSlugFromTitle(title);
-      console.log(slug, "SLUG");
 
       return {
         path: `/${slug}`,
@@ -759,37 +756,38 @@ export default {
 
       this.setContainer(navContainer);
 
-      // Use a small delay to ensure DOM is fully ready
       setTimeout(() => {
         this.updateActiveUnderline();
       }, 50);
     },
-    updateActiveUnderline() {
+    updateActiveUnderline(providedPath = null) {
       const navContainer = this.$refs.navContainer;
       if (!navContainer) {
         this.hideUnderline();
         return;
       }
 
-      // Get current route path
-      const currentPath = this.$route.path;
-
-      // First try to find the active link using router-link exact-active class
-      let activeLink = navContainer.querySelector("a.router-link-exact-active");
-
-      // If no exact active link found, try router-link-active
-      if (!activeLink) {
-        activeLink = navContainer.querySelector("a.router-link-active");
+      // Use provided path from route watcher, or fall back to current route path
+      const currentPath = providedPath || this.$route.path;
+      // Hide underline on homepage
+      if (currentPath === '/') {
+        this.hideUnderline();
+        return;
       }
+
+      // Debug: log all links and their classes
+      const allLinks = navContainer.querySelectorAll("a");
+
+      // First try to find the active link using the custom active class
+      let activeLink = navContainer.querySelector("a.active");
 
       // If still no active link found, manually find the matching link
       if (!activeLink) {
-        const allLinks = navContainer.querySelectorAll("a");
-
         // Find the link that matches the current route
         for (let link of allLinks) {
-          const linkTo = link.getAttribute("href");
-          if (linkTo === currentPath) {
+          // Get the href attribute from the router-link
+          const href = link.getAttribute("href");
+          if (href === currentPath) {
             activeLink = link;
             break;
           }
@@ -798,15 +796,29 @@ export default {
 
       // If still no match, try to find partial matches for nested routes
       if (!activeLink && currentPath !== "/") {
-        const allLinks = navContainer.querySelectorAll("a");
-
         for (let link of allLinks) {
-          const linkTo = link.getAttribute("href");
-          if (linkTo && linkTo !== "/" && currentPath.startsWith(linkTo)) {
+          const href = link.getAttribute("href");
+          if (href && href !== "/" && currentPath.startsWith(href)) {
             activeLink = link;
             break;
           }
         }
+      }
+
+      // If still no match found, try one more time with a small delay
+      // This handles cases where router-link classes haven't been applied yet
+      if (!activeLink) {
+        setTimeout(() => {
+          const finalActiveLink = navContainer.querySelector("a.active");
+          
+          
+          if (finalActiveLink) {
+            this.setActiveItem(finalActiveLink);
+          } else {
+            this.hideUnderline();
+          }
+        }, 50);
+        return;
       }
 
       if (activeLink) {
@@ -814,17 +826,6 @@ export default {
       } else {
         this.hideUnderline();
       }
-    },
-    setupSlidingUnderline() {
-      const navContainer = this.$refs.navContainer;
-      if (!navContainer) return;
-
-      this.setContainer(navContainer);
-
-      // Use requestAnimationFrame for better timing
-      requestAnimationFrame(() => {
-        this.updateActiveUnderline();
-      });
     },
     setupSportCategoriesUnderline() {
       const sportContainer = this.$refs.sportCategoriesContainer;
@@ -995,23 +996,23 @@ export default {
         this.checkUserLoggedIn();
       }
       // Update underline position when route changes
+      // Use nextTick first, then setTimeout to ensure router-link classes are fully updated
       this.$nextTick(() => {
-        // Use requestAnimationFrame for better timing
-        requestAnimationFrame(() => {
-          this.updateActiveUnderline();
+        setTimeout(() => {
+          this.updateActiveUnderline(to.path);
           this.updateSportActiveUnderline();
           this.updateMobileActiveUnderline();
-        });
+        }, 150);
       });
     },
     navigationItems() {
       // Update underline when navigation items are loaded
       this.$nextTick(() => {
-        requestAnimationFrame(() => {
+        setTimeout(() => {
           this.setupSlidingUnderline();
           this.setupSportCategoriesUnderline();
           this.setupMobileNavUnderline();
-        });
+        }, 50);
       });
     },
   },
@@ -1113,12 +1114,13 @@ a:hover {
 
 .nav-underline {
   position: absolute;
-  bottom: -3px;
+  bottom: 0px;
   height: 3px;
   background: var(--text-white);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 1px;
   transform-origin: left;
+  z-index: 10;
 }
 
 .search-icon {
