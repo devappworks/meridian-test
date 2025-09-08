@@ -132,7 +132,7 @@
             >
               <img :src="article.images.large.url" :alt="article.title" />
               <div class="image-caption" v-if="article.featured_image_caption">
-                <span>FOTO:</span> {{ article.featured_image_caption }}
+                {{ article.featured_image_caption }}
               </div>
             </div>
 
@@ -1150,6 +1150,7 @@ watch(() => props.slug, () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 8px;
 }
 
 .image-caption {
