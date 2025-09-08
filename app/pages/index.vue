@@ -7,7 +7,7 @@ import LiveStream from "@/components/LiveStream.vue";
 import YouTubeSection from "@/components/YouTube.vue";
 import NewsletterForm from "@/components/Newsletter.vue";
 import AdBanners from "@/components/AdBanners.vue";
-import { fetchFromApi } from "@/services/api";
+import { fetchFromApi, fetchMeridianTipovi } from "@/services/api";
 
 // Import skeleton components
 import SkeletonFeatured from "@/components/skeletons/SkeletonFeatured.vue";
@@ -94,27 +94,7 @@ const footballNews = ref([]);
 const basketballNews = ref([]);
 const tennisNews = ref([]);
 const otherNews = ref([]);
-
-const tipovi = ref([
-  {
-    title:
-      "NAVIJAČU GA TERAJU, ON SE OGLASIO NA INSTAGRAMU: Poruka Nemanje Nedovića!   Poruka Nemanje Nedovića!  Poruka Nemanje Ned",
-    sport: "FUDBAL",
-    time: "10 feb 17:34",
-  },
-  {
-    title:
-      "NAVIJAČU GA TERAJU, ON SE OGLASIO NA INSTAGRAMU: Poruka Nemanje Nedovića!   Poruka Nemanje Nedovića!  Poruka Nemanje Ned",
-    sport: "KOŠARKA",
-    time: "10 feb 17:34",
-  },
-  {
-    title:
-      "NAVIJAČU GA TERAJU, ON SE OGLASIO NA INSTAGRAMU: Poruka Nemanje Nedovića!   Poruka Nemanje Nedovića!  Poruka Nemanje Ned",
-    sport: "TENIS",
-    time: "10 feb 17:34",
-  },
-]);
+const tipovi = ref([]);
 
 const matches = ref([
   {
@@ -163,9 +143,10 @@ const mapArticleData = (article) => {
 const getSportFromCategories = (categories) => {
   const sportMap = {
     Fudbal: "FUDBAL",
-    Košarka: "KOŠARKA",
+    Košarka: "KOŠARKA", 
     Tenis: "TENIS",
     Odbojka: "ODBOJKA",
+    "Meridian tipovi": "TIPOVI"
   };
 
   const sportCategory = categories.find((cat) => sportMap[cat.name]);
@@ -178,6 +159,7 @@ const sportClass = (sport) => {
     KOŠARKA: "basketball",
     TENIS: "tennis",
     ODBOJKA: "volleyball",
+    TIPOVI: "tipovi",
   };
   return sportMap[sport] || "";
 };
@@ -194,11 +176,13 @@ const { data: latestArticlesData, pending: latestPending } = await useAsyncData(
 const [
   { data: tennisData },
   { data: basketballData },
-  { data: footballData }
+  { data: footballData },
+  { data: tipoviData }
 ] = await Promise.all([
   useAsyncData('homepage-tennis', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 41 })),
   useAsyncData('homepage-basketball', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 25 })),
-  useAsyncData('homepage-football', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 28 }))
+  useAsyncData('homepage-football', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 28 })),
+  useAsyncData('homepage-tipovi', () => fetchMeridianTipovi(3))
 ]);
 
 // Process featured articles from SSR
@@ -277,6 +261,19 @@ if (tennisData.value?.result.articles?.length > 0) {
     date: article.date,
     url: article.url,
     image: article.feat_images["medium"]?.url || null,
+    category: article.categories[0]?.slug,
+    slug: article?.slug,
+  }));
+}
+
+// Process Meridian tipovi articles from SSR
+if (tipoviData.value?.result.articles?.length > 0) {
+  tipovi.value = tipoviData.value.result.articles.slice(0, 3).map((article) => ({
+    id: article.id,
+    title: article.title,
+    sport: getSportFromCategories(article.categories),
+    time: article.date,
+    url: article.url,
     category: article.categories[0]?.slug,
     slug: article?.slug,
   }));
@@ -419,9 +416,10 @@ const slideMatchOdds = (direction) => {
         <div>
           <h3 class="tipovi-title">TIPOVI DANA</h3>
           <div class="tipovi-content">
-            <div
+            <NuxtLink
               v-for="(item, index) in tipovi"
               :key="`tip-${index}`"
+              :to="`/${item.category}/${item.slug}`"
               class="tip-item"
             >
               <div class="tip-category" :class="sportClass(item.sport)">
@@ -434,7 +432,7 @@ const slideMatchOdds = (direction) => {
                 <span>{{ item.time }}</span>
                 <div class="divider"></div>
               </div>
-            </div>
+            </NuxtLink>
           </div>
         </div>
       </div>
@@ -509,6 +507,17 @@ const slideMatchOdds = (direction) => {
   margin-top: 12px;
 }
 
+.tip-item {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition);
+}
+
+.tip-item:hover {
+  transform: translateY(-2px);
+}
+
 .tip-item:not(:last-child) {
   margin-bottom: 32px;
 }
@@ -529,6 +538,10 @@ const slideMatchOdds = (direction) => {
 
 .tip-category.tennis {
   color: var(--blue-primary);
+}
+
+.tip-category.tipovi {
+  color: var(--yellow-primary);
 }
 
 .tip-headline p {

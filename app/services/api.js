@@ -273,6 +273,22 @@ export const addNewsletterEmail = async (email) => {
 };
 
 // Fetch all comments from all pages for a given article
+// Fetch Meridian tipovi articles (category 59)
+export const fetchMeridianTipovi = async (limit = 3) => {
+  try {
+    const response = await apiClient.get('/getArticles', {
+      params: { 
+        'category[]': 59,
+        articleLimit: limit
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching Meridian tipovi:`, error);
+    throw error;
+  }
+};
+
 export const fetchAllComments = async (articleId) => {
   try {
     let allComments = [];
