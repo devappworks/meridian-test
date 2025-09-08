@@ -83,7 +83,7 @@ export default {
         this.errorMessage = "";
       } catch (error) {
         console.error("Error adding newsletter email:", error);
-        this.errorMessage = "Dogodila se greška. Molimo pokušajte ponovo.";
+        this.errorMessage = "Već ste se prijavili na naš bilten.";
       }
     },
   },
