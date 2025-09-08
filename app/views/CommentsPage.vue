@@ -1067,10 +1067,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 8px;
   border-radius: 4px;
   transition: all 0.2s ease;
   position: relative;
+  border-radius: 20px;
 }
 
 .vote-btn img {
@@ -1090,6 +1091,7 @@ export default {
 .vote-btn:hover:not(:disabled) {
   background: var(--bg-40);
   transform: scale(1.05);
+  border-radius: 20px;
 }
 
 .vote-btn:disabled {
@@ -1098,13 +1100,22 @@ export default {
 }
 
 .vote-btn.active.like {
-  background: rgba(74, 222, 128, 0.2);
-  color: #4ade80;
+  background: #4CAF50;
+  border-radius: 20px;
+  padding: 8px 12px;
+  color: #FFFFFF;
 }
 
 .vote-btn.active.dislike {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background: #F44336;
+  border-radius: 20px;
+  padding: 8px 12px;
+  color: #FFFFFF;
+}
+
+.vote-btn.dislike.active img,
+.vote-btn.like.active img {
+  filter: brightness(0) invert(1);
 }
 
 .vote-btn.voting {
@@ -1123,21 +1134,7 @@ export default {
   font-weight: 600;
   color: var(--text-white);
   line-height: 1;
-  min-width: 16px;
   text-align: center;
-  background: var(--bg-30);
-  border-radius: 10px;
-  padding: 2px 6px;
-  margin-left: 2px;
-}
-
-.vote-btn.active .vote-count {
-  color: inherit;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.vote-btn:hover:not(:disabled) .vote-count {
-  background: var(--bg-20);
 }
 
 .read-more {
