@@ -99,6 +99,32 @@ export const postComment = async (articleId, commentData) => {
   }
 };
 
+export const voteComment = async (voteData) => {
+  try {
+    // Get JWT token from localStorage or sessionStorage
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    
+    if (!token) {
+      throw new Error("User not authenticated");
+    }
+
+    const response = await apiClient.post('/writeComment', {
+      action: voteData.action, // 'like' or 'dislike'
+      comment_id: voteData.commentId,
+      ...(voteData.parentCommentId && { parent_comment_id: voteData.parentCommentId })
+    }, {
+      headers: {
+        Authorization: API_KEY,
+        'Jwt-token': token
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error voting on comment:`, error);
+    throw error;
+  }
+};
+
 export const registerUser = async (registrationData) => {
   try {
     const response = await authApiClient.post('/auth/register', {

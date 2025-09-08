@@ -80,8 +80,8 @@
                       >
                         <path
                           d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"
-                        /></svg
-                    ></span>
+                        /></svg>
+                    </span>
                   </button>
                 </div>
                 <div class="comment-content">
@@ -92,11 +92,33 @@
                 </div>
                 <div class="comment-actions">
                   <div class="vote-buttons">
-                    <button class="vote-btn like">
+                    <button 
+                      class="vote-btn like"
+                      :class="{ 
+                        active: hasUserVoted(comment.id, 'like'),
+                        voting: isVoting(comment.id)
+                      }"
+                      @click="handleVote(comment.id, 'like')"
+                      :disabled="isVoting(comment.id) || !isLoggedIn"
+                    >
                       <img src="@/assets/icons/thumbs-up.svg" alt="Like" />
+                      <span class="vote-count">
+                        {{ getVoteCount(comment.id, 'like') }}
+                      </span>
                     </button>
-                    <button class="vote-btn dislike">
+                    <button 
+                      class="vote-btn dislike"
+                      :class="{ 
+                        active: hasUserVoted(comment.id, 'dislike'),
+                        voting: isVoting(comment.id)
+                      }"
+                      @click="handleVote(comment.id, 'dislike')"
+                      :disabled="isVoting(comment.id) || !isLoggedIn"
+                    >
                       <img src="@/assets/icons/thumbs-down.svg" alt="Dislike" />
+                      <span class="vote-count">
+                        {{ getVoteCount(comment.id, 'dislike') }}
+                      </span>
                     </button>
                   </div>
                   <button 
@@ -168,18 +190,6 @@
                         <span class="time">{{ reply.time }}</span>
                       </div>
                     </div>
-                    <button class="reply-btn" @click="startReply(reply.id)">
-                      <span>OSTAVI KOMENTAR</span>
-                      <span class="arrow"
-                        ><svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 320 512"
-                        >
-                          <path
-                            d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"
-                          /></svg
-                      ></span>
-                    </button>
                   </div>
                   <div class="comment-content">
                     <p 
@@ -187,18 +197,40 @@
                       :class="['comment-text', isExpanded(reply.id, true) ? 'expanded' : 'clipped']"
                     >{{ reply.message }}</p>
                   </div>
-                  <div class="comment-actions">
-                    <div class="vote-buttons">
-                      <button class="vote-btn like">
-                        <img src="@/assets/icons/thumbs-up.svg" alt="Like" />
-                      </button>
-                      <button class="vote-btn dislike">
-                        <img
-                          src="@/assets/icons/thumbs-down.svg"
-                          alt="Dislike"
-                        />
-                      </button>
-                    </div>
+                   <div class="comment-actions">
+                     <div class="vote-buttons">
+                       <button 
+                         class="vote-btn like"
+                         :class="{ 
+                           active: hasUserVoted(reply.id, 'like'),
+                           voting: isVoting(reply.id)
+                         }"
+                         @click="handleVote(reply.id, 'like', comment.id)"
+                         :disabled="isVoting(reply.id) || !isLoggedIn"
+                       >
+                         <img src="@/assets/icons/thumbs-up.svg" alt="Like" />
+                         <span class="vote-count">
+                           {{ getVoteCount(reply.id, 'like') }}
+                         </span>
+                       </button>
+                       <button 
+                         class="vote-btn dislike"
+                         :class="{ 
+                           active: hasUserVoted(reply.id, 'dislike'),
+                           voting: isVoting(reply.id)
+                         }"
+                         @click="handleVote(reply.id, 'dislike', comment.id)"
+                         :disabled="isVoting(reply.id) || !isLoggedIn"
+                       >
+                         <img
+                           src="@/assets/icons/thumbs-down.svg"
+                           alt="Dislike"
+                         />
+                         <span class="vote-count">
+                           {{ getVoteCount(reply.id, 'dislike') }}
+                         </span>
+                       </button>
+                     </div>
                     <button 
                       :id="`reply-read-more-${reply.id}`"
                       class="read-more hidden"
@@ -233,7 +265,7 @@
 </template>
 
 <script>
-import { postComment } from "@/services/api";
+import { postComment, voteComment } from "@/services/api";
 
 export default {
   name: "CommentsPage",
@@ -293,6 +325,10 @@ export default {
         type: '', // 'success' or 'error'
         visible: false
       },
+      // Vote tracking
+      votingComments: new Set(), // Track which comments are currently being voted on
+      userVotes: {}, // Track user's votes { commentId: 'like'|'dislike'|null }
+      voteCounts: {}, // Track vote counts { commentId: { likes: 0, dislikes: 0 } }
     };
   },
   mounted() {
@@ -312,16 +348,28 @@ export default {
   },
   computed: {
     formattedComments() {
-      const allComments = this.comments.map((comment) => ({
-        id: comment.id,
-        name: comment.user_name || "Anonymous",
-        time: this.formatDate(comment.publish_date),
-        message: this.stripHtml(comment.content),
-        likes: comment.likes || 0,
-        dislikes: comment.dislikes || 0,
-        parentId: comment.parent_comment_id,
-        replies: [],
-      }));
+      const allComments = this.comments.map((comment) => {
+        const formattedComment = {
+          id: comment.id,
+          name: comment.user_name || "Anonymous",
+          time: this.formatDate(comment.publish_date),
+          message: this.stripHtml(comment.content),
+          likes: comment.likes || 0,
+          dislikes: comment.dislikes || 0,
+          parentId: comment.parent_comment_id,
+          replies: [],
+        };
+
+        // Initialize vote counts for this comment
+        if (!this.voteCounts[comment.id]) {
+          this.voteCounts[comment.id] = {
+            likes: formattedComment.likes,
+            dislikes: formattedComment.dislikes
+          };
+        }
+
+        return formattedComment;
+      });
 
       // Separate top-level comments from replies
       const topLevelComments = allComments.filter(
@@ -679,6 +727,94 @@ export default {
     handleLoadAllComments() {
       this.$emit('load-all-comments');
     },
+
+    // Handle like/dislike vote
+    async handleVote(commentId, action, parentCommentId = null) {
+      if (!this.isLoggedIn) {
+        this.showCommentMessage("Morate biti prijavljeni da biste glasali.", "error");
+        setTimeout(() => {
+          this.$router.push("/prijava");
+        }, 2000);
+        return;
+      }
+
+      // Prevent multiple votes on the same comment simultaneously
+      if (this.votingComments.has(commentId)) {
+        return;
+      }
+
+      // Check if user is changing their vote or voting for the first time
+      const currentVote = this.userVotes[commentId];
+      const isChangingVote = currentVote && currentVote !== action;
+      const isSameVote = currentVote === action;
+
+      // If clicking the same vote, remove the vote
+      if (isSameVote) {
+        action = 'remove';
+      }
+
+      this.votingComments.add(commentId);
+
+      try {
+        await voteComment({
+          action: action,
+          commentId: commentId,
+          parentCommentId: parentCommentId
+        });
+
+        // Update local vote counts and user vote tracking
+        if (action === 'remove') {
+          // Remove vote
+          if (currentVote === 'like') {
+            this.voteCounts[commentId].likes = Math.max(0, this.voteCounts[commentId].likes - 1);
+          } else if (currentVote === 'dislike') {
+            this.voteCounts[commentId].dislikes = Math.max(0, this.voteCounts[commentId].dislikes - 1);
+          }
+          this.userVotes[commentId] = null;
+        } else if (isChangingVote) {
+          // Change vote
+          if (currentVote === 'like') {
+            this.voteCounts[commentId].likes = Math.max(0, this.voteCounts[commentId].likes - 1);
+            this.voteCounts[commentId].dislikes += 1;
+          } else {
+            this.voteCounts[commentId].dislikes = Math.max(0, this.voteCounts[commentId].dislikes - 1);
+            this.voteCounts[commentId].likes += 1;
+          }
+          this.userVotes[commentId] = action;
+        } else {
+          // New vote
+          if (action === 'like') {
+            this.voteCounts[commentId].likes += 1;
+          } else {
+            this.voteCounts[commentId].dislikes += 1;
+          }
+          this.userVotes[commentId] = action;
+        }
+
+        // Vue 3 reactivity handles updates automatically
+
+      } catch (error) {
+        console.error("Error voting on comment:", error);
+        this.showCommentMessage("Već ste glasali.", "error");
+      } finally {
+        this.votingComments.delete(commentId);
+      }
+    },
+
+    // Check if user has voted on a comment
+    hasUserVoted(commentId, voteType) {
+      return this.userVotes[commentId] === voteType;
+    },
+
+    // Check if comment is being voted on
+    isVoting(commentId) {
+      return this.votingComments.has(commentId);
+    },
+
+    // Get vote count for a comment
+    getVoteCount(commentId, voteType) {
+      return this.voteCounts[commentId] ? this.voteCounts[commentId][voteType + 's'] || 0 : 0;
+    },
   },
 };
 </script>
@@ -927,10 +1063,14 @@ export default {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 4px 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .vote-btn img {
@@ -947,9 +1087,57 @@ export default {
   color: var(--red-primary);
 }
 
-.vote-btn.like:hover,
-.vote-btn.dislike:hover {
-  transform: scale(1.1);
+.vote-btn:hover:not(:disabled) {
+  background: var(--bg-40);
+  transform: scale(1.05);
+}
+
+.vote-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.vote-btn.active.like {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.vote-btn.active.dislike {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.vote-btn.voting {
+  opacity: 0.7;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+.vote-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-white);
+  line-height: 1;
+  min-width: 16px;
+  text-align: center;
+  background: var(--bg-30);
+  border-radius: 10px;
+  padding: 2px 6px;
+  margin-left: 2px;
+}
+
+.vote-btn.active .vote-count {
+  color: inherit;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.vote-btn:hover:not(:disabled) .vote-count {
+  background: var(--bg-20);
 }
 
 .read-more {
