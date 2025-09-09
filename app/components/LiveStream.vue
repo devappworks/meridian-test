@@ -85,8 +85,8 @@ export default {
 
 .live-stream-banner {
   width: 100%;
-  height: 280px;
+  height: auto;
   border-radius: 8px;
-  object-fit: cover;
+  object-fit: contain;
 }
 </style>
