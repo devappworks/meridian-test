@@ -113,6 +113,7 @@ export default {
   cursor: pointer;
   transition: var(--transition);
   margin-bottom: -16px;
+  flex-wrap: wrap;
 }
 
 .featured-content:hover {
@@ -169,6 +170,7 @@ export default {
   font-size: 36px;
   line-height: 48px;
   color: var(--text-white);
+  min-width: 204px;
 }
 
 @media screen and (max-width: 1024px) {
