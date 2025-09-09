@@ -1157,7 +1157,7 @@ watch(() => props.slug, () => {
   font-weight: 400;
   font-size: 16px;
   line-height: 130%;
-  text-align: center;
+  text-align: end;
   color: var(--text-25);
   margin-top: 12px;
 }
