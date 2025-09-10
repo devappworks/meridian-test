@@ -63,7 +63,8 @@ export default {
   },
   data() {
     return {
-      windowWidth: typeof window !== "undefined" ? window.innerWidth : 1400,
+      windowWidth: 1200,
+      isClient: false,
     };
   },
   props: {
@@ -115,6 +116,10 @@ export default {
   },
   computed: {
     responsiveColumns() {
+      if (!this.isClient) {
+        return 4; // Default to desktop layout during SSR
+      }
+      
       if (this.windowWidth <= 576) return 1;
       if (this.windowWidth <= 850) return 2;
       if (this.windowWidth <= 1200) return 3;
@@ -155,6 +160,9 @@ export default {
     },
   },
   mounted() {
+    // Mark as client-side and get actual window width
+    this.isClient = true;
+    this.handleResize();
     window.addEventListener("resize", this.handleResize);
   },
   beforeUnmount() {
@@ -370,12 +378,7 @@ export default {
   }
 }
 
-@media screen and (max-width: 1024px) {
-  .grid-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
+/* Fallback CSS for when JavaScript hasn't loaded yet */
 @media screen and (max-width: 576px) {
   .news-grid {
     padding-left: 0;
@@ -385,13 +388,25 @@ export default {
   }
 
   .grid-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
   .ostale-vesti-background {
     padding: 0 16px;
     margin-left: -16px;
     width: 100vw;
+  }
+}
+
+@media screen and (max-width: 850px) and (min-width: 577px) {
+  .grid-container {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media screen and (max-width: 1200px) and (min-width: 851px) {
+  .grid-container {
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 }
 </style>
