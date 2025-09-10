@@ -178,7 +178,8 @@ export default {
         if (response.success) {
           this.successMessage = "Registracija je uspešna! Možete se prijaviti.";
         } else {
-          this.errorMessage = response.message || "Greška pri registraciji.";
+          this.errorMessage = response.result.message || "Greška pri registraciji.";
+          return;
         }
 
         this.resetForm();
