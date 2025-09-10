@@ -291,6 +291,7 @@ form {
   flex-direction: column;
   align-items: center;
   gap: 30px;
+  max-width: 100%;
 }
 
 .form-header {
