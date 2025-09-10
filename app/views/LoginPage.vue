@@ -315,6 +315,7 @@ form {
   font-size: 14px;
   text-align: center;
   margin-bottom: 10px;
+  margin-top: 10px;
 }
 
 .success-message {
@@ -329,6 +330,7 @@ form {
   font-size: 14px;
   text-align: center;
   margin-bottom: 10px;
+  margin-top: 10px;
 }
 
 .form-options {
