@@ -1335,7 +1335,7 @@ a:hover {
 .category {
   font-weight: 400;
   font-size: 14px;
-  line-height: 16px;
+  line-height: 14px;
   color: var(--text-white);
   padding: 8px 12px;
   border-radius: 8px;
@@ -1344,6 +1344,7 @@ a:hover {
   text-align: center;
   white-space: nowrap;
   background-color: var(--bg-70);
+  border: 1px solid transparent;
 }
 
 :deep(.swiper-slide) {
@@ -1722,6 +1723,13 @@ a:hover {
 
   :deep(.swiper-wrapper) {
     gap: 8px;
+  }
+
+  .category.router-link-active,
+  .category.router-link-exact-active {
+    color: #396f85;
+    border-color: #396f85;
+    font-weight: 600;
   }
 }
 </style>
