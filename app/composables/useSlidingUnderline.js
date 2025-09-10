@@ -1,6 +1,6 @@
 import { ref, reactive, nextTick } from 'vue'
 
-export function useSlidingUnderline() {
+export function useSlidingUnderline(breakpoint = null) {
   const underlineStyle = reactive({
     left: '0px',
     width: '0px',
@@ -10,8 +10,20 @@ export function useSlidingUnderline() {
   const containerRef = ref(null)
   const activeItemRef = ref(null)
 
+  // Check if underline should be hidden based on screen width
+  const shouldHideForScreenSize = () => {
+    if (!breakpoint) return false
+    return window.innerWidth <= breakpoint
+  }
+
   const updateUnderlinePosition = () => {
     if (!containerRef.value || !activeItemRef.value) {
+      hideUnderline()
+      return
+    }
+
+    // Hide underline if screen width is at or below breakpoint
+    if (shouldHideForScreenSize()) {
       hideUnderline()
       return
     }
@@ -59,9 +71,8 @@ export function useSlidingUnderline() {
   }
 
   const handleResize = () => {
-    if (containerRef.value && activeItemRef.value) {
-      updateUnderlinePosition()
-    }
+    // Always call updateUnderlinePosition to check screen size and update accordingly
+    updateUnderlinePosition()
   }
 
   // Return methods to manually add/remove resize listener

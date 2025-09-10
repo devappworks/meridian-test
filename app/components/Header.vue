@@ -235,7 +235,7 @@ export default {
     const router = useRouter();
     const route = useRoute();
 
-    // Main navigation underline
+    // Main navigation underline - hide on screens 768px and smaller
     const {
       underlineStyle,
       setContainer,
@@ -244,9 +244,9 @@ export default {
       updateUnderlinePosition,
       addResizeListener,
       removeResizeListener,
-    } = useSlidingUnderline('main');
+    } = useSlidingUnderline(768);
 
-    // Sport categories underline
+    // Sport categories underline - hide on screens 768px and smaller
     const {
       underlineStyle: sportUnderlineStyle,
       setContainer: setSportContainer,
@@ -255,9 +255,9 @@ export default {
       updateUnderlinePosition: updateSportUnderlinePosition,
       addResizeListener: addSportResizeListener,
       removeResizeListener: removeSportResizeListener,
-    } = useSlidingUnderline('sport');
+    } = useSlidingUnderline(768);
 
-    // Mobile navigation underline
+    // Mobile navigation underline - hide on screens 768px and smaller
     const {
       underlineStyle: mobileUnderlineStyle,
       setContainer: setMobileContainer,
@@ -266,7 +266,7 @@ export default {
       updateUnderlinePosition: updateMobileUnderlinePosition,
       addResizeListener: addMobileResizeListener,
       removeResizeListener: removeMobileResizeListener,
-    } = useSlidingUnderline('mobile');
+    } = useSlidingUnderline(768);
 
     const toggleMyNews = () => {
       // Check if user is logged in before allowing navigation
