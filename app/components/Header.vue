@@ -1731,9 +1731,7 @@ a:hover {
 
   .category.router-link-active,
   .category.router-link-exact-active {
-    color: var(--bg-05);
     border-color: var(--bg-20);
-    font-weight: 600;
   }
 }
 </style>
