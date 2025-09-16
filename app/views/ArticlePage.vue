@@ -171,7 +171,7 @@
                 <div class="more-news-content">
                   <div v-html="fifthParagraph" class="text-column"></div>
                   <div class="more-news-column">
-                    <div v-if="loading.relatedNews" class="more-news-grid">
+                    <div v-if="loading.josVestiNews" class="more-news-grid">
                       <div
                         v-for="n in josVestiNews.length"
                         :key="n"
@@ -292,13 +292,13 @@
                   <div
                     class="category"
                     :class="
-                      news.sport
+                      news.category
                         .toLowerCase()
                         .replace('š', 's')
                         .replace('ć', 'c')
                     "
                   >
-                    {{ news.sport }}
+                    {{ news.categoryName.toUpperCase() }}
                   </div>
                   <h3>{{ news.title }}</h3>
                   <div class="timestamp">
@@ -549,6 +549,7 @@ const fetchRelatedNews = async () => {
     );
 
     const relatedArticles = article.value.relatedArticle || [];
+    console.log(relatedArticles, "RELATED ARTICLES");
 
     if (relatedArticles.length > 0) {
       josVestiNews.value = relatedArticles.map((article) => ({
@@ -569,28 +570,27 @@ const fetchRelatedNews = async () => {
     // Still fetch category-based articles for sidebar related news
     const categoryId = article.value.categories.find((cat) =>
       ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
-    )?.id;
+    )?.id || article.value.categories[0].id;
 
-    if (categoryId) {
-      const response = await fetchFromApi(`/getArticles`, {
-        "category[]": categoryId,
-        articleLimit: 8,
-      });
+    const response = await fetchFromApi(`/getArticles`, {
+      "category[]": categoryId,
+      articleLimit: 8,
+    });
 
-      const articles = (response.result.articles || []).filter(
-        (article) => article.slug !== props.slug
-      );
+    const articles = (response.result.articles || []).filter(
+      (article) => article.slug !== props.slug
+    );
 
-      relatedNews.value = articles.slice(0, 3).map((article) => ({
-        id: article.id,
-        title: article.title,
-        date: formatDate(article.date || article.publish_date),
-        sport: sportCategory,
-        url: article.url || null,
-        category: article.categories[0].slug,
-        slug: article.slug,
-      }));
-    }
+    relatedNews.value = articles.slice(0, 3).map((article) => ({
+      id: article.id,
+      title: article.title,
+      date: formatDate(article.date || article.publish_date),
+      sport: sportCategory,
+      url: article.url || null,
+      category: article.categories[0].slug,
+      categoryName: article.categories[0].name,
+      slug: article.slug,
+    }));
 
     loading.value.relatedNews = false;
   } catch (error) {
@@ -958,6 +958,10 @@ watch(() => props.slug, () => {
 </script>
 
 <style scoped>
+.category {
+  color: var(--yellow-primary);
+}
+
 .article-column {
   max-width: 800px;
   margin: 0 auto;
