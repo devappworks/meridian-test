@@ -37,7 +37,7 @@
           </div>
           <input
             type="text"
-            placeholder="Search news, leagues..."
+            placeholder="Pretraga..."
             class="search-input"
             v-model="searchQuery"
             @keyup.enter="fetchFromApi"
