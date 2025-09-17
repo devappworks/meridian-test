@@ -160,7 +160,7 @@ export default {
         // Handle different error types
         if (error.response?.status === 401) {
           this.errorMessage =
-            "Neispravni podaci za prijavu. Molimo proverite email i lozinku.";
+            "Poslat Vam je email sa linkom za resetovanje lozinke.";
         } else if (error.response?.status === 422) {
           this.errorMessage =
             "Nevažeći format podataka. Molimo proverite unos.";
