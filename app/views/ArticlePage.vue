@@ -202,7 +202,7 @@
               <div v-html="afterFifthParagraph" class="article-text"></div>
 
               <!-- Quote block -->
-              <div class="quote-block">
+              <!-- <div class="quote-block">
                 <div class="quote-content">
                   <p>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -217,7 +217,7 @@
                     morbi tristique senectus et netus et malesuada fames ac.
                   </p>
                 </div>
-              </div>
+              </div> -->
 
               <!-- Tags section -->
               <div class="tags-section">

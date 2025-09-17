@@ -101,6 +101,10 @@ export default {
       type: String,
       required: false,
     },
+    tagId: {
+      type: String,
+      required: false,
+    },
   },
   data() {
     return {
@@ -112,6 +116,7 @@ export default {
       isLoading: false,
       hasMorePages: true,
       currentCategoryId: null,
+      currentTagId: null,
       storedCategoryTitle: null, // Store title to persist after URL cleanup
       loading: {
         main: true,
@@ -129,6 +134,11 @@ export default {
     categoryIdFromQuery() {
       // Get category ID from query parameters
       return this.$route.query.categoryId || null;
+    },
+    tagIdFromQuery() {
+      // Get tag ID from query parameters
+      console.log(this.$route.query.tagId, 'this.$route.query.tagId');
+      return this.$route.query.tagId || null;
     },
     displayTitle() {
       // Use stored title first (persists after URL cleanup)
@@ -222,8 +232,16 @@ export default {
         if (candidate) {
           const candidateTitle = candidate.title;
           const webCategories = candidate.web_categories;
+          
+          // Extract tagId from the candidate
+          const tagId = candidate.content?.[0]?.options?.tags?.[0];
+          
           if (Array.isArray(webCategories) && webCategories.length > 0) {
-            return { id: webCategories[0], title: candidateTitle };
+            return { 
+              id: webCategories[0], 
+              title: candidateTitle,
+              tagId: tagId  // ✅ Add tagId to the return object
+            };
           }
           // Some items might define category in sub_menu children
           if (Array.isArray(candidate.sub_menu) && candidate.sub_menu.length) {
@@ -231,9 +249,12 @@ export default {
               (c) => Array.isArray(c?.web_categories) && c.web_categories.length > 0
             );
             if (childWithCategory) {
+              // Also try to get tagId from child
+              const childTagId = childWithCategory.content?.[0]?.options?.tags?.[0];
               return {
                 id: childWithCategory.web_categories[0],
                 title: childWithCategory.title || candidateTitle,
+                tagId: childTagId || tagId  // ✅ Use child tagId or fallback to parent
               };
             }
           }
@@ -251,6 +272,16 @@ export default {
         this.categoryIdFromQuery ||
         this.$route.query.category ||
         this.$route.params.categoryId ||
+        null
+      );
+    },
+
+    getTagId() {
+      // Get tag ID from props, query params, route params, or resolved from slug
+      return (
+        this.tagId ||
+        this.tagIdFromQuery ||
+        this.currentTagId ||  // ✅ Add this line to check stored tagId
         null
       );
     },
@@ -328,8 +359,37 @@ export default {
           articleLimit: 53,
           "category[]": this.currentCategoryId,
         });
+        /* if (this.categoryData.result.articles[0].categories[0].name.toLowerCase().includes(this.displayTitle.toLowerCase())) {
+          console.log('radiiiiiiii');
+        } */
+        console.log(categoryData, "categoryData");
 
-        const allArticles = categoryData.result.articles;
+        // Check if any article doesn't have displayTitle in its categories
+        let needsTagFetch = false;
+        for (const article of categoryData.result.articles) {
+          const hasDisplayTitle = article.categories.some(cat => 
+            cat.name.toLowerCase().includes(this.displayTitle.toLowerCase())
+          );
+          if (!hasDisplayTitle) {
+            needsTagFetch = true;
+            break;
+          }
+        }
+
+        // If we found an article without displayTitle in categories, fetch using tags
+        let finalArticles = categoryData.result.articles;
+        if (needsTagFetch) {
+          console.log('radiiiiiiii');
+          this.currentTagId = this.getTagId();
+          console.log(this.currentTagId, 'this.currentTagId');
+          const tagData = await fetchFromApi("/getArticles", {
+            articleLimit: 53,
+            "tag[]": this.currentTagId,
+          });
+          finalArticles = tagData.result.articles;
+        }
+
+        const allArticles = finalArticles;
 
         if (allArticles.length > 0) {
           // Main category news grid (first 12 articles)
@@ -481,6 +541,12 @@ export default {
         const resolved = await this.resolveCategoryFromSlug(this.slug);
         if (resolved && resolved.id) {
           this.currentCategoryId = resolved.id;
+          
+          // ✅ Store the tagId if it was resolved
+          if (resolved.tagId) {
+            this.currentTagId = resolved.tagId;
+          }
+          
           if (!this.storedCategoryTitle && resolved.title) {
             this.storedCategoryTitle = resolved.title;
           }
@@ -499,6 +565,11 @@ export default {
       };
     },
 
+    async initializeTag() {
+      this.currentTagId = this.getTagId();
+      return;
+    },
+
     cleanUpUrl() {
       // Remove query parameters from URL while keeping the functionality
       if (this.$route.query.categoryId || this.$route.query.title) {
@@ -510,7 +581,7 @@ export default {
           (this.currentCategoryId || this.storedCategoryTitle)
         ) {
           // Use browser History API instead of Vue Router to avoid triggering watchers
-          const cleanUrl = `/sport/${currentSlug}`;
+          const cleanUrl = `${currentSlug}`;
           window.history.replaceState(null, "", cleanUrl);
         }
       }
@@ -524,6 +595,7 @@ export default {
   },
   mounted() {
     this.initializeCategory();
+    this.initializeTag();
   },
   watch: {
     // Watch for route changes to handle navigation between categories
@@ -534,6 +606,7 @@ export default {
         this.resetNews();
         this.storedCategoryTitle = null; // Clear stored title for new route
         this.initializeCategory();
+        this.initializeTag();
       }
     },
     // Watch for prop changes
@@ -541,6 +614,11 @@ export default {
       this.resetNews();
       this.storedCategoryTitle = null; // Clear stored title for new category
       this.initializeCategory();
+    },
+    tagId() {
+      this.resetNews();
+      this.storedCategoryTitle = null; // Clear stored title for new category
+      this.initializeTag();
     },
   },
 };
