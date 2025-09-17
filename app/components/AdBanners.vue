@@ -41,7 +41,7 @@
     </div>
 
     <!-- Bottom video placeholders -->
-    <div class="ad-section bottom-banners">
+    <!-- <div class="ad-section bottom-banners">
       <div class="ad-banner video-placeholder">
         <div class="video-mock">
           <div class="play-button">
@@ -74,7 +74,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
