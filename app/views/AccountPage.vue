@@ -70,13 +70,13 @@
               label="Ime"
               v-model="formData.firstName"
               type="text"
-              placeholder=""
+              :placeholder="DBFormData.firstName"
             />
             <FormField
               label="Prezime"
               v-model="formData.lastName"
               type="text"
-              placeholder=""
+              :placeholder="DBFormData.lastName"
             />
           </div>
 
@@ -85,13 +85,13 @@
               label="Broj telefona"
               v-model="formData.phoneNumber"
               type="tel"
-              placeholder=""
+              :placeholder="DBFormData.phoneNumber"
             />
             <FormField
               label="Grad"
               v-model="formData.city"
               type="text"
-              placeholder=""
+              :placeholder="DBFormData.city"
             />
           </div>
         </div>
@@ -151,7 +151,7 @@
 
 <script>
 import FormField from "@/components/FormField.vue";
-import { updateUserProfile, updateUserPassword } from "@/services/api.js";
+import { updateUserProfile, updateUserPassword, fetchUserData } from "@/services/api.js";
 
 export default {
   name: "AccountPage",
@@ -167,6 +167,13 @@ export default {
         lastName: "",
         email: "",
         password: "",
+        phoneNumber: "",
+        city: "",
+      },
+      DBFormData: {
+        firstName: "",
+        lastName: "",
+        email: "",
         phoneNumber: "",
         city: "",
       },
@@ -188,6 +195,7 @@ export default {
       this.updateUnderlinePosition();
     });
     window.addEventListener("resize", this.updateUnderlinePosition);
+    this.fetchUserData();
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.updateUnderlinePosition);
@@ -200,6 +208,27 @@ export default {
     },
   },
   methods: {
+    async fetchUserData() {
+      const jwtToken =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      const response = await fetchUserData(jwtToken);
+      console.log("response", response);
+      const userResponse = response.result.user;
+      
+      // Update the component's DBFormData property
+      this.DBFormData = {
+        firstName: userResponse.first_name,
+        lastName: userResponse.last_name,
+        email: userResponse.email,
+        phoneNumber: userResponse.phone_number,
+        city: userResponse.city,
+      };
+      
+      // Also update the profile picture
+      this.profilePicture = response.profile_picture;
+      
+      console.log("DBFormData", this.DBFormData);
+    },
     switchTab(tab) {
       this.activeTab = tab;
       this.$nextTick(() => {
