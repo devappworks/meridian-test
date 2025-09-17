@@ -165,9 +165,10 @@ const sportClass = (sport) => {
 };
 
 // SSR Data Fetching
-const { data: featuredData, pending: featuredPending } = await useAsyncData('homepage-featured', () => 
-  fetchFromApi('/getHomepageFeaturedArticles')
-);
+const { data: featuredData, pending: featuredPending } = await useAsyncData('homepage-featured', async () => {
+  const data = await fetchFromApi('/getHomepageFeaturedArticles');
+  return data;
+});
 
 const { data: latestArticlesData, pending: latestPending } = await useAsyncData('homepage-latest', () => 
   fetchFromApi('/getArticles')
@@ -204,7 +205,7 @@ if (featuredData.value?.result.articles?.length > 0) {
       slug: featuredArticles[0].slug || '',
     };
     
-    latestNewsGrid.value = featuredArticles.slice(1, 9).map(mapArticleData).filter(Boolean);
+    latestNewsGrid.value = featuredArticles.slice(1, featuredArticles.length).map(mapArticleData).filter(Boolean);
   }
 }
 
