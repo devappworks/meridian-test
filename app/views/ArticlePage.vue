@@ -552,6 +552,7 @@ const fetchRelatedNews = async () => {
     console.log(relatedArticles, "RELATED ARTICLES");
 
     if (relatedArticles.length > 0) {
+      console.log(josVestiNews, "JOS VESTI NEWS");
       josVestiNews.value = relatedArticles.map((article) => ({
         id: article.id,
         title: article.title,
@@ -804,7 +805,7 @@ const navigateToArticle = (id) => {
   console.log(foundInJos, "FOUND IN JOS");
   const foundInRelated = relatedNews.value.find((a) => a.id === id)
   console.log(foundInRelated, "FOUND IN RELATED");
-  const target = `/${foundInRelated.category}/${foundInRelated.slug}` || `/${foundInJos.category}/${foundInJos.slug}`
+  const target = `/${foundInJos.category}/${foundInJos.slug}` || `/${foundInRelated.category}/${foundInRelated.slug}`;
   console.log(target, "TARGET");
   
   console.log("🔴 ArticlePage navigating to:", target);
