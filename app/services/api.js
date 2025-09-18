@@ -289,6 +289,18 @@ export const fetchMeridianTipovi = async (limit = 3) => {
   }
 };
 
+export const resetPasswordViaEmail = async (email) => {
+  try {
+    const response = await authApiClient.post('/resetPasswordViaEmail', {
+      email: email
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error resetting password via email:`, error);
+    throw error;
+  }
+};
+
 export const fetchAllComments = async (articleId) => {
   try {
     let allComments = [];

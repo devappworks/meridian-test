@@ -67,7 +67,17 @@
               />
               <label for="rememberMe" class="checkbox-label">Zapamti me</label>
             </div>
-            <a href="#" class="forgot-password">Zaboravio/la si lozinku</a>
+            <div class="forgot-password-wrapper">
+              <button type="button" class="forgot-password" @click="handleForgotPassword" @mouseenter="showTooltip" @mouseleave="hideTooltip" :disabled="isLoading || !formData.email">Zaboravio/la si lozinku</button>
+              <!-- Tooltip -->
+              <div
+                v-if="!formData.email"
+                class="tooltip"
+                :class="{ show: isTooltipVisible }"
+              >
+                Unesite Vašu email adresu u polje za email kako bi dobili link za resetovanje šifre.
+              </div>
+            </div>
           </div>
 
           <!-- Submit Button and Registration Link -->
@@ -90,7 +100,7 @@
 </template>
 
 <script>
-import { loginUser, fetchUserData } from "@/services/api";
+import { loginUser, fetchUserData, resetPasswordViaEmail } from "@/services/api";
 
 export default {
   name: "LoginPage",
@@ -105,6 +115,8 @@ export default {
       errorMessage: "",
       successMessage: "",
       showPassword: false,
+      isResettingPassword: false,
+      isTooltipVisible: false,
     };
   },
   methods: {
@@ -175,6 +187,55 @@ export default {
     },
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword;
+    },
+    showTooltip() {
+      this.isTooltipVisible = true;
+    },
+    hideTooltip() {
+      this.isTooltipVisible = false;
+    },
+    async handleForgotPassword() {
+      // Validate email before proceeding
+      if (!this.formData.email) {
+        this.errorMessage = "Molimo unesite email adresu pre nego što zatražite resetovanje lozinke.";
+        return;
+      }
+
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(this.formData.email)) {
+        this.errorMessage = "Molimo unesite važeću email adresu.";
+        return;
+      }
+
+      this.isResettingPassword = true;
+      this.errorMessage = "";
+      this.successMessage = "";
+
+      try {
+        const response = await resetPasswordViaEmail(this.formData.email);
+        
+        if (response.success) {
+          this.successMessage = "Poslat Vam je email sa linkom za resetovanje lozinke. Molimo proverite vašu email poštu.";
+        } else {
+          this.errorMessage = response.message || "Došlo je do greške prilikom slanja email-a. Molimo pokušajte ponovo.";
+        }
+      } catch (error) {
+        console.error("Reset password error:", error);
+        
+        // Handle different error types
+        if (error.response?.status === 404) {
+          this.errorMessage = "Email adresa nije pronađena u našoj bazi podataka.";
+        } else if (error.response?.status === 422) {
+          this.errorMessage = "Nevažeći format email adrese.";
+        } else if (error.response?.status >= 500) {
+          this.errorMessage = "Greška na serveru. Molimo pokušajte kasnije.";
+        } else {
+          this.errorMessage = "Došlo je do greške. Molimo pokušajte ponovo.";
+        }
+      } finally {
+        this.isResettingPassword = false;
+      }
     },
   },
 };
@@ -385,6 +446,22 @@ form {
   line-height: 18px;
   text-decoration: underline;
   color: var(--yellow-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: var(--transition);
+}
+
+.forgot-password:hover:not(:disabled) {
+  color: #e6b800;
+  text-decoration: none;
+}
+
+.forgot-password:disabled {
+  color: #666;
+  cursor: not-allowed;
+  text-decoration: none;
 }
 
 .form-actions {
@@ -506,5 +583,48 @@ form {
   .form-header h2 {
     font-size: 18px;
   }
+}
+
+/* Tooltip styles for forgot password button */
+.forgot-password-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-50);
+  color: var(--text-white);
+  padding: 10px;
+  border-radius: 8px;
+  font-family: var(--actions);
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: normal;
+  border: 1px solid var(--bg-20);
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+  z-index: 1000;
+  max-width: 250px;
+  text-align: center;
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--bg-20);
+}
+
+.tooltip.show {
+  opacity: 1;
+  visibility: visible;
 }
 </style>
