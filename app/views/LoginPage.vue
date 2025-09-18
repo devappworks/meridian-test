@@ -593,7 +593,7 @@ form {
 
 .tooltip {
   position: absolute;
-  bottom: calc(100% + 12px);
+  top: calc(100% + 12px);
   left: 50%;
   transform: translateX(-50%);
   background-color: var(--bg-50);
@@ -611,16 +611,17 @@ form {
   z-index: 1000;
   max-width: 250px;
   text-align: center;
+  width: max-content;
 }
 
 .tooltip::after {
   content: "";
   position: absolute;
-  top: 100%;
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
   border: 6px solid transparent;
-  border-top-color: var(--bg-20);
+  border-bottom-color: var(--bg-20);
 }
 
 .tooltip.show {
