@@ -128,6 +128,8 @@
                 :spaceBetween="8"
                 :freeMode="true"
                 :mousewheel="false"
+                :slidesOffsetAfter="120"
+                :slidesOffsetBefore="0"
                 :modules="swiperModules"
                 @swiper="onSwiperInit"
                 @slideChange="onSlideChange"
