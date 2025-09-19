@@ -334,18 +334,14 @@ export default {
       helperNavigationItems: [], // Add this new property
       isNavigationLoading: true,
       hasSportCategoryClicked: false,
-      sportMenuData: {
-        football: null,
-        basketball: null,
-        tennis: null,
-        volleyball: null,
-      },
-      currentCategories: {
-        football: 28,
-        basketball: 25,
-        tennis: 41,
-        volleyball: 30,
-      },
+      // Dynamic sport menu data - will be populated based on API response
+      sportMenuData: {},
+      // Dynamic current categories - will be populated based on API response
+      currentCategories: {},
+      // Dynamic sport mapping - maps route paths to sport keys
+      sportRouteMapping: {},
+      // Store category listener references for cleanup
+      categoryListeners: [],
     };
   },
   computed: {
@@ -356,24 +352,96 @@ export default {
       return this.swiper && !this.isEnd;
     },
     isCategoryPage() {
+      // Check if current route matches navigation items with submenus
       const categoryRoutes = this.navigationItems.filter(item => item.has_submenu).map(item => item.href);
       const currentRoute = this.$route.path.split("/").pop();
-      return categoryRoutes.includes(currentRoute);
+      
+      // First check: direct route match
+      if (categoryRoutes.includes(currentRoute)) {
+        return true;
+      }
+      
+      // Second check: if we have sport menu data for the current route (category page via slug)
+      if (this.currentSport && this.sportMenuData[this.currentSport]) {
+        return true;
+      }
+      
+      // Third check: check if the route has category-related query parameters
+      if (this.$route.query.categoryId && this.$route.query.title) {
+        return true;
+      }
+      
+      // Fourth check: check if current route matches any sport route mapping
+      const currentPath = this.$route.path;
+      if (this.sportRouteMapping[currentPath]) {
+        return true;
+      }
+      
+      return false;
     },
     currentSport() {
-      const sportMap = {
-        "/fudbal": "football",
-        "/kosarka": "basketball",
-        "/odbojka": "volleyball",
-        "/tenis": "tennis",
-      };
-      return sportMap[this.$route.path] || null;
+      // Use dynamic route mapping instead of hardcoded sport map
+      const mappedSport = this.sportRouteMapping[this.$route.path];
+      if (mappedSport) {
+        return mappedSport;
+      }
+      
+      // If no direct mapping, try to find sport based on route query parameters or slug
+      if (this.$route.query.categoryId) {
+        // Find which sport menu contains this categoryId
+        for (const [sportKey, menuData] of Object.entries(this.sportMenuData)) {
+          if (menuData.web_categories?.includes(parseInt(this.$route.query.categoryId))) {
+            return sportKey;
+          }
+          if (menuData.sub_menu) {
+            for (const subMenu of menuData.sub_menu) {
+              if (subMenu.web_categories?.includes(parseInt(this.$route.query.categoryId))) {
+                return sportKey;
+              }
+            }
+          }
+        }
+      }
+      
+      // If still no match, try to match based on route slug/title
+      const routeSlug = this.$route.path.split('/').pop();
+      const routeTitle = this.$route.query.title;
+      
+      if (routeSlug || routeTitle) {
+        for (const [sportKey, menuData] of Object.entries(this.sportMenuData)) {
+          // Check if the slug matches the menu item title
+          const menuSlug = this.generateSlugFromTitle(menuData.title);
+          if (routeSlug === menuSlug) {
+            return sportKey;
+          }
+          
+          // Check submenu items
+          if (menuData.sub_menu) {
+            for (const subMenu of menuData.sub_menu) {
+              const subMenuSlug = this.generateSlugFromTitle(subMenu.title);
+              if (routeSlug === subMenuSlug || routeTitle === subMenu.title) {
+                return sportKey;
+              }
+            }
+          }
+        }
+      }
+      
+      return null;
     },
     currentSportMenuData() {
       return this.currentSport ? this.sportMenuData[this.currentSport] : null;
     },
     currentSportCategory() {
-      return this.currentSport ? this.currentCategories[this.currentSport] : 28;
+      if (!this.currentSport) return null;
+      
+      // If we have a categoryId in the route query, use that as the current category
+      if (this.$route.query.categoryId) {
+        return parseInt(this.$route.query.categoryId);
+      }
+      
+      // Otherwise, fall back to the stored current category
+      return this.currentCategories[this.currentSport] || null;
     },
   },
   mounted() {
@@ -398,43 +466,15 @@ export default {
       }, 100);
     });
 
-    // Listen for category updates from all sport pages
-    window.addEventListener(
-      "football-category-updated",
-      this.handleCategoryUpdate
-    );
-    window.addEventListener(
-      "basketball-category-updated",
-      this.handleCategoryUpdate
-    );
-    window.addEventListener(
-      "tennis-category-updated",
-      this.handleCategoryUpdate
-    );
-    window.addEventListener(
-      "volleyball-category-updated",
-      this.handleCategoryUpdate
-    );
+    // Dynamic category listeners are now setup in processNavigationItems()
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.updateVisibility);
     window.removeEventListener("storage", this.checkUserLoggedIn);
-    window.removeEventListener(
-      "football-category-updated",
-      this.handleCategoryUpdate
-    );
-    window.removeEventListener(
-      "basketball-category-updated",
-      this.handleCategoryUpdate
-    );
-    window.removeEventListener(
-      "tennis-category-updated",
-      this.handleCategoryUpdate
-    );
-    window.removeEventListener(
-      "volleyball-category-updated",
-      this.handleCategoryUpdate
-    );
+    
+    // Remove dynamic category listeners
+    this.removeDynamicCategoryListeners();
+    
     this.removeResizeListener();
     this.removeSportResizeListener();
     this.removeMobileResizeListener();
@@ -452,48 +492,8 @@ export default {
         ) {
           this.navigationItems = response.result.languages[0].web_menu || [];
 
-          // Extract football menu data for CategoryPageNav
-          const footballMenu = this.navigationItems.find(
-            (menu) => menu.title === "FUDBAL"
-          );
-          if (footballMenu) {
-            this.sportMenuData.football = footballMenu;
-            if (footballMenu.web_categories?.length > 0) {
-              this.currentCategories.football = footballMenu.web_categories[0];
-            }
-          }
-
-          const basketballMenu = this.navigationItems.find(
-            (menu) => menu.title === "KOŠARKA"
-          );
-          if (basketballMenu) {
-            this.sportMenuData.basketball = basketballMenu;
-            if (basketballMenu.web_categories?.length > 0) {
-              this.currentCategories.basketball =
-                basketballMenu.web_categories[0];
-            }
-          }
-
-          const tennisMenu = this.navigationItems.find(
-            (menu) => menu.title === "TENIS"
-          );
-          if (tennisMenu) {
-            this.sportMenuData.tennis = tennisMenu;
-            if (tennisMenu.web_categories?.length > 0) {
-              this.currentCategories.tennis = tennisMenu.web_categories[0];
-            }
-          }
-
-          const volleyballMenu = this.navigationItems.find(
-            (menu) => menu.title === "ODBOJKA"
-          );
-          if (volleyballMenu) {
-            this.sportMenuData.volleyball = volleyballMenu;
-            if (volleyballMenu.web_categories?.length > 0) {
-              this.currentCategories.volleyball =
-                volleyballMenu.web_categories[0];
-            }
-          }
+          // Dynamically process all navigation items with submenus
+          this.processNavigationItems();
         }
       } catch (error) {
         console.error("Error fetching navigation data:", error);
@@ -549,10 +549,61 @@ export default {
             sub_menu: [],
           },
         ];
+        
+        // Process fallback navigation items
+        this.processNavigationItems();
       } finally {
         this.isNavigationLoading = false;
         // Don't setup underline here - it's handled in mounted() now
       }
+    },
+
+    /**
+     * Dynamically process navigation items to create sport menu data and route mapping
+     */
+    processNavigationItems() {
+      // Reset dynamic data structures
+      this.sportMenuData = {};
+      this.currentCategories = {};
+      this.sportRouteMapping = {};
+
+      // Process each navigation item
+      this.navigationItems.forEach((menuItem) => {
+        if (menuItem.has_submenu && menuItem.web_categories?.length > 0) {
+          // Generate a unique key for this sport/menu item
+          const sportKey = this.generateSportKey(menuItem.title);
+          
+          // Store menu data
+          this.sportMenuData[sportKey] = menuItem;
+          
+          // Set initial category (first one in the list)
+          this.currentCategories[sportKey] = menuItem.web_categories[0];
+          
+          // Create route mapping if href exists
+          if (menuItem.href) {
+            const routePath = this.generateRouteFromHref(menuItem.href);
+            this.sportRouteMapping[routePath] = sportKey;
+          }
+        }
+      });
+
+      // Setup dynamic category listeners after processing navigation items
+      this.setupDynamicCategoryListeners();
+    },
+
+    /**
+     * Generate a consistent sport key from menu title
+     */
+    generateSportKey(title) {
+      return title
+        .toLowerCase()
+        .replace(/š/g, "s")
+        .replace(/č/g, "c")
+        .replace(/ć/g, "c")
+        .replace(/ž/g, "z")
+        .replace(/đ/g, "d")
+        .replace(/\s+/g, "_")
+        .replace(/[^a-z0-9_]/g, "");
     },
     async fetchHelperNavigationData() {
       try {
@@ -812,16 +863,48 @@ export default {
         }
       }
 
+      // NEW: If we're on a category page, find the parent sport navigation item
+      if (!activeLink && this.currentSport && this.isCategoryPage) {
+        const currentSportMenuData = this.currentSportMenuData;
+        if (currentSportMenuData && currentSportMenuData.href) {
+          // Find the navigation link that matches the current sport
+          for (let link of allLinks) {
+            const href = link.getAttribute("href");
+            const sportHref = this.generateRouteFromHref(currentSportMenuData.href);
+            if (href === sportHref) {
+              activeLink = link;
+              console.log(`Main nav: Found parent sport link for category page: ${currentSportMenuData.title}`);
+              break;
+            }
+          }
+        }
+      }
+
       // If still no match found, try one more time with a small delay
       // This handles cases where router-link classes haven't been applied yet
       if (!activeLink) {
         setTimeout(() => {
           const finalActiveLink = navContainer.querySelector("a.active");
           
-          
           if (finalActiveLink) {
             this.setActiveItem(finalActiveLink);
           } else {
+            // Try the category page logic again with a delay
+            if (this.currentSport && this.isCategoryPage) {
+              const currentSportMenuData = this.currentSportMenuData;
+              if (currentSportMenuData && currentSportMenuData.href) {
+                const allLinksDelayed = navContainer.querySelectorAll("a");
+                for (let link of allLinksDelayed) {
+                  const href = link.getAttribute("href");
+                  const sportHref = this.generateRouteFromHref(currentSportMenuData.href);
+                  if (href === sportHref) {
+                    this.setActiveItem(link);
+                    console.log(`Main nav (delayed): Found parent sport link: ${currentSportMenuData.title}`);
+                    return;
+                  }
+                }
+              }
+            }
             this.hideUnderline();
           }
         }, 50);
@@ -976,16 +1059,106 @@ export default {
     handleCategoryChange(categoryId) {
       if (!this.currentSport) return;
 
+      // Update the stored current category for this sport
       this.currentCategories[this.currentSport] = categoryId;
 
-      // Emit a global event that the current sport page can listen to
-      const eventName = `${this.currentSport}-category-changed`;
-      window.dispatchEvent(
-        new CustomEvent(eventName, {
-          detail: { categoryId },
-        })
-      );
+      console.log("handleCategoryChange - categoryId:", categoryId);
+      console.log("handleCategoryChange - currentSport:", this.currentSport);
+      console.log("handleCategoryChange - updated currentCategories:", this.currentCategories[this.currentSport]);
+
+      // Find the menu item and subcategory that corresponds to this categoryId
+      const currentMenuData = this.currentSportMenuData;
+      let targetTitle = null;
+      let targetSlug = null;
+
+      if (currentMenuData) {
+        // Check if it's the main category
+        if (currentMenuData.web_categories && currentMenuData.web_categories.includes(categoryId)) {
+          targetTitle = currentMenuData.title;
+          targetSlug = this.generateSlugFromTitle(currentMenuData.title);
+        } else if (currentMenuData.sub_menu) {
+          // Check subcategories
+          for (const subMenu of currentMenuData.sub_menu) {
+            if (subMenu.web_categories && subMenu.web_categories.includes(categoryId)) {
+              targetTitle = subMenu.title;
+              targetSlug = this.generateSlugFromTitle(subMenu.title);
+              break;
+            }
+          }
+        }
+      }
+
+      // Navigate to the category page with the appropriate route
+      if (targetSlug) {
+        const route = {
+          path: `/${targetSlug}`,
+          query: {
+            categoryId: categoryId,
+            title: targetTitle,
+          },
+        };
+        
+        console.log('Navigating to category page:', route);
+        
+        // Check if we're already on the target route to avoid unnecessary navigation
+        const currentPath = this.$route.path;
+        const targetPath = route.path;
+        
+        if (currentPath === targetPath) {
+          // Already on the same page, just emit the event to update content
+          const eventName = `${this.currentSport}-category-changed`;
+          console.log("Already on target page, emitting event:", eventName);
+          window.dispatchEvent(
+            new CustomEvent(eventName, {
+              detail: { categoryId, sport: this.currentSport },
+            })
+          );
+          // Update main navigation underline to ensure parent sport is highlighted
+          this.$nextTick(() => {
+            this.updateActiveUnderline();
+          });
+        } else {
+          // Navigate to the category page
+          this.$router.push(route);
+        }
+      } else {
+        // Fallback: emit event for current page to handle (if already on category page)
+        const eventName = `${this.currentSport}-category-changed`;
+        console.log("eventName", eventName);
+        window.dispatchEvent(
+          new CustomEvent(eventName, {
+            detail: { categoryId, sport: this.currentSport },
+          })
+        );
+      }
     },
+    /**
+     * Setup dynamic category listeners for all sports
+     */
+    setupDynamicCategoryListeners() {
+      // Store listener references for cleanup
+      this.categoryListeners = [];
+      
+      // Create listeners for each sport in the dynamic data
+      Object.keys(this.sportMenuData).forEach(sportKey => {
+        const eventName = `${sportKey}-category-updated`;
+        this.categoryListeners.push(eventName);
+        window.addEventListener(eventName, this.handleCategoryUpdate);
+      });
+    },
+
+    /**
+     * Remove dynamic category listeners
+     */
+    removeDynamicCategoryListeners() {
+      if (this.categoryListeners) {
+        this.categoryListeners.forEach(eventName => {
+          window.removeEventListener(eventName, this.handleCategoryUpdate);
+        });
+        this.categoryListeners = [];
+      }
+    },
+
     handleCategoryUpdate(event) {
       const { categoryId } = event.detail;
       const eventType = event.type;
@@ -1019,6 +1192,22 @@ export default {
           this.setupSlidingUnderline();
           this.setupSportCategoriesUnderline();
           this.setupMobileNavUnderline();
+        }, 50);
+      });
+    },
+    currentSport() {
+      // Update main navigation underline when current sport changes
+      this.$nextTick(() => {
+        setTimeout(() => {
+          this.updateActiveUnderline();
+        }, 50);
+      });
+    },
+    isCategoryPage() {
+      // Update main navigation underline when entering/leaving category pages
+      this.$nextTick(() => {
+        setTimeout(() => {
+          this.updateActiveUnderline();
         }, 50);
       });
     },

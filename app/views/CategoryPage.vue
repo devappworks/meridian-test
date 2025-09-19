@@ -116,8 +116,12 @@ export default {
       isLoading: false,
       hasMorePages: true,
       currentCategoryId: null,
+      sport: null,
       currentTagId: null,
       storedCategoryTitle: null, // Store title to persist after URL cleanup
+      currentEventName: null, // Store current event listener name
+      eventHandler: null, // Store bound event handler reference
+      menuData: null, // Store navigation menu data
       loading: {
         main: true,
         loadMore: false,
@@ -141,28 +145,62 @@ export default {
       return this.$route.query.tagId || null;
     },
     displayTitle() {
+      let title;
+      
+      // First priority: Get title from active navigation item
+      const activeNavTitle = this.getActiveNavigationTitle();
+      if (activeNavTitle) {
+        title = activeNavTitle;
+        console.log('DisplayTitle from active navigation:', title);
+        return title;
+      }
+      
       // Use stored title first (persists after URL cleanup)
       if (this.storedCategoryTitle) {
-        return this.storedCategoryTitle;
+        title = this.storedCategoryTitle;
+        console.log('DisplayTitle from storedCategoryTitle:', title);
+        return title;
       }
 
       // Use title from query params if available
       if (this.categoryTitleFromQuery) {
-        return this.categoryTitleFromQuery;
+        title = this.categoryTitleFromQuery;
+        console.log('DisplayTitle from categoryTitleFromQuery:', title);
+        return title;
       }
 
       // Fallback: convert slug back to readable title
       if (this.slug) {
-        return this.slug
+        title = this.slug
           .split("-")
           .map((word) => word.toUpperCase())
           .join(" ");
+        console.log('DisplayTitle from slug:', title);
+        return title;
       }
 
-      return "VESTI";
+      title = "VESTI";
+      console.log('DisplayTitle fallback:', title);
+      return title;
     },
   },
   methods: {
+    getActiveNavigationTitle() {
+      // Return the title of the currently active navigation item
+      if (!this.menuData || !this.currentCategoryId) return null;
+      
+      // Only check subcategories
+      if (this.menuData.sub_menu) {
+        for (const subMenu of this.menuData.sub_menu) {
+          if (subMenu.web_categories && subMenu.web_categories.includes(this.currentCategoryId)) {
+            return subMenu.title;
+          }
+        }
+      }
+      
+      return null;
+    },
+
     slugifyTitle(title) {
       // Mirror header's slug generation for reliable matching
       return title
@@ -190,6 +228,57 @@ export default {
         }
       }
       return null;
+    },
+
+    async loadMenuData() {
+      // Load menu data to determine active navigation titles
+      try {
+        const [helperNavRes, webSettingsRes] = await Promise.all([
+          fetchFromApi("getHelperNav"),
+          fetchFromApi("getWebSettings"),
+        ]);
+
+        // Helper nav: locate the 'help-nav' container and search its sub_menu
+        let helperItems = [];
+        if (
+          helperNavRes?.success &&
+          helperNavRes.result?.languages &&
+          helperNavRes.result.languages.length > 0
+        ) {
+          const helpMenu = helperNavRes.result.languages[0].web_menu?.find(
+            (it) => it.title === "help-nav"
+          );
+          if (helpMenu && Array.isArray(helpMenu.sub_menu)) {
+            helperItems = helpMenu.sub_menu;
+          }
+        }
+
+        // Main web settings menu items
+        let webMenuItems = [];
+        if (
+          webSettingsRes?.success &&
+          webSettingsRes.result?.languages &&
+          webSettingsRes.result.languages.length > 0
+        ) {
+          webMenuItems = webSettingsRes.result.languages[0].web_menu || [];
+        }
+
+        // Find the current menu item based on slug or categoryId
+        const currentSlug = this.slug;
+        let currentMenuItem = null;
+        
+        if (currentSlug) {
+          currentMenuItem = this.findItemBySlug(helperItems, currentSlug) ||
+                           this.findItemBySlug(webMenuItems, currentSlug);
+        }
+        
+        // Store the menu data for the active navigation title lookup
+        this.menuData = currentMenuItem;
+        
+      } catch (e) {
+        console.error("Error loading menu data:", e);
+        this.menuData = null;
+      }
     },
 
     async resolveCategoryFromSlug(slug) {
@@ -235,6 +324,9 @@ export default {
           
           // Extract tagId from the candidate
           const tagId = candidate.content?.[0]?.options?.tags?.[0];
+          
+          // Store the menu data for navigation title lookup
+          this.menuData = candidate;
           
           if (Array.isArray(webCategories) && webCategories.length > 0) {
             return { 
@@ -320,6 +412,30 @@ export default {
       return sportCategory ? sportMap[sportCategory.name] : this.displayTitle;
     },
 
+    deriveSportFromContext() {
+      // Derive sport from stored title, query params, or slug
+      let sportSource = this.storedCategoryTitle || this.categoryTitleFromQuery || this.slug;
+      
+      if (sportSource) {
+        const sportLower = sportSource.toLowerCase();
+        
+        if (sportLower.includes("fudbal") || sportLower.includes("football")) {
+          return "fudbal";
+        } else if (sportLower.includes("košarka") || sportLower.includes("basketball") || sportLower.includes("kosarka")) {
+          return "kosarka";
+        } else if (sportLower.includes("tenis") || sportLower.includes("tennis")) {
+          return "tenis";
+        } else if (sportLower.includes("odbojka") || sportLower.includes("volleyball")) {
+          return "odbojka";
+        } else {
+          // Default to slug or a general sport identifier
+          return this.slug || "default";
+        }
+      }
+      
+      return "default";
+    },
+
     mapArticle(article) {
       return {
         id: article.id,
@@ -362,7 +478,11 @@ export default {
         /* if (this.categoryData.result.articles[0].categories[0].name.toLowerCase().includes(this.displayTitle.toLowerCase())) {
           console.log('radiiiiiiii');
         } */
-        console.log(categoryData, "categoryData");
+        console.log(categoryData, "categoryData1111111111111");
+
+        console.log(categoryData.result.articles, "article.categories1111111111111");
+
+        console.log("this.displayTitle1111111111111", this.displayTitle);
 
         // Check if any article doesn't have displayTitle in its categories
         let needsTagFetch = false;
@@ -370,14 +490,20 @@ export default {
           const hasDisplayTitle = article.categories.some(cat => 
             cat.name.toLowerCase().includes(this.displayTitle.toLowerCase())
           );
+          console.log(hasDisplayTitle, "hasDisplayTitle1111111111111");
+          console.log(!hasDisplayTitle, "hasDisplayTitle1111111111");
           if (!hasDisplayTitle) {
+            console.log('radiiiiiiii22222222222');
             needsTagFetch = true;
             break;
           }
         }
 
+        console.log("needsTagFetch1111111111111", needsTagFetch);
+
         // If we found an article without displayTitle in categories, fetch using tags
         let finalArticles = categoryData.result.articles;
+        console.log("needsTagFetch1111111111111", needsTagFetch);
         if (needsTagFetch) {
           console.log('radiiiiiiii');
           this.currentTagId = this.getTagId();
@@ -390,6 +516,8 @@ export default {
         }
 
         const allArticles = finalArticles;
+
+        console.log(allArticles, "allArticles1111111111111");
 
         if (allArticles.length > 0) {
           // Main category news grid (first 12 articles)
@@ -524,11 +652,15 @@ export default {
     async initializeCategory() {
       // Store essential data before URL cleanup
       this.currentCategoryId = this.getCategoryId();
+      this.sport = this.deriveSportFromContext();
 
       // Store the title if we have it from query params
       if (this.categoryTitleFromQuery) {
         this.storedCategoryTitle = this.categoryTitleFromQuery;
       }
+
+      // Load menu data for navigation title lookup
+      await this.loadMenuData();
 
       // Fetch articles first, then clean up URL after successful load
       if (this.currentCategoryId) {
@@ -550,6 +682,11 @@ export default {
           if (!this.storedCategoryTitle && resolved.title) {
             this.storedCategoryTitle = resolved.title;
           }
+          
+          // Re-derive sport after resolving category
+          this.sport = this.deriveSportFromContext();
+          console.log(`Re-derived sport as: ${this.sport} after category resolution`);
+          
           this.fetchCategoryArticles();
           return;
         }
@@ -592,10 +729,82 @@ export default {
       const target = `/${found.category}/${found.slug}`;
       this.$router.push(target);
     },
+
+    setupDynamicEventListener() {
+      // Create dynamic event name based on current categoryId
+      const eventName = `${this.sport || 'default'}-category-changed`;
+      console.log("eventName11111111111", eventName);
+      
+      // Store the event name and handler for cleanup
+      this.currentEventName = eventName;
+      this.eventHandler = this.handleGlobalCategoryChange.bind(this);
+      
+      // Add the dynamic event listener
+      window.addEventListener(this.currentEventName, this.eventHandler);
+      
+      // Dispatch initial event to notify other components
+      window.dispatchEvent(new CustomEvent(`${this.sport || this.currentCategoryId || 'default'}-category-updated`, {
+        detail: { 
+          categoryId: this.currentCategoryId,
+          sport: this.sport 
+        }
+      }));
+      
+      console.log(`Added event listener: ${this.currentEventName} for sport: ${this.sport}`);
+    },
+    
+    removeDynamicEventListener() {
+      // Remove the current event listener if it exists
+      if (this.currentEventName && this.eventHandler) {
+        window.removeEventListener(this.currentEventName, this.eventHandler);
+        console.log(`Removed event listener: ${this.currentEventName}`);
+      }
+    },
+    
+    async handleGlobalCategoryChange(event) {
+      const { categoryId, sport } = event.detail;
+      console.log('Category changed to:', categoryId, 'Sport:', sport);
+      
+      // Update current category and sport information
+      this.currentCategoryId = categoryId;
+      this.sport = sport; // Store the sport value for future use
+      
+      // Only update stored category title if it's not already set or if we're changing sport context
+      if (sport && (!this.storedCategoryTitle || this.storedCategoryTitle !== sport.toUpperCase())) {
+        this.storedCategoryTitle = sport.toUpperCase();
+        console.log('Updated sport title to:', this.storedCategoryTitle);
+      }
+      
+      // Reset all data
+      this.resetNews();
+      
+      // Set loading states
+      this.loading = {
+        main: true,
+        loadMore: false,
+        other: true,
+        sidebar: true,
+      };
+      
+      // Fetch new data for the category
+      await this.fetchCategoryArticles();
+      
+      // Clean up URL after data is loaded
+      this.cleanUpUrl();
+    },
   },
+
   mounted() {
     this.initializeCategory();
     this.initializeTag();
+    
+    // Add dynamic event listener based on categoryId
+    this.setupDynamicEventListener();
+  },
+  
+  beforeUnmount() {
+    // Clean up dynamic event listeners
+    this.removeDynamicEventListener();
   },
   watch: {
     // Watch for route changes to handle navigation between categories
@@ -605,20 +814,43 @@ export default {
       if (to.params.slug !== from.params.slug) {
         this.resetNews();
         this.storedCategoryTitle = null; // Clear stored title for new route
+        
+        // Remove old event listener and setup new one
+        this.removeDynamicEventListener();
         this.initializeCategory();
         this.initializeTag();
+        this.setupDynamicEventListener();
       }
     },
     // Watch for prop changes
     categoryId() {
       this.resetNews();
       this.storedCategoryTitle = null; // Clear stored title for new category
+      
+      // Remove old event listener and setup new one
+      this.removeDynamicEventListener();
       this.initializeCategory();
+      this.setupDynamicEventListener();
     },
     tagId() {
       this.resetNews();
       this.storedCategoryTitle = null; // Clear stored title for new category
       this.initializeTag();
+    },
+    
+    // Watch for currentCategoryId changes to update event listener
+    currentCategoryId(newCategoryId, oldCategoryId) {
+      if (newCategoryId !== oldCategoryId) {
+        // Remove old event listener and setup new one with updated categoryId
+        this.removeDynamicEventListener();
+        this.setupDynamicEventListener();
+      }
+    },
+
+    // Watch for menuData changes to trigger displayTitle update
+    menuData() {
+      // Force reactivity update for displayTitle when menuData changes
+      this.$forceUpdate();
     },
   },
 };
