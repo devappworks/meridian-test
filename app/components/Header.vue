@@ -647,7 +647,6 @@ export default {
     },
 
     generateHelperRouteFromTitle(title, item) {
-      console.log(item, 'item');
       const dedicatedSportPages = {
         FUDBAL: "/fudbal",
         KOŠARKA: "/kosarka",
@@ -667,13 +666,8 @@ export default {
 
       // For all other categories, create dynamic routes
       if (item && item.web_categories && item.web_categories.length > 0) {
-        console.log(item.type, 'item type');
-        console.log(item.content[0]?.type, 'itemCONTENT');
         const categoryId = item.web_categories[0];
         const slug = this.generateSlugFromTitle(title);
-
-        console.log(item.content[0]?.type === "article_list", item.content[0]?.id);
-        console.log(item.content[0]?.options?.tags[0], "TAGS");
 
         return {
           path: `/${slug}`,
@@ -873,7 +867,6 @@ export default {
             const sportHref = this.generateRouteFromHref(currentSportMenuData.href);
             if (href === sportHref) {
               activeLink = link;
-              console.log(`Main nav: Found parent sport link for category page: ${currentSportMenuData.title}`);
               break;
             }
           }
@@ -899,7 +892,6 @@ export default {
                   const sportHref = this.generateRouteFromHref(currentSportMenuData.href);
                   if (href === sportHref) {
                     this.setActiveItem(link);
-                    console.log(`Main nav (delayed): Found parent sport link: ${currentSportMenuData.title}`);
                     return;
                   }
                 }
@@ -1062,10 +1054,6 @@ export default {
       // Update the stored current category for this sport
       this.currentCategories[this.currentSport] = categoryId;
 
-      console.log("handleCategoryChange - categoryId:", categoryId);
-      console.log("handleCategoryChange - currentSport:", this.currentSport);
-      console.log("handleCategoryChange - updated currentCategories:", this.currentCategories[this.currentSport]);
-
       // Find the menu item and subcategory that corresponds to this categoryId
       const currentMenuData = this.currentSportMenuData;
       let targetTitle = null;
@@ -1098,8 +1086,6 @@ export default {
           },
         };
         
-        console.log('Navigating to category page:', route);
-        
         // Check if we're already on the target route to avoid unnecessary navigation
         const currentPath = this.$route.path;
         const targetPath = route.path;
@@ -1107,7 +1093,6 @@ export default {
         if (currentPath === targetPath) {
           // Already on the same page, just emit the event to update content
           const eventName = `${this.currentSport}-category-changed`;
-          console.log("Already on target page, emitting event:", eventName);
           window.dispatchEvent(
             new CustomEvent(eventName, {
               detail: { categoryId, sport: this.currentSport },
@@ -1124,7 +1109,6 @@ export default {
       } else {
         // Fallback: emit event for current page to handle (if already on category page)
         const eventName = `${this.currentSport}-category-changed`;
-        console.log("eventName", eventName);
         window.dispatchEvent(
           new CustomEvent(eventName, {
             detail: { categoryId, sport: this.currentSport },

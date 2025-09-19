@@ -141,7 +141,7 @@ export default {
     },
     tagIdFromQuery() {
       // Get tag ID from query parameters
-      console.log(this.$route.query.tagId, 'this.$route.query.tagId');
+       
       return this.$route.query.tagId || null;
     },
     displayTitle() {
@@ -151,21 +151,21 @@ export default {
       const activeNavTitle = this.getActiveNavigationTitle();
       if (activeNavTitle) {
         title = activeNavTitle;
-        console.log('DisplayTitle from active navigation:', title);
+         
         return title;
       }
       
       // Use stored title first (persists after URL cleanup)
       if (this.storedCategoryTitle) {
         title = this.storedCategoryTitle;
-        console.log('DisplayTitle from storedCategoryTitle:', title);
+         
         return title;
       }
 
       // Use title from query params if available
       if (this.categoryTitleFromQuery) {
         title = this.categoryTitleFromQuery;
-        console.log('DisplayTitle from categoryTitleFromQuery:', title);
+         
         return title;
       }
 
@@ -175,12 +175,12 @@ export default {
           .split("-")
           .map((word) => word.toUpperCase())
           .join(" ");
-        console.log('DisplayTitle from slug:', title);
+         
         return title;
       }
 
       title = "VESTI";
-      console.log('DisplayTitle fallback:', title);
+       
       return title;
     },
   },
@@ -476,13 +476,13 @@ export default {
           "category[]": this.currentCategoryId,
         });
         /* if (this.categoryData.result.articles[0].categories[0].name.toLowerCase().includes(this.displayTitle.toLowerCase())) {
-          console.log('radiiiiiiii');
+           
         } */
-        console.log(categoryData, "categoryData1111111111111");
+         
 
-        console.log(categoryData.result.articles, "article.categories1111111111111");
+         
 
-        console.log("this.displayTitle1111111111111", this.displayTitle);
+         
 
         // Check if any article doesn't have displayTitle in its categories
         let needsTagFetch = false;
@@ -490,24 +490,24 @@ export default {
           const hasDisplayTitle = article.categories.some(cat => 
             cat.name.toLowerCase().includes(this.displayTitle.toLowerCase())
           );
-          console.log(hasDisplayTitle, "hasDisplayTitle1111111111111");
-          console.log(!hasDisplayTitle, "hasDisplayTitle1111111111");
+           
+           
           if (!hasDisplayTitle) {
-            console.log('radiiiiiiii22222222222');
+             
             needsTagFetch = true;
             break;
           }
         }
 
-        console.log("needsTagFetch1111111111111", needsTagFetch);
+         
 
         // If we found an article without displayTitle in categories, fetch using tags
         let finalArticles = categoryData.result.articles;
-        console.log("needsTagFetch1111111111111", needsTagFetch);
+         
         if (needsTagFetch) {
-          console.log('radiiiiiiii');
+           
           this.currentTagId = this.getTagId();
-          console.log(this.currentTagId, 'this.currentTagId');
+           
           const tagData = await fetchFromApi("/getArticles", {
             articleLimit: 53,
             "tag[]": this.currentTagId,
@@ -517,7 +517,7 @@ export default {
 
         const allArticles = finalArticles;
 
-        console.log(allArticles, "allArticles1111111111111");
+         
 
         if (allArticles.length > 0) {
           // Main category news grid (first 12 articles)
@@ -586,7 +586,7 @@ export default {
             "category[]": this.currentCategoryId,
             page: currentPage,
           });
-          console.log(response, "response");
+           
 
           const newArticles = response.result.articles;
 
@@ -685,7 +685,6 @@ export default {
           
           // Re-derive sport after resolving category
           this.sport = this.deriveSportFromContext();
-          console.log(`Re-derived sport as: ${this.sport} after category resolution`);
           
           this.fetchCategoryArticles();
           return;
@@ -733,7 +732,7 @@ export default {
     setupDynamicEventListener() {
       // Create dynamic event name based on current categoryId
       const eventName = `${this.sport || 'default'}-category-changed`;
-      console.log("eventName11111111111", eventName);
+       
       
       // Store the event name and handler for cleanup
       this.currentEventName = eventName;
@@ -750,20 +749,20 @@ export default {
         }
       }));
       
-      console.log(`Added event listener: ${this.currentEventName} for sport: ${this.sport}`);
+       
     },
     
     removeDynamicEventListener() {
       // Remove the current event listener if it exists
       if (this.currentEventName && this.eventHandler) {
         window.removeEventListener(this.currentEventName, this.eventHandler);
-        console.log(`Removed event listener: ${this.currentEventName}`);
+         
       }
     },
     
     async handleGlobalCategoryChange(event) {
       const { categoryId, sport } = event.detail;
-      console.log('Category changed to:', categoryId, 'Sport:', sport);
+       
       
       // Update current category and sport information
       this.currentCategoryId = categoryId;
@@ -772,7 +771,7 @@ export default {
       // Only update stored category title if it's not already set or if we're changing sport context
       if (sport && (!this.storedCategoryTitle || this.storedCategoryTitle !== sport.toUpperCase())) {
         this.storedCategoryTitle = sport.toUpperCase();
-        console.log('Updated sport title to:', this.storedCategoryTitle);
+         
       }
       
       // Reset all data

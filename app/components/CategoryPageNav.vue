@@ -71,13 +71,10 @@ export default {
       return this.$route.path;
     },
     validSubMenus() {
-      console.log("menuData", this.menuData);
       if (!this.menuData?.sub_menu) return [];
       const x = this.menuData.sub_menu.filter(
         (subMenu) => subMenu.web_categories?.length > 0
       );
-      console.log("this.menuData.sub_menu", this.menuData.sub_menu[0].web_categories[0]);
-      console.log("x", x);
       return x;
     },
     isVolleyballPage() {
@@ -99,8 +96,6 @@ export default {
       return this.currentCategory === categoryId;
     },
     selectCategory(categoryId) {
-      console.log("categoryId", categoryId);
-      console.log("this.currentCategory", this.currentCategory);
       if (categoryId && categoryId !== this.currentCategory) {
         this.$emit("category-changed", categoryId);
       }
