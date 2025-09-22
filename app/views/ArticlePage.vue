@@ -128,9 +128,9 @@
             <!-- Featured image -->
             <div
               class="featured-image"
-              v-if="article.images && article.images.large"
+              v-if="article.feat_images && article.feat_images.large"
             >
-              <img :src="article.images.large.url" :alt="article.title" />
+              <img :src="article.feat_images.large.url" :alt="article.title" />
               <div class="image-caption" v-if="article.featured_image_caption">
                 {{ article.featured_image_caption }}
               </div>
