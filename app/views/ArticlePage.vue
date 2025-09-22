@@ -473,7 +473,7 @@ useSeoMeta({
     
     return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
   },
-  ogImage: () => article.value?.images?.large?.url || '/meridian-logo.svg',
+  ogImage: () => article.value?.feat_images?.large?.url || '/meridian-logo.svg',
   ogType: 'article',
   twitterCard: 'summary_large_image',
   twitterTitle: () => article.value?.title || 'Article - Meridian',
@@ -494,7 +494,7 @@ useSeoMeta({
     
     return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
   },
-  twitterImage: () => article.value?.images?.large?.url || '/meridian-logo.svg',
+  twitterImage: () => article.value?.feat_images?.large?.url || '/meridian-logo.svg',
 });
 
 // Methods
@@ -557,7 +557,7 @@ const fetchRelatedNews = async () => {
         id: article.id,
         title: article.title,
         image:
-          article.images?.small?.url ||
+          article.feat_images?.small?.url ||
           require("@/assets/images/image.jpg"),
         sport: sportCategory,
         url: article.url || null,
