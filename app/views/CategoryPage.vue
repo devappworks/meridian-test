@@ -707,6 +707,15 @@ export default {
     },
 
     cleanUpUrl() {
+      // Only clean URL if we're actually on a category page, not an article page
+      const currentPath = this.$route.path;
+      const isArticlePage = currentPath.includes('/') && currentPath.split('/').length > 2;
+      
+      // Don't clean URL if we're on an article page
+      if (isArticlePage) {
+        return;
+      }
+      
       // Remove query parameters from URL while keeping the functionality
       if (this.$route.query.categoryId || this.$route.query.title) {
         const currentSlug = this.$route.params.slug;
@@ -762,7 +771,14 @@ export default {
     
     async handleGlobalCategoryChange(event) {
       const { categoryId, sport } = event.detail;
-       
+      
+      // Don't handle category changes if we're not on a category page
+      const currentPath = this.$route.path;
+      const isArticlePage = currentPath.includes('/') && currentPath.split('/').length > 2;
+      
+      if (isArticlePage) {
+        return;
+      }
       
       // Update current category and sport information
       this.currentCategoryId = categoryId;
@@ -808,7 +824,19 @@ export default {
   watch: {
     // Watch for route changes to handle navigation between categories
     $route(to, from) {
-      // Only re-initialize if the slug actually changed (real route change)
+      // Check if we're navigating to/from article pages
+      const toIsArticle = to.path.split('/').length > 2;
+      const fromIsArticle = from.path.split('/').length > 2;
+      
+      // Don't re-initialize if:
+      // 1. Navigating from category to article (toIsArticle && !fromIsArticle)
+      // 2. Navigating from article to same category (fromIsArticle && !toIsArticle && to.params.slug === from.params.slug.split('/')[0])
+      // 3. Navigating between articles in same category
+      if (toIsArticle || fromIsArticle) {
+        return;
+      }
+      
+      // Only re-initialize if the slug actually changed (real route change between categories)
       // Don't re-initialize for query parameter changes or same slug
       if (to.params.slug !== from.params.slug) {
         this.resetNews();

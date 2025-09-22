@@ -1051,6 +1051,14 @@ export default {
     handleCategoryChange(categoryId) {
       if (!this.currentSport) return;
 
+      // Don't handle category changes if we're on an article page
+      const currentPath = this.$route.path;
+      const isArticlePage = currentPath.split('/').length > 2;
+      
+      if (isArticlePage) {
+        return;
+      }
+
       // Update the stored current category for this sport
       this.currentCategories[this.currentSport] = categoryId;
 
