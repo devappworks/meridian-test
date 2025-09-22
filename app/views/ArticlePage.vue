@@ -924,6 +924,8 @@ onMounted(async () => {
     await fetchArticle();
   } else {
     // If we have article data from props, still need to fetch related content
+    // Set loading states to false for content we already have
+    loading.value.article = false;
     await fetchRelatedNews();
     await fetchOtherNews();
   }
