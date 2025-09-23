@@ -15,7 +15,7 @@
 <script setup>
 useHead({
   link: [
-    { rel: 'icon', type: 'image/x-icon', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon.png?crop=true' }
+    { rel: 'icon', type: 'image/x-icon', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-square.png?crop=true' }
   ]
 })
 </script>
