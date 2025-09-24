@@ -11,11 +11,3 @@
     </NuxtLayout>
   </div>
 </template>
-
-<script setup>
-useHead({
-  /* link: [
-    { rel: 'icon', type: 'image/x-icon', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' }
-  ] */
-})
-</script>
