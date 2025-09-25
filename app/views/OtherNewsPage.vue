@@ -470,4 +470,8 @@ const loadMore = async () => {
 .sub-nav a:hover:not(.active) {
   color: var(--text-white-60);
 }
+
+:deep(.view-all) {
+  display: none;
+}
 </style>
