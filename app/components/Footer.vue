@@ -8,23 +8,26 @@
             <a
               href="https://www.instagram.com/meridiansportrs/"
               class="social-icon"
+              aria-label="Instagram"
             >
-              <img src="@/assets/images/instagram.svg" alt="Instagram" />
+              <i class="fab fa-instagram"></i>
             </a>
-            <a href="https://x.com/meridiansportrs" class="social-icon">
-              <img src="@/assets/images/twitter.svg" alt="Twitter" />
+            <a href="https://x.com/meridiansportrs" class="social-icon" aria-label="X">
+              <i class="fab fa-x-twitter"></i>
             </a>
             <a
               href="https://www.facebook.com/SportMeridian/"
               class="social-icon"
+              aria-label="Facebook"
             >
-              <img src="@/assets/images/facebook.svg" alt="Facebook" />
+              <i class="fab fa-facebook-f"></i>
             </a>
             <a
               href="https://www.youtube.com/@meridiansport"
               class="social-icon"
+              aria-label="YouTube"
             >
-              <img src="@/assets/images/youtube.svg" alt="YouTube" />
+              <i class="fab fa-youtube"></i>
             </a>
           </div>
           <p class="contact-info">
@@ -186,6 +189,71 @@ export default {
 .social-icon {
   width: 32px;
   height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 40px;
+  transition: var(--transition);
+}
+
+.social-icon i {
+  font-size: 20px;
+  transition: var(--transition);
+  border-radius: 40px;
+  padding: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Instagram - Pink brand color */
+.social-icon:nth-child(1) i {
+  color: #E4405F;
+  background-color: rgba(228, 64, 95, 0.1);
+}
+
+.social-icon:nth-child(1):hover i {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  color: white;
+  transform: scale(1.1);
+}
+
+/* X (formerly Twitter) - Black brand color */
+.social-icon:nth-child(2) i {
+  color: #000000;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.social-icon:nth-child(2):hover i {
+  background-color: #000000;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Facebook - Blue brand color */
+.social-icon:nth-child(3) i {
+  color: #1877F2;
+  background-color: rgba(24, 119, 242, 0.1);
+}
+
+.social-icon:nth-child(3):hover i {
+  background-color: #1877F2;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* YouTube - Red brand color */
+.social-icon:nth-child(4) i {
+  color: #FF0000;
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+.social-icon:nth-child(4):hover i {
+  background-color: #FF0000;
+  color: white;
+  transform: scale(1.1);
 }
 
 .contact-info {
