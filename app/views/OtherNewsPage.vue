@@ -3,7 +3,7 @@
     <div class="content-wrapper">
       <div class="main-column">
         <div class="section-header">
-          <h2 class="section-title">OSTALE VESTI</h2>
+          <h2 class="section-title">OSTALI SPORTOVI</h2>
         </div>
 
         <!-- Main Other News Grid -->
@@ -131,6 +131,7 @@ const filterOutSportsArticles = (articles) => {
 const { data: otherData, pending: otherPending } = await useAsyncData('other-news-articles', () => 
   fetchFromApi('/getArticles', {
     articleLimit: 53,
+    'category[]': 38,
     page: 1
   })
 );
@@ -168,6 +169,7 @@ const loadMore = async () => {
       const response = await fetchFromApi("/getArticles", {
         articleLimit: 12,
         page: currentPageNum,
+        'category[]': 38,
       });
 
       const newArticles = response.result.articles || [];
