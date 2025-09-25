@@ -65,47 +65,35 @@
                   @click="share('viber')"
                   aria-label="Share on Viber"
                 >
-                  <img src="@/assets/images/viber.svg" alt="Share on Viber" />
+                  <i class="fab fa-viber"></i>
                 </button>
                 <button
                   class="share-btn"
                   @click="share('facebook')"
                   aria-label="Share on Facebook"
                 >
-                  <img
-                    src="@/assets/images/facebook.svg"
-                    alt="Share on Facebook"
-                  />
+                  <i class="fab fa-facebook-f"></i>
                 </button>
                 <button
                   class="share-btn"
                   @click="share('twitter')"
-                  aria-label="Share on Twitter"
+                  aria-label="Share on X"
                 >
-                  <img
-                    src="@/assets/images/twitter.svg"
-                    alt="Share on Twitter"
-                  />
+                  <i class="fab fa-x-twitter"></i>
                 </button>
                 <button
                   class="share-btn"
                   @click="share('whatsapp')"
                   aria-label="Share on WhatsApp"
                 >
-                  <img
-                    src="@/assets/images/whatsapp.svg"
-                    alt="Share on WhatsApp"
-                  />
+                  <i class="fab fa-whatsapp"></i>
                 </button>
                 <button
                   class="share-btn"
                   @click="share('instagram')"
                   aria-label="Share on Instagram"
                 >
-                  <img
-                    src="@/assets/images/instagram.svg"
-                    alt="Share on Instagram"
-                  />
+                  <i class="fab fa-instagram"></i>
                 </button>
               </div>
             </div>
@@ -1143,10 +1131,76 @@ watch(() => props.slug, () => {
   justify-content: center;
 }
 
-.share-btn img {
+.share-btn i {
+  font-size: 20px;
+  transition: var(--transition);
+  border-radius: 40px;
+  padding: 6px;
   width: 32px;
   height: 32px;
-  object-fit: contain;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Viber - Purple brand color */
+.share-btn:nth-child(1) i {
+  color: #665CAC;
+  background-color: rgba(102, 92, 172, 0.1);
+}
+
+.share-btn:nth-child(1):hover i {
+  background-color: #665CAC;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Facebook - Blue brand color */
+.share-btn:nth-child(2) i {
+  color: #1877F2;
+  background-color: rgba(24, 119, 242, 0.1);
+}
+
+.share-btn:nth-child(2):hover i {
+  background-color: #1877F2;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* X (formerly Twitter) - Black brand color */
+.share-btn:nth-child(3) i {
+  color: #000000;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.share-btn:nth-child(3):hover i {
+  background-color: #000000;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* WhatsApp - Green brand color */
+.share-btn:nth-child(4) i {
+  color: #25D366;
+  background-color: rgba(37, 211, 102, 0.1);
+}
+
+.share-btn:nth-child(4):hover i {
+  background-color: #25D366;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Instagram - Gradient brand colors */
+.share-btn:nth-child(5) i {
+  color: #E4405F;
+  background-color: rgba(228, 64, 95, 0.1);
+}
+
+.share-btn:nth-child(5):hover i {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  color: white;
+  transform: scale(1.1);
 }
 
 .featured-image {
