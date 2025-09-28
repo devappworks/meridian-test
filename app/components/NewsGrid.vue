@@ -1,6 +1,6 @@
 <template>
   <div class="news-grid" :class="{ 'ostale-vesti-background': background }">
-    <div class="section-header" v-if="title">
+    <div class="section-header" v-if="title && title.trim()">
       <div class="section-title" :class="sportClass">
         <h2>{{ title }}</h2>
       </div>
@@ -17,19 +17,20 @@
     >
       <div
         v-for="(item, index) in filteredNews"
-        :key="item.id || index"
+        :key="(item && item.id) || `item-${index}`"
         class="news-item"
         :data-index="index"
+        v-if="item"
       >
         <news-card
-          :title="item.title"
-          :image="item.image"
-          :sport="item.sport"
-          :sectionType="sport"
-          :id="item.id"
-          :url="item.url"
-          :category="item.category"
-          :slug="item.slug"
+          :title="item.title || ''"
+          :image="item.image || ''"
+          :sport="item.sport || ''"
+          :sectionType="sport || ''"
+          :id="item.id || ''"
+          :url="item.url || ''"
+          :category="item.category || ''"
+          :slug="item.slug || ''"
           :emitEvents="true"
           :forceShowSportTag="forceShowSportTag"
           @change-page="handlePageChange"
@@ -40,7 +41,7 @@
     <div v-if="showLoadMore" class="load-more-container">
       <button
         class="load-more-button"
-        @click="$emit('load-more')"
+        @click="handleLoadMore"
         :disabled="loading"
       >
         <span v-if="!loading">Učitaj više</span>
@@ -76,6 +77,8 @@ export default {
     news: {
       type: Array,
       required: true,
+      default: () => [],
+      validator: (value) => Array.isArray(value),
     },
     sport: {
       type: String,
@@ -120,12 +123,17 @@ export default {
         return 4; // Default to desktop layout during SSR
       }
       
-      if (this.windowWidth <= 576) return 1;
-      if (this.windowWidth <= 850) return 2;
-      if (this.windowWidth <= 1200) return 3;
+      const width = this.windowWidth || 1200;
+      if (width <= 576) return 1;
+      if (width <= 850) return 2;
+      if (width <= 1200) return 3;
       return 4;
     },
     sportClass() {
+      if (!this.sport || typeof this.sport !== 'string') {
+        return "";
+      }
+      
       const sportMap = {
         FUDBAL: "football",
         KOŠARKA: "basketball",
@@ -137,17 +145,26 @@ export default {
       return sportMap[this.sport] || "";
     },
     gridStyle() {
+      const columns = this.responsiveColumns || 4;
       return {
-        "grid-template-columns": `repeat(${this.responsiveColumns}, 1fr)`,
+        "grid-template-columns": `repeat(${columns}, 1fr)`,
       };
     },
     filteredNews() {
+      if (!Array.isArray(this.news)) {
+        return [];
+      }
+      
       if (this.title === "OSTALE VESTI") {
         return this.news.slice(0, 8);
       }
       return this.news;
     },
     categoryRoute() {
+      if (!this.sport || typeof this.sport !== 'string') {
+        return "/";
+      }
+      
       const routeMap = {
         FUDBAL: "/fudbal",
         KOŠARKA: "/kosarka",
@@ -163,59 +180,113 @@ export default {
     // Mark as client-side and get actual window width
     this.isClient = true;
     this.handleResize();
-    window.addEventListener("resize", this.handleResize);
+    
+    if (typeof window !== "undefined" && window.addEventListener) {
+      window.addEventListener("resize", this.handleResize);
+    }
   },
   beforeUnmount() {
-    window.removeEventListener("resize", this.handleResize);
+    if (typeof window !== "undefined" && window.removeEventListener) {
+      window.removeEventListener("resize", this.handleResize);
+    }
   },
   methods: {
     handleResize() {
-      if (typeof window !== "undefined") {
-        this.windowWidth = window.innerWidth;
+      if (typeof window !== "undefined" && window.innerWidth) {
+        this.windowWidth = window.innerWidth || 1200;
       }
     },
-    handlePageChange({ page, id }) {
-      if (page === "article") {
-        this.$router.push(`/article/${id}`);
+    handleLoadMore() {
+      if (this.$emit) {
+        this.$emit('load-more');
+      }
+    },
+    handlePageChange(payload) {
+      if (!payload || typeof payload !== 'object') {
+        console.warn('Invalid payload in handlePageChange:', payload);
+        return;
+      }
+      
+      const { page, id } = payload;
+      if (page === "article" && id) {
+        if (this.$router && this.$router.push) {
+          this.$router.push(`/article/${id}`);
+        }
       }
     },
     handleArticleClick(articleId) {
+      if (!articleId) {
+        console.warn('No articleId provided to handleArticleClick');
+        return;
+      }
+      
       if (this.emitClicks) {
         console.log(articleId, "articleId");
         // Find the entire article object
-        const article = this.news.find(item => item.id === articleId);
+        const article = Array.isArray(this.news) 
+          ? this.news.find(item => item && item.id === articleId)
+          : null;
         console.log(article, "entire article object");
         // Emit the event to parent components (like SearchModal)
-        this.$emit("article-clicked", articleId);
+        if (this.$emit) {
+          this.$emit("article-clicked", articleId);
+        }
       } else {
-        // Navigate directly to the article
-        this.$router.push(`/${article.category}/${article.slug}`);
+        // Find the article first
+        const article = Array.isArray(this.news) 
+          ? this.news.find(item => item && item.id === articleId)
+          : null;
+          
+        if (article && article.category && article.slug) {
+          // Navigate directly to the article
+          if (this.$router && this.$router.push) {
+            this.$router.push(`/${article.category}/${article.slug}`);
+          }
+        } else {
+          console.warn('Article not found or missing category/slug:', articleId);
+        }
       }
     },
     beforeEnter(el) {
+      if (!el || typeof gsap === 'undefined') {
+        return;
+      }
+      
       gsap.set(el, {
         opacity: 0,
         y: 30,
       });
     },
     enter(el, done) {
-      const delay = el.dataset.index * 0.05;
+      if (!el || typeof gsap === 'undefined') {
+        if (typeof done === 'function') done();
+        return;
+      }
+      
+      const index = el.dataset && el.dataset.index ? parseInt(el.dataset.index) : 0;
+      const delay = index * 0.05;
+      
       gsap.to(el, {
         opacity: 1,
         y: 0,
         duration: 0.3,
         delay,
         ease: "power2.out",
-        onComplete: done,
+        onComplete: typeof done === 'function' ? done : () => {},
       });
     },
     leave(el, done) {
+      if (!el || typeof gsap === 'undefined') {
+        if (typeof done === 'function') done();
+        return;
+      }
+      
       gsap.to(el, {
         opacity: 0,
         y: -30,
         duration: 0.2,
         ease: "power2.in",
-        onComplete: done,
+        onComplete: typeof done === 'function' ? done : () => {},
       });
     },
   },
