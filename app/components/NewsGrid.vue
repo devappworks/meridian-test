@@ -17,10 +17,9 @@
     >
       <div
         v-for="(item, index) in filteredNews"
-        :key="(item && item.id) || `item-${index}`"
+        :key="item.id || `item-${index}`"
         class="news-item"
         :data-index="index"
-        v-if="item"
       >
         <news-card
           :title="item.title || ''"
@@ -155,10 +154,17 @@ export default {
         return [];
       }
       
+      // Filter out null/undefined articles and articles without essential properties
+      const validNews = this.news.filter(item => 
+        item && 
+        typeof item === 'object' && 
+        (item.title || item.id)
+      );
+      
       if (this.title === "OSTALE VESTI") {
-        return this.news.slice(0, 8);
+        return validNews.slice(0, 8);
       }
-      return this.news;
+      return validNews;
     },
     categoryRoute() {
       if (!this.sport || typeof this.sport !== 'string') {
