@@ -23,6 +23,36 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Article not found' })
     }
 
+    // Define priority main categories
+    const mainCategories = ['fudbal', 'kosarka', 'odbojka', 'tenis']
+
+    // Find the correct category to use (prioritize main categories)
+    let correctCategory = null
+
+    // First, check if any of the article's categories matches the main categories
+    for (const mainCat of mainCategories) {
+      const foundMainCat = article.categories?.find(cat => cat.slug === mainCat)
+      if (foundMainCat) {
+        correctCategory = mainCat
+        break
+      }
+    }
+
+    // If no main category found, use the first category as fallback
+    if (!correctCategory) {
+      correctCategory = article.categories?.[0]?.slug
+    }
+
+    if (!correctCategory || correctCategory !== category) {
+      // If the requested category doesn't match the correct category, redirect to the correct URL
+      const correctUrl = `/${correctCategory}/${slug}`
+      throw createError({
+        statusCode: 301,
+        statusMessage: 'Moved Permanently',
+        data: { redirectTo: correctUrl }
+      })
+    }
+
     return article
   } catch (err) {
     if (err && err.statusCode) throw err

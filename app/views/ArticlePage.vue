@@ -526,7 +526,13 @@ const fetchArticle = async () => {
 };
 
 const fetchRelatedNews = async () => {
-  if (!article.value || !article.value.categories) return;
+  if (!article.value || !article.value.categories || !Array.isArray(article.value.categories) || article.value.categories.length === 0) {
+    console.log("🔴 fetchRelatedNews: No valid article or categories data");
+    loading.value.relatedNews = false;
+    josVestiNews.value = [];
+    relatedNews.value = [];
+    return;
+  }
 
   loading.value.relatedNews = true;
 
@@ -536,22 +542,24 @@ const fetchRelatedNews = async () => {
       article.value.categories
     );
 
-    const relatedArticles = article.value.relatedArticle || [];
+    const relatedArticles = article.value?.relatedArticle || [];
     console.log(relatedArticles, "RELATED ARTICLES");
 
-    if (relatedArticles.length > 0) {
+    if (Array.isArray(relatedArticles) && relatedArticles.length > 0) {
       console.log(josVestiNews, "JOS VESTI NEWS");
-      josVestiNews.value = relatedArticles.map((article) => ({
-        id: article.id,
-        title: article.title,
-        image:
-          article.feat_images?.small?.url ||
-          require("@/assets/images/image.jpg"),
-        sport: sportCategory,
-        url: article.url || null,
-        category: article.categories[0].slug,
-        slug: article.slug,
-      }));
+      josVestiNews.value = relatedArticles
+        .filter(article => article && article.categories && article.categories.length > 0)
+        .map((article) => ({
+          id: article.id,
+          title: article.title,
+          image:
+            article.feat_images?.small?.url ||
+            require("@/assets/images/image.jpg"),
+          sport: sportCategory,
+          url: article.url || null,
+          category: article.categories[0]?.slug,
+          slug: article.slug,
+        }));
     } else {
       josVestiNews.value = [];
     }
@@ -559,7 +567,7 @@ const fetchRelatedNews = async () => {
     // Still fetch category-based articles for sidebar related news
     const categoryId = article.value.categories.find((cat) =>
       ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
-    )?.id || article.value.categories[0].id;
+    )?.id || article.value.categories[0]?.id;
 
     const response = await fetchFromApi(`/getArticles`, {
       "category[]": categoryId,
@@ -570,16 +578,19 @@ const fetchRelatedNews = async () => {
       (article) => article.slug !== props.slug
     );
 
-    relatedNews.value = articles.slice(0, 3).map((article) => ({
-      id: article.id,
-      title: article.title,
-      date: formatDate(article.date || article.publish_date),
-      sport: sportCategory,
-      url: article.url || null,
-      category: article.categories[0].slug,
-      categoryName: article.categories[0].name,
-      slug: article.slug,
-    }));
+    relatedNews.value = articles
+      .slice(0, 3)
+      .filter(article => article && article.categories && article.categories.length > 0)
+      .map((article) => ({
+        id: article.id,
+        title: article.title,
+        date: formatDate(article.date || article.publish_date),
+        sport: sportCategory,
+        url: article.url || null,
+        category: article.categories[0]?.slug,
+        categoryName: article.categories[0]?.name,
+        slug: article.slug,
+      }));
 
     loading.value.relatedNews = false;
   } catch (error) {
@@ -591,7 +602,12 @@ const fetchRelatedNews = async () => {
 };
 
 const fetchOtherNews = async () => {
-  if (!article.value || !article.value.categories) return;
+  if (!article.value || !article.value.categories || !Array.isArray(article.value.categories) || article.value.categories.length === 0) {
+    console.log("🔴 fetchOtherNews: No valid article or categories data");
+    loading.value.otherNews = false;
+    otherNews.value = [];
+    return;
+  }
 
   loading.value.otherNews = true;
 
@@ -602,7 +618,7 @@ const fetchOtherNews = async () => {
     );
 
     // Find the category ID for API call
-    const categoryId = article.value.categories.find((cat) =>
+    const categoryId = article.value.categories?.find((cat) =>
       ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
     )?.id;
 
@@ -622,15 +638,18 @@ const fetchOtherNews = async () => {
       (articleItem) => articleItem.id !== article.value.id
     );
 
-    otherNews.value = articles.slice(0, 8).map((article) => ({
-      id: article.id,
-      title: article.title,
-      image: article.feat_images?.small?.url || null,
-      sport: sportCategory,
-      url: article.url || null,
-      category: article.categories[0].slug,
-      slug: article.slug,
-    }));
+    otherNews.value = articles
+      .slice(0, 8)
+      .filter(article => article && article.categories && article.categories.length > 0)
+      .map((article) => ({
+        id: article.id,
+        title: article.title,
+        image: article.feat_images?.small?.url || null,
+        sport: sportCategory,
+        url: article.url || null,
+        category: article.categories[0]?.slug,
+        slug: article.slug,
+      }));
 
     loading.value.otherNews = false;
   } catch (error) {

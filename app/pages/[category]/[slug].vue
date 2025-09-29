@@ -23,6 +23,11 @@ const { data: article } = await useAsyncData(
         query: { category, slug }
       })
     } catch (e) {
+      // Handle redirect to correct category URL
+      if (e.statusCode === 301 && e.data?.redirectTo) {
+        await navigateTo(e.data.redirectTo, { redirectCode: 301 })
+        return null
+      }
       return null
     }
   }
