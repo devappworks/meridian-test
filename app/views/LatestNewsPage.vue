@@ -48,7 +48,7 @@
             <NuxtLink
               v-for="(news, index) in relatedNews"
               :key="news.id"
-              :to="`/${news.category}/${news.slug}`"
+              :to="`/${getCanonicalCategoryFromSlug(news.category)}/${news.slug}`"
               class="related-news-item"
             >
               <div class="number">{{ index + 1 }}</div>
@@ -80,6 +80,7 @@ import NewsGrid from "@/components/NewsGrid.vue";
 import SkeletonNewsGrid from "@/components/skeletons/SkeletonNewsGrid.vue";
 import SkeletonRelatedNews from "@/components/skeletons/SkeletonRelatedNews.vue";
 import { fetchFromApi } from "@/services/api";
+import { getCanonicalCategoryFromSlug } from '~/utils/canonicalCategory';
 
 // Reactive state
 const loading = ref({

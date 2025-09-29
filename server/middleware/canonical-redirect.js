@@ -4,9 +4,9 @@ export default defineEventHandler(async (event) => {
 
   console.log(`[SERVER MW] Processing request: ${getMethod(event)} ${path}`)
 
-  // Only handle GET requests
-  if (getMethod(event) !== 'GET') {
-    console.log(`[SERVER MW] Skipping non-GET request: ${getMethod(event)}`)
+  // Only handle GET and HEAD requests
+  if (!['GET', 'HEAD'].includes(getMethod(event))) {
+    console.log(`[SERVER MW] Skipping non-GET/HEAD request: ${getMethod(event)}`)
     return
   }
 

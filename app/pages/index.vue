@@ -8,6 +8,7 @@ import YouTubeSection from "@/components/YouTube.vue";
 import NewsletterForm from "@/components/Newsletter.vue";
 import AdBanners from "@/components/AdBanners.vue";
 import { fetchFromApi, fetchMeridianTipovi } from "@/services/api";
+import { getCanonicalCategoryFromSlug } from '~/utils/canonicalCategory';
 
 // Import skeleton components
 import SkeletonFeatured from "@/components/skeletons/SkeletonFeatured.vue";
@@ -420,7 +421,7 @@ const slideMatchOdds = (direction) => {
             <NuxtLink
               v-for="(item, index) in tipovi"
               :key="`tip-${index}`"
-              :to="`/${item.category}/${item.slug}`"
+              :to="`/${getCanonicalCategoryFromSlug(item.category)}/${item.slug}`"
               class="tip-item"
             >
               <div class="tip-category" :class="sportClass(item.sport)">

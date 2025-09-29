@@ -82,6 +82,7 @@
 import { fetchFromApi } from "@/services/api";
 import NewsGrid from "./NewsGrid.vue";
 import SkeletonNewsGrid from "./skeletons/SkeletonNewsGrid.vue";
+import { getCanonicalCategoryFromSlug } from '~/utils/canonicalCategory';
 
 export default {
   name: "SearchModal",
@@ -196,7 +197,11 @@ export default {
       this.closeSearch();
       const found = this.newsResults.find((a) => a.id === articleId);
       console.log(found, "FOUND ARTICLE");
-      const target = `/${found.category}/${found.slug}`
+
+      // Use canonical category for navigation
+      const canonicalCategory = getCanonicalCategoryFromSlug(found.category);
+      const target = `/${canonicalCategory}/${found.slug}`;
+      console.log(`SearchModal: ${found.category} -> ${canonicalCategory}`, "canonical conversion");
       console.log(target, "target");
       this.$router.push(target)
     },

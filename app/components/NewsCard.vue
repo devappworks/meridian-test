@@ -13,6 +13,8 @@
 </template>
 
 <script>
+import { getCanonicalCategoryFromSlug } from '~/utils/canonicalCategory';
+
 export default {
   name: "NewsCard",
   props: {
@@ -77,32 +79,24 @@ export default {
       }
     },
     navigateToArticle() {
+      // Use canonical category for navigation
+      const canonicalCategory = getCanonicalCategoryFromSlug(this.category);
+      const target = `/${canonicalCategory}/${this.slug}`;
+
       console.log("🔵 NewsCard clicked!", {
         id: this.id,
         title: this.title,
-        url: this.url,
-        sport: this.sport,
-        category: this.category,
-        slug: this.slug
+        originalCategory: this.category,
+        canonicalCategory: canonicalCategory,
+        slug: this.slug,
+        target: target
       });
-      
-      console.log("🔵 NewsCard category:", this.category);
-      console.log("🔵 NewsCard slug:", this.slug);
 
-      this.$router.push(`/${this.category}/${this.slug}`);
-      
-      //window.location.href = `/${this.category}/${this.slug}`;
-      
-      if (this.id) {
-        if (this.emitEvents) {
-          console.log("🔵 NewsCard emitting event to parent");
-          this.$emit("article-clicked", this.id);
-        } else {
-          const target = `/${this.category}/${this.slug}`
-          console.log("🔵 NewsCard navigating to:", target);
-          this.$router.push(target);
-        }
-        
+      this.$router.push(target);
+
+      if (this.id && this.emitEvents) {
+        console.log("🔵 NewsCard emitting event to parent");
+        this.$emit("article-clicked", this.id);
       }
     },
   },
