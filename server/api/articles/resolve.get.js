@@ -44,12 +44,14 @@ export default defineEventHandler(async (event) => {
     }
 
     if (!correctCategory || correctCategory !== category) {
-      // If the requested category doesn't match the correct category, redirect to the correct URL
+      // If the requested category doesn't match the correct category, send a redirect response
       const correctUrl = `/${correctCategory}/${slug}`
       throw createError({
         statusCode: 301,
         statusMessage: 'Moved Permanently',
-        data: { redirectTo: correctUrl }
+        headers: {
+          Location: correctUrl
+        }
       })
     }
 

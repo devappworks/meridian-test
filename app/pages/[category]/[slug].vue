@@ -24,9 +24,9 @@ const { data: article } = await useAsyncData(
       })
     } catch (e) {
       // Handle redirect to correct category URL
-      if (e.statusCode === 301 && e.data?.redirectTo) {
-        await navigateTo(e.data.redirectTo, { redirectCode: 301 })
-        return null
+      if (e.statusCode === 301) {
+        // Let Nuxt handle the redirect naturally
+        throw e
       }
       return null
     }
@@ -116,8 +116,13 @@ import ArticlePage from "@/views/ArticlePage.vue";
 </script>
 
 <template>
-  <ArticlePage :category="category" :slug="slug" :article="article" />
-  <!-- Article data is now passed from server-side useAsyncData to prevent hydration mismatch -->
+  <div v-if="article">
+    <ArticlePage :category="category" :slug="slug" :article="article" />
+    <!-- Article data is now passed from server-side useAsyncData to prevent hydration mismatch -->
+  </div>
+  <div v-else>
+    <!-- Loading or redirect state - don't render ArticlePage if no article data -->
+  </div>
 </template>
 
 

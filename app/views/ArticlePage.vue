@@ -1,5 +1,5 @@
 <template>
-  <div class="article-page">
+  <div v-if="article" class="article-page">
     <div class="content-wrapper">
       <!-- Main content column -->
       <div class="main-column article-column" ref="mainColumn">
@@ -368,6 +368,11 @@ const props = defineProps({
     default: null,
   },
 });
+
+// Early return if no article data to prevent rendering errors
+if (!props.article) {
+  console.log("🔴 ArticlePage: No article data provided, skipping render");
+}
 
 // Reactive data
 const showComments = ref(false);
