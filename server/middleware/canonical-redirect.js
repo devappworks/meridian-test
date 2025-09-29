@@ -1,13 +1,21 @@
 export default defineEventHandler(async (event) => {
-  // Only handle GET requests
-  if (getMethod(event) !== 'GET') return
-
   const url = getRequestURL(event)
   const path = url.pathname
 
+  console.log(`[SERVER MW] Processing request: ${getMethod(event)} ${path}`)
+
+  // Only handle GET requests
+  if (getMethod(event) !== 'GET') {
+    console.log(`[SERVER MW] Skipping non-GET request: ${getMethod(event)}`)
+    return
+  }
+
   // Check if the path has exactly 2 segments (like /something/slug)
   const pathMatch = path.match(/^\/([^\/]+)\/([^\/]+)\/?$/i)
-  if (!pathMatch) return
+  if (!pathMatch) {
+    console.log(`[SERVER MW] Path doesn't match pattern: ${path}`)
+    return
+  }
 
   const [, category, slug] = pathMatch
 
@@ -23,8 +31,8 @@ export default defineEventHandler(async (event) => {
     const backendUrl = config.public.BACKEND_URL
     const apiKey = config.public.API_KEY
 
-    // Fetch article data to determine canonical category
-    const apiUrl = `${backendUrl}/articles/resolve?category=${encodeURIComponent(category)}&slug=${encodeURIComponent(slug)}`
+    // Fetch article data to determine canonical category (use same endpoint as page component)
+    const apiUrl = `${backendUrl}/getArticlesBySlug/${encodeURIComponent(category)}/${encodeURIComponent(slug)}`
 
     const response = await $fetch(apiUrl, {
       headers: apiKey ? { 'X-API-Key': apiKey } : {}
