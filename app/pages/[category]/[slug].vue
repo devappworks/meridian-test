@@ -52,6 +52,36 @@ const { data: article } = await useAsyncData(
   }
 )
 
+// Handle canonical redirect after article data is loaded
+if (article.value && article.value.categories && Array.isArray(article.value.categories)) {
+  const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka']
+
+  // Extract category names from the article
+  const articleCategories = article.value.categories
+    .map(cat => cat.name || cat.slug || cat)
+    .filter(Boolean)
+    .map(name => name.toLowerCase())
+
+  // Find if any main category exists in the article categories
+  const foundMainCategory = mainCategories.find(mainCat =>
+    articleCategories.includes(mainCat)
+  )
+
+  let canonicalCategory
+  if (foundMainCategory) {
+    // Use the main category as canonical
+    canonicalCategory = foundMainCategory
+  } else {
+    // Use the first category as canonical if no main category found
+    canonicalCategory = articleCategories[0]
+  }
+
+  // If the current URL doesn't use the canonical category, redirect
+  if (canonicalCategory && category.toLowerCase() !== canonicalCategory.toLowerCase()) {
+    await navigateTo(`/${canonicalCategory}/${slug}`, { redirectCode: 301 })
+  }
+}
+
 useHead(() => {
   const a = article.value || {};
   const siteUrl = (config.public?.SITE_URL || "").replace(/\/$/, "");
