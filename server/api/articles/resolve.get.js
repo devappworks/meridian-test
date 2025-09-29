@@ -83,17 +83,9 @@ export default defineEventHandler(async (event) => {
         to: correctUrl,
         reason: 'Category mismatch'
       })
-      throw createError({
-        statusCode: 301,
-        statusMessage: 'Moved Permanently',
-        headers: {
-          Location: correctUrl
-        },
-        data: {
-          redirectTo: correctUrl,
-          message: `Redirect to: ${correctUrl}`
-        }
-      })
+
+      // Send proper HTTP redirect using sendRedirect
+      return sendRedirect(event, correctUrl, 301)
     }
 
     console.log('🔴 Articles resolve API: Returning article', {
