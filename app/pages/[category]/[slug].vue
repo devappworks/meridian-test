@@ -1,13 +1,11 @@
 <script setup>
-// Apply the article canonical middleware to this page
-definePageMeta({
-  middleware: 'article-canonical'
-})
+// The article canonical middleware is now global
 
 const route = useRoute();
 const config = useRuntimeConfig();
 const category = route.params.category;
 const slug = route.params.slug;
+
 
 // Get canonical category from article data
 function getCanonicalCategory(article, currentCategory) {
