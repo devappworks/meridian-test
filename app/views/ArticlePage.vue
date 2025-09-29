@@ -39,10 +39,10 @@
             <div class="article-meta">
               <div class="author-date">
                 <p>Od
-                  <span class="author" v-if="article.authors[0].name"
+                  <span class="author" v-if="article?.authors?.[0]?.name"
                     > {{ article.authors[0].name }}</span
                   ><span v-else>Redakcija</span> -
-                  {{ formatDate(article.date || article.publish_date) }}
+                  {{ formatDate(article?.date || article?.publish_date) }}
                 </p>
               </div>
               <div class="comments-count">
@@ -116,10 +116,10 @@
             <!-- Featured image -->
             <div
               class="featured-image"
-              v-if="article.feat_images && article.feat_images.large"
+              v-if="article?.feat_images?.large?.url"
             >
-              <img :src="article.feat_images.large.url" :alt="article.title" />
-              <div class="image-caption" v-if="article.featured_image_caption">
+              <img :src="article.feat_images.large.url" :alt="article?.title || ''"/>
+              <div class="image-caption" v-if="article?.featured_image_caption">
                 {{ article.featured_image_caption }}
               </div>
             </div>
@@ -208,14 +208,14 @@
               </div> -->
 
               <!-- Tags section -->
-              <div class="tags-section">
+              <div class="tags-section" v-if="article?.tags && Array.isArray(article.tags)">
                 <button
                   class="tag"
                   v-for="tag in article.tags"
-                  :key="tag.id"
-                  @click="navigateToTag(tag.id, tag.name)"
+                  :key="tag?.id"
+                  @click="navigateToTag(tag?.id, tag?.name)"
                 >
-                  {{ tag.name.toUpperCase() }}
+                  {{ tag?.name?.toUpperCase() }}
                 </button>
               </div>
 
@@ -369,9 +369,13 @@ const props = defineProps({
   },
 });
 
-// Early return if no article data to prevent rendering errors
+// Early validation of article data structure
+if (props.article && typeof props.article !== 'object') {
+  console.error("🔴 ArticlePage: Invalid article data type:", typeof props.article);
+}
+
 if (!props.article) {
-  console.log("🔴 ArticlePage: No article data provided, skipping render");
+  console.log("🔴 ArticlePage: No article data provided, will fetch from API");
 }
 
 // Reactive data
@@ -532,7 +536,12 @@ const fetchArticle = async () => {
 
 const fetchRelatedNews = async () => {
   if (!article.value || !article.value.categories || !Array.isArray(article.value.categories) || article.value.categories.length === 0) {
-    console.log("🔴 fetchRelatedNews: No valid article or categories data");
+    console.log("🔴 fetchRelatedNews: No valid article or categories data", {
+      hasArticle: !!article.value,
+      hasCategories: !!(article.value?.categories),
+      isArray: Array.isArray(article.value?.categories),
+      length: article.value?.categories?.length
+    });
     loading.value.relatedNews = false;
     josVestiNews.value = [];
     relatedNews.value = [];
@@ -571,8 +580,14 @@ const fetchRelatedNews = async () => {
 
     // Still fetch category-based articles for sidebar related news
     const categoryId = article.value.categories.find((cat) =>
-      ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
+      cat?.name && ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
     )?.id || article.value.categories[0]?.id;
+
+    if (!categoryId) {
+      console.log("🔴 fetchRelatedNews: No valid category ID found");
+      loading.value.relatedNews = false;
+      return;
+    }
 
     const response = await fetchFromApi(`/getArticles`, {
       "category[]": categoryId,
@@ -608,7 +623,12 @@ const fetchRelatedNews = async () => {
 
 const fetchOtherNews = async () => {
   if (!article.value || !article.value.categories || !Array.isArray(article.value.categories) || article.value.categories.length === 0) {
-    console.log("🔴 fetchOtherNews: No valid article or categories data");
+    console.log("🔴 fetchOtherNews: No valid article or categories data", {
+      hasArticle: !!article.value,
+      hasCategories: !!(article.value?.categories),
+      isArray: Array.isArray(article.value?.categories),
+      length: article.value?.categories?.length
+    });
     loading.value.otherNews = false;
     otherNews.value = [];
     return;
@@ -624,7 +644,7 @@ const fetchOtherNews = async () => {
 
     // Find the category ID for API call
     const categoryId = article.value.categories?.find((cat) =>
-      ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
+      cat?.name && ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
     )?.id;
 
     let response;
@@ -742,6 +762,10 @@ const toggleComments = () => {
 };
 
 const getSportFromCategories = (categories) => {
+  if (!Array.isArray(categories) || categories.length === 0) {
+    return "OSTALE VESTI";
+  }
+
   const sportMap = {
     Fudbal: "FUDBAL",
     Košarka: "KOŠARKA",
@@ -749,7 +773,7 @@ const getSportFromCategories = (categories) => {
     Odbojka: "ODBOJKA",
   };
 
-  const sportCategory = categories.find((cat) => sportMap[cat.name]);
+  const sportCategory = categories.find((cat) => cat?.name && sportMap[cat.name]);
   return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
 };
 
@@ -812,19 +836,36 @@ const navigateToArticle = (id) => {
     category: props.category,
     slug: props.slug
   });
-  
+
   const foundInJos = josVestiNews.value.find((a) => a.id === id)
   console.log(foundInJos, "FOUND IN JOS");
   const foundInRelated = relatedNews.value.find((a) => a.id === id)
   console.log(foundInRelated, "FOUND IN RELATED");
-  const target = `/${foundInJos.category}/${foundInJos.slug}` || `/${foundInRelated.category}/${foundInRelated.slug}`;
+  const foundInOther = otherNews.value.find((a) => a.id === id)
+  console.log(foundInOther, "FOUND IN OTHER");
+
+  let target;
+  if (foundInJos?.category && foundInJos?.slug) {
+    target = `/${foundInJos.category}/${foundInJos.slug}`;
+  } else if (foundInRelated?.category && foundInRelated?.slug) {
+    target = `/${foundInRelated.category}/${foundInRelated.slug}`;
+  } else if (foundInOther?.category && foundInOther?.slug) {
+    target = `/${foundInOther.category}/${foundInOther.slug}`;
+  } else {
+    console.error('🔴 Could not find article for navigation:', id);
+    return;
+  }
+
   console.log(target, "TARGET");
-  
   console.log("🔴 ArticlePage navigating to:", target);
   useRouter().push(target)
 };
 
 const navigateToTag = (tagId, tagName) => {
+  if (!tagId || !tagName) {
+    console.error("🔴 NavigateToTag: Invalid tag data", { tagId, tagName });
+    return;
+  }
   useRouter().push(`/tag/${tagId}/${encodeURIComponent(tagName)}`);
 };
 
@@ -916,32 +957,64 @@ onMounted(async () => {
     routePath: useRoute().path,
     routeParams: useRoute().params,
     isSSR: process.server,
-    isClient: process.client
+    isClient: process.client,
+    hasArticle: !!props.article,
+    articleValid: !!(props.article?.id)
   });
-  
+
   // SSR Debug - this should show true on server, false on client
   console.log("🔴 SSR Status:", {
     server: process.server,
     client: process.client,
     isHydrating: nuxtApp.isHydrating
   });
-  
+
   // Only scroll on client side to prevent SSR mismatch
   if (typeof window !== 'undefined') {
     window.scrollTo(0, 0);
   }
-  
-  // Only fetch article if we don't already have it from SSR
-  if (!props.article) {
+
+  // Validate category and slug parameters
+  if (!props.category || !props.slug) {
+    console.error("🔴 ArticlePage: Invalid route parameters", {
+      category: props.category,
+      slug: props.slug
+    });
+    error.value = "Invalid article URL";
+    return;
+  }
+
+  // Only fetch article if we don't already have it from SSR or if the article is invalid
+  if (!props.article || !props.article.id) {
+    console.log("🔴 ArticlePage: Fetching article from API");
     await fetchArticle();
   } else {
-    // If we have article data from props, still need to fetch related content
-    // Set loading states to false for content we already have
-    loading.value.article = false;
-    await fetchRelatedNews();
-    await fetchOtherNews();
+    console.log("🔴 ArticlePage: Using article from SSR props");
+    // If we have article data from props, validate it and fetch related content
+    if (props.article.id) {
+      loading.value.article = false;
+      // Only fetch related content if we have valid article data
+      if (props.article.categories && Array.isArray(props.article.categories)) {
+        await fetchRelatedNews();
+        await fetchOtherNews();
+      } else {
+        console.warn("🔴 ArticlePage: Article has no valid categories, skipping related content");
+        loading.value.relatedNews = false;
+        loading.value.otherNews = false;
+      }
+    } else {
+      console.warn("🔴 ArticlePage: Invalid article from props, fetching from API");
+      await fetchArticle();
+    }
   }
-  await fetchComments();
+
+  // Only fetch comments if we have a valid article
+  if (article.value?.id || props.article?.id) {
+    await fetchComments();
+  } else {
+    console.log("🔴 ArticlePage: No article ID for comments, skipping comment fetch");
+    loading.value.comments = false;
+  }
 });
 
 // Watchers
