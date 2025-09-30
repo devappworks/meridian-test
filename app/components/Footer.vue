@@ -10,7 +10,7 @@
               class="social-icon"
               aria-label="Instagram"
             >
-              <i class="fab fa-instagram"></i>
+              <img src="@/assets/images/article/instagram.png" alt="Instagram" />
             </a>
             <a href="https://x.com/meridiansportrs" class="social-icon" aria-label="X">
               <i class="fab fa-x-twitter"></i>
@@ -20,14 +20,14 @@
               class="social-icon"
               aria-label="Facebook"
             >
-              <i class="fab fa-facebook-f"></i>
+              <img src="@/assets/images/article/facebook.png" alt="Facebook" />
             </a>
             <a
               href="https://www.youtube.com/@meridiansport"
               class="social-icon"
               aria-label="YouTube"
             >
-              <i class="fab fa-youtube"></i>
+              <img src="@/assets/images/newsletter/youtube.png" alt="YouTube" />
             </a>
           </div>
           <p class="contact-info">
@@ -193,7 +193,12 @@ export default {
   align-items: center;
   justify-content: center;
   border-radius: 40px;
-  transition: var(--transition);
+  transition: opacity 0.2s;
+}
+
+.social-icon img {
+  width: auto;
+  height: 100%;
 }
 
 .social-icon i {
@@ -208,52 +213,13 @@ export default {
   justify-content: center;
 }
 
-/* Instagram - Pink brand color */
-.social-icon:nth-child(1) i {
-  color: #E4405F;
-  background-color: rgba(228, 64, 95, 0.1);
-}
 
-.social-icon:nth-child(1):hover i {
-  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-  color: white;
-  transform: scale(1.1);
-}
+.social-icon:hover { opacity: 0.8; }
 
-/* X (formerly Twitter) - Black brand color */
+
 .social-icon:nth-child(2) i {
-  color: #000000;
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.social-icon:nth-child(2):hover i {
-  background-color: #000000;
-  color: white;
-  transform: scale(1.1);
-}
-
-/* Facebook - Blue brand color */
-.social-icon:nth-child(3) i {
-  color: #1877F2;
-  background-color: rgba(24, 119, 242, 0.1);
-}
-
-.social-icon:nth-child(3):hover i {
-  background-color: #1877F2;
-  color: white;
-  transform: scale(1.1);
-}
-
-/* YouTube - Red brand color */
-.social-icon:nth-child(4) i {
-  color: #FF0000;
-  background-color: rgba(255, 0, 0, 0.1);
-}
-
-.social-icon:nth-child(4):hover i {
-  background-color: #FF0000;
-  color: white;
-  transform: scale(1.1);
+  color: var(--text-white);
+  background: none;
 }
 
 .contact-info {
