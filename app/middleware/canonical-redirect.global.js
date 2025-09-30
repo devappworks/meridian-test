@@ -43,9 +43,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
         return
       }
 
-      // Extract category names from the article
+      // Extract category slugs from the article (consistent with API resolve logic)
       const articleCategories = article.categories
-        .map(cat => cat.name || cat.slug || cat)
+        .map(cat => cat.slug || cat.name || cat)
         .filter(Boolean)
         .map(name => name.toLowerCase())
 

@@ -580,7 +580,7 @@ const fetchRelatedNews = async () => {
 
     // Still fetch category-based articles for sidebar related news
     const categoryId = article.value.categories.find((cat) =>
-      cat?.name && ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
+      cat?.slug && ["fudbal", "kosarka", "tenis", "odbojka"].includes(cat.slug)
     )?.id || article.value.categories[0]?.id;
 
     if (!categoryId) {
