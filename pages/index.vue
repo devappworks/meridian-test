@@ -35,9 +35,10 @@ useHead({ title: "Home" });
         sport="KOŠARKA"
         :news="basketballNews"
       />
-
-      <SkeletonNewsSlider v-if="loading.tennis" title="ODBOJKA" sport="ODBOJKA" />
-      <NewsSlider v-else title="ODBOJKA" sport="ODBOJKA" :news="tennisNews" />
+      <!-- odbojka -->
+      <SkeletonNewsSlider v-if="loading.volleyball" title="ODBOJKA" sport="ODBOJKA" />
+      <NewsSlider v-else title="ODBOJKA" sport="ODBOJKA" :news="volleyballNews" />
+      
 
       <YouTubeSection />
 
@@ -198,10 +199,12 @@ export default {
         }
 
         // Fetch sport-specific articles in parallel
+        // const [tennisArticles, basketballArticles, footballArticles] =
         const [volleyballArticles, basketballArticles, footballArticles] =
           await Promise.all([
             fetchFromApi("/getArticles", {
               articleLimit: 50,
+              // "category[]": 41,
               "category[]": 37,
             }),
             fetchFromApi("/getArticles", {
@@ -243,7 +246,22 @@ export default {
           }));
         this.loading.basketball = false;
 
-        this.tennisNews = volleyballArticles.result.articles
+        // this.tennisNews = tennisArticles.result.articles
+        //   .slice(0, 12)
+        //   .map((article) => ({
+        //     id: article.id,
+        //     title: article.title,
+        //     // sport: "TENIS",
+        //     sport: "ODBOJKA",
+        //     date: article.date,
+        //     url: article.url,
+        //     image: article.feat_images["medium"]
+        //       ? article.feat_images["medium"].url
+        //       : null,
+        //   }));
+        // this.loading.tennis = false;
+
+        this.volleyballNews = volleyballArticles.result.articles
           .slice(0, 12)
           .map((article) => ({
             id: article.id,
@@ -255,7 +273,7 @@ export default {
               ? article.feat_images["medium"].url
               : null,
           }));
-        this.loading.tennis = false;
+        this.loading.volleyball = false;
       } catch (error) {
         console.error("Error fetching articles:", error);
         this.resetAllNews();
@@ -300,8 +318,8 @@ export default {
       const groups = {
         FUDBAL: [],
         KOŠARKA: [],
-        TENIS: [],
         ODBOJKA: [],
+        TENIS: [],
         "OSTALE VESTI": [],
       };
 
