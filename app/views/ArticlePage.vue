@@ -42,7 +42,7 @@
                   <span class="author" v-if="article?.authors?.[0]?.name"
                     > {{ article.authors[0].name }}</span
                   ><span v-else>Redakcija</span> -
-                  {{ formatDate(article?.date || article?.publish_date) }}
+                  {{ formatDate(article?.publish_date) }}
                 </p>
               </div>
               <div class="comments-count">
