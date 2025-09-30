@@ -20,14 +20,14 @@
               class="social-icon"
               aria-label="Facebook"
             >
-              <img src="@/assets/images/article/facebook_1.png" alt="Facebook" />
+              <img src="@/assets/images/article/facebook.png" alt="Facebook" />
             </a>
             <a
               href="https://www.youtube.com/@meridiansport"
               class="social-icon"
               aria-label="YouTube"
             >
-              <img src="@/assets/images/newsletter/youtube.png" alt="YouTube" />
+              <img src="@/assets/images/newsletter/youtube.svg" alt="YouTube" />
             </a>
           </div>
           <p class="contact-info">
