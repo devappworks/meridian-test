@@ -7,33 +7,8 @@ const category = route.params.category;
 const slug = route.params.slug;
 
 
-// Get canonical category from article data
-function getCanonicalCategory(article, currentCategory) {
-  if (!article || !article.categories || !Array.isArray(article.categories)) {
-    return currentCategory;
-  }
-
-  const mainCategories = ['fudbal', 'Košarka', 'tenis', 'odbojka'];
-
-  // Extract category names from the article
-  const articleCategories = article.categories
-    .map(cat => cat.name || cat.slug || cat)
-    .filter(Boolean)
-    .map(name => name.toLowerCase());
-
-  // Find if any main category exists in the article categories
-  const foundMainCategory = mainCategories.find(mainCat =>
-    articleCategories.includes(mainCat)
-  );
-
-  if (foundMainCategory) {
-    // Use the main category as canonical
-    return foundMainCategory;
-  } else {
-    // Use the first category as canonical if no main category found
-    return articleCategories[0] || currentCategory;
-  }
-}
+// Import the canonical category utility function instead of duplicating logic
+import { getCanonicalCategory } from '~/utils/canonicalCategory';
 
 function stripHtml(input) {
   if (!input || typeof input !== "string") return "";
@@ -60,7 +35,7 @@ useHead(() => {
   const siteUrl = (config.public?.SITE_URL || "").replace(/\/$/, "");
   const siteName = config.public?.SITE_NAME || "";
   const twitterHandle = config.public?.TWITTER_HANDLE || "";
-  const canonicalCategory = getCanonicalCategory(a, category);
+  const canonicalCategory = getCanonicalCategory(a.categories, category);
   const canonicalUrl = siteUrl ? `${siteUrl}/${canonicalCategory}/${slug}` : undefined;
   const title = a.title || siteName || "Meridian Sport";
   const rawDesc = a.excerpt || a.subtitle || stripHtml(a.contents || "") || a.title || "";

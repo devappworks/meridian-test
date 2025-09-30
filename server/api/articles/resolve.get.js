@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Define priority main categories
-    const mainCategories = ['fudbal', 'kosarka', 'odbojka', 'tenis']
+    const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka', 'ostali-sportovi']
 
     // Validate categories exist and are valid
     if (!article.categories || !Array.isArray(article.categories) || article.categories.length === 0) {
