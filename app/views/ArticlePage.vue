@@ -65,36 +65,39 @@
                   @click="share('viber')"
                   aria-label="Share on Viber"
                 >
-                  <i class="fab fa-viber"></i>
+                  <img src="@/assets/images/article/viber.png" alt="Viber" />
                 </button>
                 <button
                   class="share-btn"
                   @click="share('facebook')"
                   aria-label="Share on Facebook"
                 >
-                  <i class="fab fa-facebook-f"></i>
+                  <img src="@/assets/images/article/facebook.png" alt="Facebook" />
                 </button>
                 <button
                   class="share-btn"
                   @click="share('twitter')"
                   aria-label="Share on X"
                 >
-                  <i class="fab fa-x-twitter"></i>
+                  <img src="@/assets/images/twitter.svg" alt="X" />
                 </button>
                 <button
                   class="share-btn"
                   @click="share('whatsapp')"
                   aria-label="Share on WhatsApp"
                 >
-                  <i class="fab fa-whatsapp"></i>
+                  <img src="@/assets/images/article/whatsup.png" alt="WhatsApp" />
                 </button>
                 <button
                   class="share-btn"
                   @click="share('instagram')"
                   aria-label="Share on Instagram"
                 >
-                  <i class="fab fa-instagram"></i>
+                  <img src="@/assets/images/article/instagram.png" alt="Instagram" />
                 </button>
+                <!-- <a href="https://www.youtube.com/@meridiansport" class="social-icon">
+                    <img src="@/assets/images/newsletter/youtube.png" alt="YouTube" />
+                </a> -->
               </div>
             </div>
           </div>
@@ -1228,73 +1231,71 @@ watch(() => props.slug, () => {
   justify-content: center;
 }
 
-.share-btn i {
+.share-btn img {
   font-size: 20px;
   transition: var(--transition);
   border-radius: 40px;
   padding: 6px;
   width: 32px;
   height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
 }
 
 /* Viber - Purple brand color */
-.share-btn:nth-child(1) i {
+.share-btn:nth-child(1) img {
   color: #665CAC;
   background-color: rgba(102, 92, 172, 0.1);
 }
 
-.share-btn:nth-child(1):hover i {
+.share-btn:nth-child(1):hover img {
   background-color: #665CAC;
   color: white;
   transform: scale(1.1);
 }
 
 /* Facebook - Blue brand color */
-.share-btn:nth-child(2) i {
+.share-btn:nth-child(2) img {
   color: #1877F2;
   background-color: rgba(24, 119, 242, 0.1);
 }
 
-.share-btn:nth-child(2):hover i {
+.share-btn:nth-child(2):hover img {
   background-color: #1877F2;
   color: white;
   transform: scale(1.1);
 }
 
 /* X (formerly Twitter) - Black brand color */
-.share-btn:nth-child(3) i {
+.share-btn:nth-child(3) img {
   color: #000000;
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.share-btn:nth-child(3):hover i {
+.share-btn:nth-child(3):hover img {
   background-color: #000000;
   color: white;
   transform: scale(1.1);
 }
 
 /* WhatsApp - Green brand color */
-.share-btn:nth-child(4) i {
+.share-btn:nth-child(4) img {
   color: #25D366;
   background-color: rgba(37, 211, 102, 0.1);
 }
 
-.share-btn:nth-child(4):hover i {
+.share-btn:nth-child(4):hover img {
   background-color: #25D366;
   color: white;
   transform: scale(1.1);
 }
 
 /* Instagram - Gradient brand colors */
-.share-btn:nth-child(5) i {
+.share-btn:nth-child(5) img {
   color: #E4405F;
   background-color: rgba(228, 64, 95, 0.1);
 }
 
-.share-btn:nth-child(5):hover i {
+.share-btn:nth-child(5):hover img {
   background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
   color: white;
   transform: scale(1.1);
