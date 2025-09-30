@@ -9,7 +9,7 @@
           <img src="@/assets/images/newsletter/instagram.png" alt="Instagram" />
         </a>
         <a href="https://x.com/meridiansportrs" class="social-icon">
-          <img src="@/assets/images/twitter.svg" alt="Twitter" />
+          <i class="fab fa-x-twitter" aria-hidden="true"></i>
         </a>
         <a href="https://www.facebook.com/SportMeridian/" class="social-icon">
           <img src="@/assets/images/newsletter/facebook.png" alt="Facebook" />
@@ -122,6 +122,15 @@ export default {
   height: 100%;
 }
 
+.social-icon i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 22px;
+  color: var(--text-white);
+}
 .social-icon:hover {
   opacity: 0.8;
 }

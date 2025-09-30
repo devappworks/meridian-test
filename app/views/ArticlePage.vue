@@ -79,7 +79,7 @@
                   @click="share('twitter')"
                   aria-label="Share on X"
                 >
-                  <img src="@/assets/images/twitter.svg" alt="X" />
+                  <i class="fab fa-x-twitter" aria-hidden="true"></i>
                 </button>
                 <button
                   class="share-btn"
@@ -95,9 +95,6 @@
                 >
                   <img src="@/assets/images/article/instagram.png" alt="Instagram" />
                 </button>
-                <!-- <a href="https://www.youtube.com/@meridiansport" class="social-icon">
-                    <img src="@/assets/images/newsletter/youtube.png" alt="YouTube" />
-                </a> -->
               </div>
             </div>
           </div>
@@ -1231,6 +1228,15 @@ watch(() => props.slug, () => {
 .share-btn img {
   width: auto;
   height: 100%;
+}
+.share-btn i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  color: var(--text-white);
 }
 .share-btn:hover {
   opacity: 0.8;
