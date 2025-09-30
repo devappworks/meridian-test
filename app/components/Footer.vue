@@ -10,7 +10,7 @@
               class="social-icon"
               aria-label="Instagram"
             >
-              <img src="@/assets/images/article/instagram_1.png" alt="Instagram" />
+              <img src="@/assets/images/article/instagram.png" alt="Instagram" />
             </a>
             <a href="https://x.com/meridiansportrs" class="social-icon" aria-label="X">
               <i class="fab fa-x-twitter"></i>
