@@ -256,7 +256,7 @@ export default {
               ? article.feat_images["medium"].url
               : null,
           }));
-        this.loading.tennis = false;
+        this.loading.volleyball = false;
       } catch (error) {
         console.error("Error fetching articles:", error);
         this.resetAllNews();
@@ -301,8 +301,8 @@ export default {
       const groups = {
         FUDBAL: [],
         KOŠARKA: [],
-        TENIS: [],
         ODBOJKA: [],
+        TENIS: [],
         "OSTALE VESTI": [],
       };
 
