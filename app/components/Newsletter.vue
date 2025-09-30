@@ -6,16 +6,16 @@
           href="https://www.instagram.com/meridiansportrs/"
           class="social-icon"
         >
-          <img src="@/assets/images/instagram.svg" alt="Instagram" />
+          <img src="@/assets/images/newsletter/instagram.png" alt="Instagram" />
         </a>
         <a href="https://x.com/meridiansportrs" class="social-icon">
           <img src="@/assets/images/twitter.svg" alt="Twitter" />
         </a>
         <a href="https://www.facebook.com/SportMeridian/" class="social-icon">
-          <img src="@/assets/images/facebook.svg" alt="Facebook" />
+          <img src="@/assets/images/newsletter/facebook.png" alt="Facebook" />
         </a>
         <a href="https://www.youtube.com/@meridiansport" class="social-icon">
-          <img src="@/assets/images/youtube.svg" alt="YouTube" />
+          <img src="@/assets/images/newsletter/youtube.png" alt="YouTube" />
         </a>
       </div>
 
