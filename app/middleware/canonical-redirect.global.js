@@ -19,6 +19,17 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // Only run on client-side to avoid conflicts with server middleware
   if (process.server) return
 
+  // Check if this is a subcategory that should be redirected immediately
+  const { getCanonicalCategoryFromSlug } = await import('~/utils/canonicalCategory')
+  const canonicalCategory = getCanonicalCategoryFromSlug(category)
+  
+  // If the category maps to a different canonical category, redirect immediately
+  if (canonicalCategory !== category) {
+    const redirectUrl = `/${canonicalCategory}/${slug}`
+    console.log(`[CLIENT MW] Subcategory redirect: ${path} -> ${redirectUrl}`)
+    return navigateTo(redirectUrl, { redirectCode: 301 })
+  }
+
   try {
     // Fetch article data to determine canonical category
     const response = await $fetch(`/api/articles/resolve`, {

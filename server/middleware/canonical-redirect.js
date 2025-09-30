@@ -25,6 +25,19 @@ export default defineEventHandler(async (event) => {
     return
   }
 
+  // Check if this is a subcategory that should be redirected immediately
+  // Import and use the canonical category utility function
+  const { getCanonicalCategoryFromSlug } = await import('~/utils/canonicalCategory')
+  const canonicalCategory = getCanonicalCategoryFromSlug(category)
+  
+  // If the category maps to a different canonical category, redirect immediately
+  if (canonicalCategory !== category) {
+    const redirectUrl = `/${canonicalCategory}/${slug}`
+    console.log(`[SERVER MW] Subcategory redirect: ${path} -> ${redirectUrl}`)
+    await sendRedirect(event, redirectUrl, 301)
+    return
+  }
+
   try {
     // Get runtime config for API URL
     const config = useRuntimeConfig()

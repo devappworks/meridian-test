@@ -65,14 +65,14 @@
                   @click="share('viber')"
                   aria-label="Share on Viber"
                 >
-                  <img src="@/assets/images/article/viber.png" alt="Viber" />
+                  <img src="@/assets/images/article/viber_1.png" alt="Viber" />
                 </button>
                 <button
                   class="share-btn"
                   @click="share('facebook')"
                   aria-label="Share on Facebook"
                 >
-                  <img src="@/assets/images/article/facebook.png" alt="Facebook" />
+                  <img src="@/assets/images/article/facebook_1.png" alt="Facebook" />
                 </button>
                 <button
                   class="share-btn"
@@ -86,14 +86,14 @@
                   @click="share('whatsapp')"
                   aria-label="Share on WhatsApp"
                 >
-                  <img src="@/assets/images/article/whatsup.png" alt="WhatsApp" />
+                  <img src="@/assets/images/article/whatsup_1.png" alt="WhatsApp" />
                 </button>
                 <button
                   class="share-btn"
                   @click="share('instagram')"
                   aria-label="Share on Instagram"
                 >
-                  <img src="@/assets/images/article/instagram.png" alt="Instagram" />
+                  <img src="@/assets/images/article/instagram_1.png" alt="Instagram" />
                 </button>
               </div>
             </div>
