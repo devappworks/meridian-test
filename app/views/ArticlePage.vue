@@ -1211,8 +1211,8 @@ watch(() => props.slug, () => {
   flex-grow: 0;
 }
 .share-btn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   flex: none;
   order: 0;
   flex-grow: 0;
