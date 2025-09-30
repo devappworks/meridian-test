@@ -13,7 +13,7 @@ function getCanonicalCategory(article, currentCategory) {
     return currentCategory;
   }
 
-  const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka'];
+  const mainCategories = ['fudbal', 'Košarka', 'tenis', 'odbojka'];
 
   // Extract category names from the article
   const articleCategories = article.categories
