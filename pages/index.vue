@@ -36,8 +36,9 @@ useHead({ title: "Home" });
         :news="basketballNews"
       />
 
-      <SkeletonNewsSlider v-if="loading.tennis" title="ODBOJKA" sport="ODBOJKA" />
-      <NewsSlider v-else title="ODBOJKA" sport="ODBOJKA" :news="tennisNews" />
+      <!-- Tennis News with Loading State -->
+      <SkeletonNewsSlider v-if="loading.tennis" title="TENIS" sport="TENIS" />
+      <NewsSlider v-else title="TENIS" sport="TENIS" :news="tennisNews" />
 
       <YouTubeSection />
 
@@ -198,11 +199,11 @@ export default {
         }
 
         // Fetch sport-specific articles in parallel
-        const [volleyballArticles, basketballArticles, footballArticles] =
+        const [tennisArticles, basketballArticles, footballArticles] =
           await Promise.all([
             fetchFromApi("/getArticles", {
               articleLimit: 50,
-              "category[]": 37,
+              "category[]": 41,
             }),
             fetchFromApi("/getArticles", {
               articleLimit: 50,
@@ -243,12 +244,12 @@ export default {
           }));
         this.loading.basketball = false;
 
-        this.tennisNews = volleyballArticles.result.articles
+        this.tennisNews = tennisArticles.result.articles
           .slice(0, 12)
           .map((article) => ({
             id: article.id,
             title: article.title,
-            sport: "ODBOJKA",
+            sport: "TENIS",
             date: article.date,
             url: article.url,
             image: article.feat_images["medium"]
