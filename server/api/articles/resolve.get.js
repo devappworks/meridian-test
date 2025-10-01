@@ -81,7 +81,9 @@ export default defineEventHandler(async (event) => {
       console.log('🔴 Articles resolve API: Redirecting', {
         from: `/${category}/${slug}`,
         to: correctUrl,
-        reason: 'Category mismatch'
+        reason: 'Category mismatch',
+        articleId: article.id,
+        articleCategories: article.categories.map(cat => ({ slug: cat?.slug, name: cat?.name }))
       })
 
       // Send proper HTTP redirect using sendRedirect

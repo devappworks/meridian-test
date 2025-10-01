@@ -4,17 +4,24 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const path = to.path
 
+  console.log(`[CLIENT MW] Processing route: ${path}`)
+
+  // Skip API routes to avoid infinite loops
+  if (path.startsWith('/api/')) {
+    console.log(`[CLIENT MW] Skipping API route: ${path}`)
+    return
+  }
+
   // Check if the path has exactly 2 segments (like /something/slug)
   const pathMatch = path.match(/^\/([^\/]+)\/([^\/]+)\/?$/i)
-  if (!pathMatch) return
+  if (!pathMatch) {
+    console.log(`[CLIENT MW] Path doesn't match pattern: ${path}`)
+    return
+  }
 
   const [, category, slug] = pathMatch
 
-  // Skip if it's already a main category or API route
-  const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka', 'ostali-sportovi']
-  if (mainCategories.includes(category.toLowerCase()) || path.startsWith('/api/')) {
-    return
-  }
+  // We'll validate all categories against article data, including main categories
 
   // Only run on client-side to avoid conflicts with server middleware
   if (process.server) return
@@ -30,11 +37,23 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo(redirectUrl, { redirectCode: 301 })
   }
 
+  // For main categories, we still need to validate against article data
+  const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka', 'ostali-sportovi']
+  const isMainCategory = mainCategories.includes(category.toLowerCase())
+  
+  if (isMainCategory) {
+    console.log(`[CLIENT MW] Main category detected: ${category}, will validate against article data`)
+  }
+
   try {
+    console.log(`[CLIENT MIDDLEWARE] Fetching article data for: ${path}`)
+    
     // Fetch article data to determine canonical category
     const response = await $fetch(`/api/articles/resolve`, {
       query: { category, slug }
     })
+
+    console.log(`[CLIENT MIDDLEWARE] API response type:`, typeof response)
 
     // If response is HTML (redirect response), parse the redirect URL
     if (typeof response === 'string' && response.includes('<!DOCTYPE html>')) {
@@ -51,6 +70,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
       const article = response.article
 
       if (!Array.isArray(article.categories)) {
+        console.log(`[CLIENT MIDDLEWARE] Article has no valid categories array`)
         return
       }
 
@@ -59,6 +79,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
         .map(cat => cat.slug || cat.name || cat)
         .filter(Boolean)
         .map(name => name.toLowerCase())
+
+      console.log(`[CLIENT MIDDLEWARE] Article categories:`, articleCategories)
 
       // Find if any main category exists in the article categories
       const foundMainCategory = mainCategories.find(mainCat =>
@@ -69,17 +91,23 @@ export default defineNuxtRouteMiddleware(async (to) => {
       if (foundMainCategory) {
         // Use the main category as canonical
         canonicalCategory = foundMainCategory
+        console.log(`[CLIENT MIDDLEWARE] Found main category: ${canonicalCategory}`)
       } else {
         // Use the first category as canonical if no main category found
         canonicalCategory = articleCategories[0]
+        console.log(`[CLIENT MIDDLEWARE] Using first category: ${canonicalCategory}`)
       }
 
       // If the current URL doesn't use the canonical category, redirect
       if (canonicalCategory && category.toLowerCase() !== canonicalCategory.toLowerCase()) {
         const redirectUrl = `/${canonicalCategory}/${slug}`
-        console.log(`[CLIENT MIDDLEWARE] Dynamic redirect: ${path} -> ${redirectUrl}`)
+        console.log(`[CLIENT MIDDLEWARE] Category mismatch detected: ${path} -> ${redirectUrl}`)
         return navigateTo(redirectUrl, { redirectCode: 301 })
+      } else {
+        console.log(`[CLIENT MIDDLEWARE] Category is correct, no redirect needed`)
       }
+    } else {
+      console.log(`[CLIENT MIDDLEWARE] No valid article data found in response`)
     }
 
   } catch (error) {

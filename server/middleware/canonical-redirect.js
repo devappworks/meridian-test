@@ -10,6 +10,12 @@ export default defineEventHandler(async (event) => {
     return
   }
 
+  // Skip API routes to avoid infinite loops
+  if (path.startsWith('/api/')) {
+    console.log(`[SERVER MW] Skipping API route: ${path}`)
+    return
+  }
+
   // Check if the path has exactly 2 segments (like /something/slug)
   const pathMatch = path.match(/^\/([^\/]+)\/([^\/]+)\/?$/i)
   if (!pathMatch) {
@@ -19,9 +25,9 @@ export default defineEventHandler(async (event) => {
 
   const [, category, slug] = pathMatch
 
-  // Skip if it's already a main category or API route
-  const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka', 'ostali-sportovi']
-  if (mainCategories.includes(category.toLowerCase()) || path.startsWith('/api/')) {
+  // Skip API routes to avoid infinite loops
+  if (path.startsWith('/api/')) {
+    console.log(`[SERVER MW] Skipping API route: ${path}`)
     return
   }
 
@@ -36,6 +42,14 @@ export default defineEventHandler(async (event) => {
     console.log(`[SERVER MW] Subcategory redirect: ${path} -> ${redirectUrl}`)
     await sendRedirect(event, redirectUrl, 301)
     return
+  }
+
+  // For main categories, we still need to validate against article data
+  const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka', 'ostali-sportovi']
+  const isMainCategory = mainCategories.includes(category.toLowerCase())
+  
+  if (isMainCategory) {
+    console.log(`[SERVER MW] Main category detected: ${category}, will validate against article data`)
   }
 
   try {
@@ -69,6 +83,7 @@ export default defineEventHandler(async (event) => {
       const article = response.article
 
       if (!Array.isArray(article.categories)) {
+        console.log(`[SERVER MIDDLEWARE] Article has no valid categories array`)
         return
       }
 
@@ -77,6 +92,8 @@ export default defineEventHandler(async (event) => {
         .map(cat => cat.slug || cat.name || cat)
         .filter(Boolean)
         .map(name => name.toLowerCase())
+
+      console.log(`[SERVER MIDDLEWARE] Article categories:`, articleCategories)
 
       // Find if any main category exists in the article categories
       const foundMainCategory = mainCategories.find(mainCat =>
@@ -87,20 +104,26 @@ export default defineEventHandler(async (event) => {
       if (foundMainCategory) {
         // Use the main category as canonical
         canonicalCategory = foundMainCategory
+        console.log(`[SERVER MIDDLEWARE] Found main category: ${canonicalCategory}`)
       } else {
         // Use the first category as canonical if no main category found
         canonicalCategory = articleCategories[0]
+        console.log(`[SERVER MIDDLEWARE] Using first category: ${canonicalCategory}`)
       }
 
       // If the current URL doesn't use the canonical category, redirect
       if (canonicalCategory && category.toLowerCase() !== canonicalCategory.toLowerCase()) {
         const redirectUrl = `/${canonicalCategory}/${slug}`
-        console.log(`[SERVER MIDDLEWARE] Dynamic redirect: ${path} -> ${redirectUrl}`)
+        console.log(`[SERVER MIDDLEWARE] Category mismatch detected: ${path} -> ${redirectUrl}`)
 
         // Send 301 redirect
         await sendRedirect(event, redirectUrl, 301)
         return
+      } else {
+        console.log(`[SERVER MIDDLEWARE] Category is correct, no redirect needed`)
       }
+    } else {
+      console.log(`[SERVER MIDDLEWARE] No valid article data found in response`)
     }
 
   } catch (error) {
