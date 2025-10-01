@@ -92,12 +92,12 @@ export default {
 
       // Check if this category has a dedicated page route
       const dedicatedRoutes = {
-        NAJNOVIJE: { name: "najnovije-vesti" },
-        FUDBAL: { name: "fudbal" },
-        KOŠARKA: { name: "kosarka" },
-        ODBOJKA: { name: "odbojka" },
-        TENIS: { name: "tenis" },
-        "OSTALI SPORTOVI": { name: "ostali-sportovi" },
+        NAJNOVIJE: "/najnovije-vesti",
+        FUDBAL: "/fudbal",
+        KOŠARKA: "/kosarka",
+        ODBOJKA: "/odbojka",
+        TENIS: "/tenis",
+        "OSTALI SPORTOVI": "/ostali-sportovi",
       };
 
       // Use dedicated route if available
@@ -118,8 +118,9 @@ export default {
           .replace(/\s+/g, "-");
 
         // Return route object with query parameters for category data
+        // Use same pattern as Header component - only category slug in path
         return {
-          path: `/sport/${slug}`,
+          path: `/${slug}`,
           query: {
             categoryId: child.web_categories[0].toString(), // Use first category ID as string
             title: child.label.toUpperCase(),
