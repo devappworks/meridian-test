@@ -135,6 +135,7 @@ export default {
         FUDBAL: "football",
         KOŠARKA: "basketball",
         TENIS: "tennis",
+        ODBOJKA: "volleyball",
         NAJNOVIJE: "latest",
         "OSTALE VESTI": "other",
       };
@@ -164,6 +165,7 @@ export default {
         FUDBAL: "/fudbal",
         KOŠARKA: "/kosarka",
         TENIS: "/tenis",
+        ODBOJKA: "/odbojka",
         NAJNOVIJE: "/najnovije-vesti",
         "OSTALE VESTI": "/ostali-sportovi",
       };
@@ -194,6 +196,11 @@ export default {
         FUDBAL: "football",
         KOŠARKA: "basketball",
         TENIS: "tennis",
+        ODBOJKA: "volleyball",
+        NAJNOVIJE: "latest",
+        "OSTALE VESTI": "other",
+        NAJNOVIJE: "latest",
+        "OSTALE VESTI": "other",
       };
       return sportMap[sport] || "";
     },
@@ -323,6 +330,10 @@ export default {
   border-left-color: var(--blue-primary);
 }
 
+.section-title.volleyball {
+  border-left-color: var(--red-primary);
+}
+
 .section-title h2 {
   font-weight: 600;
   font-size: 24px;
@@ -342,6 +353,10 @@ export default {
 
 .section-title.tennis h2 {
   color: var(--blue-primary);
+}
+
+.section-title.volleyball h2 {
+  color: var(--red-primary);
 }
 
 .view-all {

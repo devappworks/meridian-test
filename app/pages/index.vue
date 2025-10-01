@@ -94,6 +94,7 @@ const latestNews = ref([]);
 const footballNews = ref([]);
 const basketballNews = ref([]);
 const tennisNews = ref([]);
+const volleyballNews = ref([]);
 const otherNews = ref([]);
 const tipovi = ref([]);
 
@@ -177,11 +178,13 @@ const { data: latestArticlesData, pending: latestPending } = await useAsyncData(
 
 const [
   { data: tennisData },
+  { data: volleyballData },
   { data: basketballData },
   { data: footballData },
   { data: tipoviData }
 ] = await Promise.all([
   useAsyncData('homepage-tennis', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 41 })),
+  useAsyncData('homepage-volleyball', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 37 })),
   useAsyncData('homepage-basketball', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 25 })),
   useAsyncData('homepage-football', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 28 })),
   useAsyncData('homepage-tipovi', () => fetchMeridianTipovi(3))
@@ -234,6 +237,19 @@ if (footballData.value?.result.articles?.length > 0) {
     id: article.id,
     title: article.title,
     sport: "FUDBAL",
+    date: article.date,
+    url: article.url,
+    image: article.feat_images["medium"]?.url || null,
+    category: article.categories[0]?.slug,
+    slug: article?.slug,
+  }));
+}
+
+if (volleyballData.value?.result.articles?.length > 0) {
+  volleyballNews.value = volleyballData.value.result.articles.slice(0, 12).map((article) => ({
+    id: article.id,
+    title: article.title,
+    sport: "ODBOJKA",
     date: article.date,
     url: article.url,
     image: article.feat_images["medium"]?.url || null,
@@ -381,8 +397,12 @@ const slideMatchOdds = (direction) => {
       />
 
       <!-- Tennis News with Loading State -->
-      <SkeletonNewsSlider v-if="homepagePending || tennisNews.length === 0" title="TENIS" sport="TENIS" />
-      <NewsSlider v-else title="TENIS" sport="TENIS" :news="tennisNews" />
+      <!-- <SkeletonNewsSlider v-if="homepagePending || tennisNews.length === 0" title="TENIS" sport="TENIS" />
+      <NewsSlider v-else title="TENIS" sport="TENIS" :news="tennisNews" /> -->
+
+      <!-- Volleyball News with Loading State -->
+      <SkeletonNewsSlider v-if="homepagePending || volleyballNews.length === 0" title="ODBOJKA" sport="ODBOJKA" />
+      <NewsSlider v-else title="ODBOJKA" sport="ODBOJKA" :news="volleyballNews" />
 
       <YouTubeSection />
 
