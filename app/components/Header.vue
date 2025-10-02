@@ -1084,45 +1084,47 @@ export default {
         }
       }
 
-      // Navigate to the category page with the appropriate route
-      if (targetSlug) {
-        const route = {
-          path: `/${targetSlug}`,
-          query: {
-            categoryId: categoryId,
-            title: targetTitle,
-          },
-        };
-        
-        // Check if we're already on the target route to avoid unnecessary navigation
-        const currentPath = this.$route.path;
-        const targetPath = route.path;
-        
-        if (currentPath === targetPath) {
-          // Already on the same page, just emit the event to update content
-          const eventName = `${this.currentSport}-category-changed`;
-          window.dispatchEvent(
-            new CustomEvent(eventName, {
-              detail: { categoryId, sport: this.currentSport },
-            })
-          );
-          // Update main navigation underline to ensure parent sport is highlighted
-          this.$nextTick(() => {
-            this.updateActiveUnderline();
-          });
-        } else {
-          // Navigate to the category page
-          this.$router.push(route);
-        }
-      } else {
-        // Fallback: emit event for current page to handle (if already on category page)
-        const eventName = `${this.currentSport}-category-changed`;
-        window.dispatchEvent(
-          new CustomEvent(eventName, {
-            detail: { categoryId, sport: this.currentSport },
-          })
-        );
+      if (!targetSlug) {
+        return;
       }
+
+      // Navigate to the category page with the appropriate route
+      
+      const route = {
+        path: `/${targetSlug}`,
+        query: {
+          categoryId: categoryId,
+          title: targetTitle,
+        },
+      };
+               
+      console.log("prvi")
+      // Already on the same page, just emit the event to update content
+      const eventName = `${this.currentSport || categoryId || 'default'}-category-changed`;
+      console.log("eventName: ", eventName)
+      let detail = {
+        categoryId,
+        sport: this.currentSport ,
+        parent_slug: "fudbal"
+      }
+      console.log("sending detail: ", detail)
+
+      window.dispatchEvent(
+        new CustomEvent(eventName, {
+          detail: detail,
+        })
+      );
+      // Update main navigation underline to ensure parent sport is highlighted
+      this.$nextTick(() => {
+        this.updateActiveUnderline();
+      });
+    
+      console.log("drugi")
+      // Navigate to the category page
+      this.$router.push(route);
+      
+      
+    
     },
     /**
      * Setup dynamic category listeners for all sports

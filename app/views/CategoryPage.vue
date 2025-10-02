@@ -711,6 +711,7 @@ export default {
       const currentPath = this.$route.path;
       const isArticlePage = currentPath.includes('/') && currentPath.split('/').length > 2;
       
+      console.log("TU SAM")
       // Don't clean URL if we're on an article page
       if (isArticlePage) {
         return;
@@ -726,7 +727,7 @@ export default {
           (this.currentCategoryId || this.storedCategoryTitle)
         ) {
           // Use browser History API instead of Vue Router to avoid triggering watchers
-          const cleanUrl = `${currentSlug}`;
+          const cleanUrl = `${this.parent_slug}`;
           window.history.replaceState(null, "", cleanUrl);
         }
       }
@@ -740,9 +741,9 @@ export default {
 
     setupDynamicEventListener() {
       // Create dynamic event name based on current categoryId
-      const eventName = `${this.sport || 'default'}-category-changed`;
-       
-      
+      const eventName = `${this.sport || this.currentCategoryId || 'default'}-category-changed`;
+     
+      const parent_slug = "OVDE DOHVATITI VREDNOSTI"
       // Store the event name and handler for cleanup
       this.currentEventName = eventName;
       this.eventHandler = this.handleGlobalCategoryChange.bind(this);
@@ -751,12 +752,13 @@ export default {
       window.addEventListener(this.currentEventName, this.eventHandler);
       
       // Dispatch initial event to notify other components
-      window.dispatchEvent(new CustomEvent(`${this.sport || this.currentCategoryId || 'default'}-category-updated`, {
+      window.dispatchEvent(new CustomEvent(`${this.sport || this.currentCategoryId || 'default'}-category-changed`, {
         detail: { 
           categoryId: this.currentCategoryId,
-          sport: this.sport 
+          sport: this.sport ,
+          parent_slug: parent_slug
         }
-      }));
+      })); 
       
        
     },
@@ -770,8 +772,10 @@ export default {
     },
     
     async handleGlobalCategoryChange(event) {
-      const { categoryId, sport } = event.detail;
-      
+      const { categoryId, sport, parent_slug } = event.detail;
+
+      console.log("EVENT RECEIVED: ", event.detail)
+
       // Don't handle category changes if we're not on a category page
       const currentPath = this.$route.path;
       const isArticlePage = currentPath.includes('/') && currentPath.split('/').length > 2;
@@ -783,6 +787,7 @@ export default {
       // Update current category and sport information
       this.currentCategoryId = categoryId;
       this.sport = sport; // Store the sport value for future use
+      this.parent_slug = parent_slug;
       
       // Only update stored category title if it's not already set or if we're changing sport context
       if (sport && (!this.storedCategoryTitle || this.storedCategoryTitle !== sport.toUpperCase())) {
