@@ -9,6 +9,7 @@ const slug = route.params.slug;
 
 // Import the canonical category utility function instead of duplicating logic
 import { getCanonicalCategory } from '~/utils/canonicalCategory';
+import { useBreadcrumbSchema } from '~/composables/useBreadcrumbSchema';
 
 function stripHtml(input) {
   if (!input || typeof input !== "string") return "";

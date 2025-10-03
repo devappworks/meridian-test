@@ -1,4 +1,6 @@
 <script setup>
+import { useBreadcrumbSchema } from '~/composables/useBreadcrumbSchema';
+
 const route = useRoute();
 const id = route.params.id;
 const config = useRuntimeConfig();
