@@ -39,14 +39,29 @@ const ld = {
   "@type": "Organization",
   name: siteName,
   url: canonicalUrl,
-  logo: "https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true",
-  description,
-  potentialAction: {
-    "@type": "SearchAction",
-    target: `${siteUrl}/?q={search_term_string}`,
-    "query-input": "required name=search_term_string",
-  },
+  logo: "https://meridiansport.rs/_nuxt/meridian-logo.DklqdKiS.svg",
 };
+
+const ld2 = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": "https://meridiansport.rs/",
+  "name": "MeridianSport",
+  "description": "Najnovije sportske vesti, rezultati, prenosi uzivo i analize.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "MeridianSport",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://meridiansport.rs/_nuxt/meridian-logo.DklqdKiS.svg"
+    }
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://meridiansport.rs/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
 
 useHead(() => ({
   title,
@@ -70,9 +85,14 @@ useHead(() => ({
   link: canonicalUrl ? [{ rel: "canonical", href: canonicalUrl }] : [],
   script: [
     {
-      key: "ldjson-website",
+      key: "ldjson-website-1",
       type: "application/ld+json",
       innerHTML: JSON.stringify(ld),
+    },
+    {
+      key: "ldjson-website-2",
+      type: "application/ld+json",
+      innerHTML: JSON.stringify(ld2),
     },
   ],
 }));
