@@ -494,46 +494,8 @@ useSeoMeta({
   twitterImage: () => article.value?.feat_images?.large?.url || '/meridian-logo.svg',
 });
 
-// Add NewsArticle structured data
-useHead(() => {
-  const newsArticleSchema = useNewsArticleSchema(article.value);
-
-  // Build breadcrumb data for article pages
-  const breadcrumbs = article.value ? [
-    {
-      name: article.value.categories?.[0]?.name || 'Home',
-      url: `/${article.value.categories?.[0]?.slug || ''}`,
-    },
-    {
-      name: article.value.title,
-      url: `/${article.value.categories?.[0]?.slug || props.category}/${article.value.slug || props.slug}`,
-    },
-  ] : [];
-
-  const breadcrumbSchema = useBreadcrumbSchema(breadcrumbs);
-
-  const scripts = [];
-
-  if (newsArticleSchema) {
-    scripts.push({
-      key: 'ldjson-newsarticle',
-      type: 'application/ld+json',
-      children: JSON.stringify(newsArticleSchema),
-    });
-  }
-
-  if (breadcrumbSchema) {
-    scripts.push({
-      key: 'ldjson-breadcrumb',
-      type: 'application/ld+json',
-      children: JSON.stringify(breadcrumbSchema),
-    });
-  }
-
-  return {
-    script: scripts,
-  };
-});
+// Note: NewsArticle schema is already handled at the page level ([category]/[slug].vue)
+// Only useSeoMeta tags are needed here for dynamic updates
 
 // Methods
 const fetchArticle = async () => {

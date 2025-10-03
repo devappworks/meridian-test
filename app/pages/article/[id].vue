@@ -93,6 +93,20 @@ useHead(() => {
 
   const link = canonicalUrl ? [{ rel: "canonical", href: canonicalUrl }] : [];
 
+  // Build breadcrumb schema
+  const breadcrumbs = a.categories?.[0] ? [
+    {
+      name: a.categories[0].name,
+      url: `/${a.categories[0].slug}`,
+    },
+    {
+      name: a.title,
+      url: canonicalUrl,
+    },
+  ] : [];
+
+  const breadcrumbSchema = useBreadcrumbSchema(breadcrumbs);
+
   const script = [
     {
       key: "ldjson-article",
@@ -100,6 +114,14 @@ useHead(() => {
       children: JSON.stringify(ld),
     },
   ];
+
+  if (breadcrumbSchema) {
+    script.push({
+      key: "ldjson-breadcrumb",
+      type: "application/ld+json",
+      children: JSON.stringify(breadcrumbSchema),
+    });
+  }
 
   return {
     title,
