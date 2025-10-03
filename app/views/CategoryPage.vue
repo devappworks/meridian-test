@@ -859,10 +859,9 @@ export default {
       this.sport = sport; // Store the sport value for future use
       this.parent_slug = parent_slug;
 
-      // Don't overwrite storedCategoryTitle if we already have a proper title from the menu
-      // Only update it if we're actually changing to a different category context
-      const activeNavTitle = this.getActiveNavigationTitle();
-      if (!activeNavTitle && sport && (!this.storedCategoryTitle || this.storedCategoryTitle !== sport.toUpperCase())) {
+      // Don't overwrite storedCategoryTitle if we already have a proper title
+      // Only update if we don't have a stored title yet
+      if (sport && !this.storedCategoryTitle) {
         this.storedCategoryTitle = sport.toUpperCase();
       }
 
