@@ -798,7 +798,7 @@ const formatDate = (dateString) => {
     // Handle dd/MM/yyyy[, HH:mm]
     const dmySlash = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?$/;
     // Handle MySQL style: YYYY-MM-DD HH:mm:ss (or with 'T')
-    const ymdHms = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/;
+    const ymdHms = /^(\d{4})(\d{2})(\d{2}) (\d{2}):(\d{2})(?::(\d{2}))?$/;
     let m = trimmed.match(dmySlash);
     if (m) {
       const [_, d, mth, y, h, min] = m;
@@ -829,16 +829,8 @@ const formatDate = (dateString) => {
   const day = String(date.getDate()).padStart(2, "0");
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
 
-  // Get timezone offset in format +HH:MM or -HH:MM
-  const tzOffset = -date.getTimezoneOffset();
-  const tzSign = tzOffset >= 0 ? "+" : "-";
-  const tzHours = String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, "0");
-  const tzMinutes = String(Math.abs(tzOffset) % 60).padStart(2, "0");
-  const timezone = `${tzSign}${tzHours}:${tzMinutes}`;
-
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${timezone}`;
+  return `${year}.${month}.${day} ${hours}:${minutes}`;
 };
 
 const navigateToArticle = (id) => {
