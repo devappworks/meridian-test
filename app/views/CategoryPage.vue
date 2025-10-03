@@ -81,6 +81,7 @@ import LiveStream from "@/components/LiveStream.vue";
 import SkeletonNewsGrid from "@/components/skeletons/SkeletonNewsGrid.vue";
 import SkeletonRelatedNews from "@/components/skeletons/SkeletonRelatedNews.vue";
 import { fetchFromApi, fetchParentCategory } from "@/services/api.js";
+import { getCanonicalCategoryFromSlug } from "@/utils/canonicalCategory.js";
 
 export default {
   name: "CategoryPage",
@@ -171,58 +172,71 @@ export default {
     },
     displayTitle() {
       let title;
-      
+
       // First priority: Get title from active navigation item
       const activeNavTitle = this.getActiveNavigationTitle();
+      
+      
+      
       if (activeNavTitle) {
         title = activeNavTitle;
-         
+        
         return title;
       }
-      
+
       // Use stored title first (persists after URL cleanup)
       if (this.storedCategoryTitle) {
         title = this.storedCategoryTitle;
-         
+        
         return title;
       }
 
       // Use title from query params if available
       if (this.categoryTitleFromQuery) {
         title = this.categoryTitleFromQuery;
-         
+        
         return title;
       }
 
-      // Fallback: convert slug back to readable title
+      // Fallback: convert slug back to readable title with proper Serbian characters
       if (this.slug) {
         title = this.slug
+          .replace(/domaca/gi, "DOMAĆA")
+          .replace(/kosarka/gi, "KOŠARKA")
+          .replace(/odbojka/gi, "ODBOJKA")
+          .replace(/sampiona/gi, "ŠAMPIONA")
           .split("-")
           .map((word) => word.toUpperCase())
           .join(" ");
-         
+        
         return title;
       }
 
       title = "VESTI";
-       
+      
       return title;
     },
   },
   methods: {
     getActiveNavigationTitle() {
       // Return the title of the currently active navigation item
-      if (!this.menuData || !this.currentCategoryId) return null;
-      
-      // Only check subcategories
-      if (this.menuData.sub_menu) {
+      if (!this.menuData) return null;
+
+      // First, check if the menuData itself has the current categoryId
+      if (this.currentCategoryId && this.menuData.web_categories &&
+          this.menuData.web_categories.includes(this.currentCategoryId)) {
+        return this.menuData.title;
+      }
+
+      // Check subcategories
+      if (this.currentCategoryId && this.menuData.sub_menu) {
         for (const subMenu of this.menuData.sub_menu) {
           if (subMenu.web_categories && subMenu.web_categories.includes(this.currentCategoryId)) {
             return subMenu.title;
           }
         }
       }
-      
+
       return null;
     },
 
@@ -503,36 +517,33 @@ export default {
         /* if (this.categoryData.result.articles[0].categories[0].name.toLowerCase().includes(this.displayTitle.toLowerCase())) {
            
         } */
-         
 
-         
+        // Get canonical category for comparison (e.g., "domaca-kosarka" -> "kosarka")
+        const canonicalSlug = getCanonicalCategoryFromSlug(this.slug);
 
-         
-
-        // Check if any article doesn't have displayTitle in its categories
+        // Check if any article doesn't match the canonical category
         let needsTagFetch = false;
         for (const article of categoryData.result.articles) {
-          const hasDisplayTitle = article.categories.some(cat => 
-            cat.name.toLowerCase().includes(this.displayTitle.toLowerCase())
-          );
-           
-           
-          if (!hasDisplayTitle) {
-             
+          const hasMatchingCategory = article.categories.some(cat => {
+            const catSlug = cat.slug?.toLowerCase() || cat.name?.toLowerCase() || '';
+            const catCanonical = getCanonicalCategoryFromSlug(catSlug);
+
+            // Check if article's canonical category matches our canonical category
+            return catCanonical === canonicalSlug || catSlug === canonicalSlug;
+          });
+
+          if (!hasMatchingCategory) {
             needsTagFetch = true;
             break;
           }
         }
 
-         
-
-        // If we found an article without displayTitle in categories, fetch using tags
+        // If we found an article without matching canonical category, fetch using tags
         let finalArticles = categoryData.result.articles;
-         
-        if (needsTagFetch) {
-           
+
+        if (needsTagFetch && this.getTagId()) {
           this.currentTagId = this.getTagId();
-           
+
           const tagData = await fetchFromApi("/getArticles", {
             articleLimit: 53,
             "tag[]": this.currentTagId,
@@ -751,7 +762,7 @@ export default {
           (this.currentCategoryId || this.storedCategoryTitle)
         ) {
           // Use browser History API instead of Vue Router to avoid triggering watchers
-          console.log("this.parent_slug", this.parent_slug);
+          
           const cleanUrl = `${this.parent_slug}`;
           window.history.replaceState(null, "", cleanUrl);
           this.parent_slug = "";
@@ -766,14 +777,14 @@ export default {
     },
 
     async getParentSlug() {
-      console.log("getParentSlug called with slug:", this.slug);
+      
       
       // Check if this is a main category (like kosarka, fudbal, etc.)
       // Main categories shouldn't have parents, so return the slug itself
       const mainCategories = ['kosarka', 'fudbal', 'tenis', 'odbojka', 'ostali-sportovi'];
       
       if (mainCategories.includes(this.slug)) {
-        console.log("This is a main category, returning slug itself:", this.slug);
+        
         return this.slug;
       }
       
@@ -781,23 +792,23 @@ export default {
         const parentCategoryData = await fetchParentCategory(`${this.slug}`);
         if (parentCategoryData && parentCategoryData.result && parentCategoryData.result.category) {
           const parent_slug = parentCategoryData.result.category.slug;
-          console.log("Successfully fetched parent slug:", parent_slug);
+          
           return parent_slug;
         }
       } catch (error) {
         // Check if it's a 404 error
         if (error.response && error.response.status === 404) {
-          console.log("404 error - no parent category found, returning slug:", this.slug);
+          
           return this.slug;
         }
         // For other errors, log and return slug as fallback
         console.error("Error fetching parent category:", error);
-        console.log("Returning slug as fallback:", this.slug);
+        
         return this.slug;
       }
       
       // Fallback if no data or other issues
-      console.log("No parent category data, returning slug:", this.slug);
+      
     },
 
     async setupDynamicEventListener() {
@@ -838,25 +849,26 @@ export default {
       // Don't handle category changes if we're not on a category page
       const currentPath = this.$route.path;
       const isArticlePage = currentPath.includes('/') && currentPath.split('/').length > 2;
-      
+
       if (isArticlePage) {
         return;
       }
-      
+
       // Update current category and sport information
       this.currentCategoryId = categoryId;
       this.sport = sport; // Store the sport value for future use
       this.parent_slug = parent_slug;
-      
-      // Only update stored category title if it's not already set or if we're changing sport context
-      if (sport && (!this.storedCategoryTitle || this.storedCategoryTitle !== sport.toUpperCase())) {
+
+      // Don't overwrite storedCategoryTitle if we already have a proper title from the menu
+      // Only update it if we're actually changing to a different category context
+      const activeNavTitle = this.getActiveNavigationTitle();
+      if (!activeNavTitle && sport && (!this.storedCategoryTitle || this.storedCategoryTitle !== sport.toUpperCase())) {
         this.storedCategoryTitle = sport.toUpperCase();
-         
       }
-      
+
       // Reset all data
       this.resetNews();
-      
+
       // Set loading states
       this.loading = {
         main: true,
@@ -864,10 +876,10 @@ export default {
         other: true,
         sidebar: true,
       };
-      
+
       // Fetch new data for the category
       await this.fetchCategoryArticles();
-      
+
       // cleanUpUrl() is already called within fetchCategoryArticles()
     },
   },
