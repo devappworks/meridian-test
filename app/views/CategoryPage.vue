@@ -80,7 +80,7 @@ import AdBanners from "@/components/AdBanners.vue";
 import LiveStream from "@/components/LiveStream.vue";
 import SkeletonNewsGrid from "@/components/skeletons/SkeletonNewsGrid.vue";
 import SkeletonRelatedNews from "@/components/skeletons/SkeletonRelatedNews.vue";
-import { fetchFromApi } from "@/services/api.js";
+import { fetchFromApi, fetchParentCategory } from "@/services/api.js";
 
 export default {
   name: "CategoryPage",
@@ -711,7 +711,6 @@ export default {
       const currentPath = this.$route.path;
       const isArticlePage = currentPath.includes('/') && currentPath.split('/').length > 2;
       
-      console.log("TU SAM")
       // Don't clean URL if we're on an article page
       if (isArticlePage) {
         return;
@@ -727,8 +726,10 @@ export default {
           (this.currentCategoryId || this.storedCategoryTitle)
         ) {
           // Use browser History API instead of Vue Router to avoid triggering watchers
+          console.log("this.parent_slug", this.parent_slug);
           const cleanUrl = `${this.parent_slug}`;
           window.history.replaceState(null, "", cleanUrl);
+          this.parent_slug = "";
         }
       }
     },
@@ -739,11 +740,46 @@ export default {
       this.$router.push(target);
     },
 
-    setupDynamicEventListener() {
+    async getParentSlug() {
+      console.log("getParentSlug called with slug:", this.slug);
+      
+      // Check if this is a main category (like kosarka, fudbal, etc.)
+      // Main categories shouldn't have parents, so return the slug itself
+      const mainCategories = ['kosarka', 'fudbal', 'tenis', 'odbojka', 'ostali-sportovi'];
+      
+      if (mainCategories.includes(this.slug)) {
+        console.log("This is a main category, returning slug itself:", this.slug);
+        return this.slug;
+      }
+      
+      try {
+        const parentCategoryData = await fetchParentCategory(`${this.slug}`);
+        if (parentCategoryData && parentCategoryData.result && parentCategoryData.result.category) {
+          const parent_slug = parentCategoryData.result.category.slug;
+          console.log("Successfully fetched parent slug:", parent_slug);
+          return parent_slug;
+        }
+      } catch (error) {
+        // Check if it's a 404 error
+        if (error.response && error.response.status === 404) {
+          console.log("404 error - no parent category found, returning slug:", this.slug);
+          return this.slug;
+        }
+        // For other errors, log and return slug as fallback
+        console.error("Error fetching parent category:", error);
+        console.log("Returning slug as fallback:", this.slug);
+        return this.slug;
+      }
+      
+      // Fallback if no data or other issues
+      console.log("No parent category data, returning slug:", this.slug);
+    },
+
+    async setupDynamicEventListener() {
       // Create dynamic event name based on current categoryId
       const eventName = `${this.sport || this.currentCategoryId || 'default'}-category-changed`;
      
-      const parent_slug = "OVDE DOHVATITI VREDNOSTI"
+      const parent_slug = await this.getParentSlug();
       // Store the event name and handler for cleanup
       this.currentEventName = eventName;
       this.eventHandler = this.handleGlobalCategoryChange.bind(this);
@@ -758,9 +794,7 @@ export default {
           sport: this.sport ,
           parent_slug: parent_slug
         }
-      })); 
-      
-       
+      }));       
     },
     
     removeDynamicEventListener() {
@@ -809,17 +843,16 @@ export default {
       // Fetch new data for the category
       await this.fetchCategoryArticles();
       
-      // Clean up URL after data is loaded
-      this.cleanUpUrl();
+      // cleanUpUrl() is already called within fetchCategoryArticles()
     },
   },
 
-  mounted() {
+  async mounted() {
     this.initializeCategory();
     this.initializeTag();
     
     // Add dynamic event listener based on categoryId
-    this.setupDynamicEventListener();
+    await this.setupDynamicEventListener();
   },
   
   beforeUnmount() {
@@ -828,7 +861,7 @@ export default {
   },
   watch: {
     // Watch for route changes to handle navigation between categories
-    $route(to, from) {
+    async $route(to, from) {
       // Check if we're navigating to/from article pages
       const toIsArticle = to.path.split('/').length > 2;
       const fromIsArticle = from.path.split('/').length > 2;
@@ -851,18 +884,18 @@ export default {
         this.removeDynamicEventListener();
         this.initializeCategory();
         this.initializeTag();
-        this.setupDynamicEventListener();
+        await this.setupDynamicEventListener();
       }
     },
     // Watch for prop changes
-    categoryId() {
+    async categoryId() {
       this.resetNews();
       this.storedCategoryTitle = null; // Clear stored title for new category
       
       // Remove old event listener and setup new one
       this.removeDynamicEventListener();
       this.initializeCategory();
-      this.setupDynamicEventListener();
+      await this.setupDynamicEventListener();
     },
     tagId() {
       this.resetNews();
@@ -871,11 +904,11 @@ export default {
     },
     
     // Watch for currentCategoryId changes to update event listener
-    currentCategoryId(newCategoryId, oldCategoryId) {
+    async currentCategoryId(newCategoryId, oldCategoryId) {
       if (newCategoryId !== oldCategoryId) {
         // Remove old event listener and setup new one with updated categoryId
         this.removeDynamicEventListener();
-        this.setupDynamicEventListener();
+        await this.setupDynamicEventListener();
       }
     },
 

@@ -1104,8 +1104,7 @@ export default {
       console.log("eventName: ", eventName)
       let detail = {
         categoryId,
-        sport: this.currentSport ,
-        parent_slug: "fudbal"
+        sport: this.currentSport
       }
       console.log("sending detail: ", detail)
 
@@ -1482,7 +1481,7 @@ a:hover {
 .sport-nav-underline {
   position: absolute;
   bottom: 4px;
-  height: 2px;
+  height: 3px;
   background: var(--text-white);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 1px;

@@ -345,3 +345,12 @@ export const fetchAllComments = async (articleId) => {
   }
 };
 
+export const fetchParentCategory = async (slug) => {
+  try {
+    const response = await apiClient.get(`/parentCategory/${slug}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching parent category:`, error);
+    throw error;
+  }
+};

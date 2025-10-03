@@ -238,7 +238,7 @@ a.nav-item:active {
 
 .nav-underline {
   position: absolute;
-  bottom: 0;
+  bottom: 12px;
   height: 3px;
   background: var(--text-white);
   transition: all 0.3s ease;
