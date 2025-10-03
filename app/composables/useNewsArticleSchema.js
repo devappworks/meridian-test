@@ -16,9 +16,7 @@ export function useNewsArticleSchema(article) {
     `${siteUrl}/${article.categories?.[0]?.slug || article.category}/${article.slug}`;
 
   // Get the main image
-  const mainImage = article.feat_images?.large?.url ||
-                    article.feat_images?.medium?.url ||
-                    article.image;
+  const mainImage = article.feat_images?.['extra-large']?.url;
 
   // Get author name
   const authorName = article.authors?.[0]?.name || siteName;

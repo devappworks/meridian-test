@@ -116,9 +116,9 @@
             <!-- Featured image -->
             <div
               class="featured-image"
-              v-if="article?.feat_images?.large?.url"
+              v-if="article?.feat_images?.['extra-large']?.url"
             >
-              <img :src="article.feat_images.large.url" :alt="article?.title || ''"/>
+              <img :src="article.feat_images['extra-large'].url" :alt="article?.title || ''"/>
               <div class="image-caption" v-if="article?.featured_image_caption">
                 {{ article.featured_image_caption }}
               </div>
@@ -824,13 +824,21 @@ const formatDate = (dateString) => {
 
   if (!(date instanceof Date) || isNaN(date.getTime())) return "";
 
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
 
-  return `${day}.${month}.${year}. ${hours}:${minutes}`;
+  // Get timezone offset in format +HH:MM or -HH:MM
+  const tzOffset = -date.getTimezoneOffset();
+  const tzSign = tzOffset >= 0 ? "+" : "-";
+  const tzHours = String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, "0");
+  const tzMinutes = String(Math.abs(tzOffset) % 60).padStart(2, "0");
+  const timezone = `${tzSign}${tzHours}:${tzMinutes}`;
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${timezone}`;
 };
 
 const navigateToArticle = (id) => {
