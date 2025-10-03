@@ -93,31 +93,6 @@ export default {
     SkeletonNewsGrid,
     SkeletonRelatedNews,
   },
-  head() {
-    // Build breadcrumb schema manually (can't use composables in Options API head())
-    const breadcrumbSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: this.displayTitle,
-          item: `https://meridiansport.rs/${this.slug || ''}`,
-        },
-      ],
-    };
-
-    return {
-      script: [
-        {
-          key: 'ldjson-breadcrumb-category',
-          type: 'application/ld+json',
-          innerHTML: JSON.stringify(breadcrumbSchema),
-        },
-      ],
-    };
-  },
   props: {
     slug: {
       type: String,
