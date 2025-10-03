@@ -107,7 +107,7 @@ useHead(() => {
     },
   ] : [];
 
-  const breadcrumbSchema = useBreadcrumbSchema(breadcrumbs);
+  const breadcrumbSchema = useBreadcrumbSchema(breadcrumbs, siteUrl);
 
   const script = [
     {

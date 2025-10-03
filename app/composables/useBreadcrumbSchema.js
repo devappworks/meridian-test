@@ -1,16 +1,15 @@
-export function useBreadcrumbSchema(breadcrumbs) {
-  const config = useRuntimeConfig();
-  const siteUrl = (config.public?.SITE_URL || '').replace(/\/$/, '');
-
+export function useBreadcrumbSchema(breadcrumbs, siteUrl = '') {
   if (!breadcrumbs || !Array.isArray(breadcrumbs) || breadcrumbs.length === 0) {
     return null;
   }
+
+  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
 
   const itemListElement = breadcrumbs.map((crumb, index) => ({
     '@type': 'ListItem',
     position: index + 1,
     name: crumb.name,
-    item: crumb.url?.startsWith('http') ? crumb.url : `${siteUrl}${crumb.url}`,
+    item: crumb.url?.startsWith('http') ? crumb.url : `${cleanSiteUrl}${crumb.url}`,
   }));
 
   return {

@@ -93,27 +93,28 @@ export default {
     SkeletonRelatedNews,
   },
   head() {
-    const config = useRuntimeConfig();
-    const siteUrl = (config.public?.SITE_URL || '').replace(/\/$/, '');
-
-    // Build breadcrumb data for category pages
-    const breadcrumbs = [
-      {
-        name: this.displayTitle,
-        url: `/${this.slug || ''}`,
-      },
-    ];
-
-    const breadcrumbSchema = useBreadcrumbSchema(breadcrumbs);
+    // Build breadcrumb schema manually (can't use composables in Options API head())
+    const breadcrumbSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: this.displayTitle,
+          item: `https://meridiansport.rs/${this.slug || ''}`,
+        },
+      ],
+    };
 
     return {
-      script: breadcrumbSchema ? [
+      script: [
         {
           key: 'ldjson-breadcrumb-category',
           type: 'application/ld+json',
           innerHTML: JSON.stringify(breadcrumbSchema),
         },
-      ] : [],
+      ],
     };
   },
   props: {
