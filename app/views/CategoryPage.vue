@@ -92,6 +92,30 @@ export default {
     SkeletonNewsGrid,
     SkeletonRelatedNews,
   },
+  head() {
+    const config = useRuntimeConfig();
+    const siteUrl = (config.public?.SITE_URL || '').replace(/\/$/, '');
+
+    // Build breadcrumb data for category pages
+    const breadcrumbs = [
+      {
+        name: this.displayTitle,
+        url: `/${this.slug || ''}`,
+      },
+    ];
+
+    const breadcrumbSchema = useBreadcrumbSchema(breadcrumbs);
+
+    return {
+      script: breadcrumbSchema ? [
+        {
+          key: 'ldjson-breadcrumb-category',
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify(breadcrumbSchema),
+        },
+      ] : [],
+    };
+  },
   props: {
     slug: {
       type: String,

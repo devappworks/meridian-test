@@ -436,7 +436,7 @@ useSeoMeta({
   title: () => article.value?.title || 'Article - Meridian',
   description: () => {
     if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
-    
+
     // Extract text content from HTML and create a description - SSR safe
     let textContent;
     if (typeof document === 'undefined') {
@@ -448,14 +448,14 @@ useSeoMeta({
       tempDiv.innerHTML = article.value.contents;
       textContent = tempDiv.textContent || tempDiv.innerText || '';
     }
-    
+
     // Return first 160 characters for SEO description
     return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
   },
   ogTitle: () => article.value?.title || 'Article - Meridian',
   ogDescription: () => {
     if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
-    
+
     // SSR-safe text extraction
     let textContent;
     if (typeof document === 'undefined') {
@@ -467,7 +467,7 @@ useSeoMeta({
       tempDiv.innerHTML = article.value.contents;
       textContent = tempDiv.textContent || tempDiv.innerText || '';
     }
-    
+
     return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
   },
   ogImage: () => article.value?.feat_images?.large?.url || '/meridian-logo.svg',
@@ -476,7 +476,7 @@ useSeoMeta({
   twitterTitle: () => article.value?.title || 'Article - Meridian',
   twitterDescription: () => {
     if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
-    
+
     // SSR-safe text extraction
     let textContent;
     if (typeof document === 'undefined') {
@@ -488,10 +488,51 @@ useSeoMeta({
       tempDiv.innerHTML = article.value.contents;
       textContent = tempDiv.textContent || tempDiv.innerText || '';
     }
-    
+
     return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
   },
   twitterImage: () => article.value?.feat_images?.large?.url || '/meridian-logo.svg',
+});
+
+// Add NewsArticle structured data
+useHead(() => {
+  const newsArticleSchema = useNewsArticleSchema(article.value);
+
+  // Build breadcrumb data for article pages
+  const breadcrumbs = article.value ? [
+    {
+      name: article.value.categories?.[0]?.name || 'Home',
+      url: `/${article.value.categories?.[0]?.slug || ''}`,
+    },
+    {
+      name: article.value.title,
+      url: `/${article.value.categories?.[0]?.slug || props.category}/${article.value.slug || props.slug}`,
+    },
+  ] : [];
+
+  const breadcrumbSchema = useBreadcrumbSchema(breadcrumbs);
+
+  const scripts = [];
+
+  if (newsArticleSchema) {
+    scripts.push({
+      key: 'ldjson-newsarticle',
+      type: 'application/ld+json',
+      children: JSON.stringify(newsArticleSchema),
+    });
+  }
+
+  if (breadcrumbSchema) {
+    scripts.push({
+      key: 'ldjson-breadcrumb',
+      type: 'application/ld+json',
+      children: JSON.stringify(breadcrumbSchema),
+    });
+  }
+
+  return {
+    script: scripts,
+  };
 });
 
 // Methods

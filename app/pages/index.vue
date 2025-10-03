@@ -36,9 +36,10 @@ const imageUrl = undefined; // Add if you have a social share image at site leve
 
 const ld = {
   "@context": "https://schema.org",
-  "@type": "WebSite",
+  "@type": "Organization",
   name: siteName,
   url: canonicalUrl,
+  logo: "https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true",
   description,
   potentialAction: {
     "@type": "SearchAction",
@@ -72,6 +73,7 @@ useHead(() => ({
       key: "ldjson-website",
       type: "application/ld+json",
       children: JSON.stringify(ld),
+
     },
   ],
 }));
