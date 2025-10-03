@@ -79,7 +79,7 @@
                   @click="share('twitter')"
                   aria-label="Share on X"
                 >
-                  <i class="fab fa-x-twitter" aria-hidden="true"></i>
+                  <img src="@/assets/images/newsletter/twitter.svg" alt="X" />
                 </button>
                 <button
                   class="share-btn"

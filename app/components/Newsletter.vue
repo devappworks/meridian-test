@@ -9,7 +9,7 @@
           <img src="@/assets/images/article/instagram.png" alt="Instagram" />
         </a>
         <a href="https://x.com/meridiansportrs" class="social-icon">
-          <i class="fab fa-x-twitter" aria-hidden="true"></i>
+          <img src="@/assets/images/newsletter/twitter.svg" alt="X" />
         </a>
         <a href="https://www.facebook.com/SportMeridian/" class="social-icon">
           <img src="@/assets/images/article/facebook.png" alt="Facebook" />
