@@ -113,7 +113,7 @@ useHead(() => {
     {
       key: "ldjson-article",
       type: "application/ld+json",
-      children: JSON.stringify(ld),
+      innerHTML: JSON.stringify(ld),
     },
   ];
 
@@ -121,7 +121,7 @@ useHead(() => {
     script.push({
       key: "ldjson-breadcrumb",
       type: "application/ld+json",
-      children: JSON.stringify(breadcrumbSchema),
+      innerHTML: JSON.stringify(breadcrumbSchema),
     });
   }
 

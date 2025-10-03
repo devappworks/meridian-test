@@ -72,8 +72,7 @@ useHead(() => ({
     {
       key: "ldjson-website",
       type: "application/ld+json",
-      children: JSON.stringify(ld),
-
+      innerHTML: JSON.stringify(ld),
     },
   ],
 }));
