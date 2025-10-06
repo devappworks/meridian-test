@@ -147,16 +147,30 @@ export default {
       return this.tagName ? this.tagName.replace(/-/g, ' ').toUpperCase() : "TAG";
     },
   },
+  mounted() {
+    // Update the URL to show just the tag slug
+    this.updateUrl();
+  },
   watch: {
     tagId: {
       handler(newTagId, oldTagId) {
         this.resetNews();
         this.fetchTagArticles();
+        this.updateUrl();
       },
       immediate: true,
     },
   },
   methods: {
+    // Update the browser URL to show just the tag slug
+    updateUrl() {
+      if (this.tagName && this.$router) {
+        const newUrl = `/${this.tagName}/`;
+        // Use replaceState to update URL without triggering navigation
+        window.history.replaceState(null, '', newUrl);
+      }
+    },
+
     // Helper function to map article data consistently
     mapArticle(article) {
       return {
