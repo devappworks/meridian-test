@@ -6,5 +6,5 @@ import TagPage from "@/views/TagPage.vue";
 </script>
 
 <template>
-  <TagPage />
+  <TagPage :tagId="tagId" :tagName="tagName" />
 </template>

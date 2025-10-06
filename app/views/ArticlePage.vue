@@ -875,7 +875,7 @@ const navigateToTag = (tagId, tagName) => {
   }
   const tagSlug = generateSlugFromTagName(tagName);
   console.log("🔴 ArticlePage navigating to tag:", tagName, "→ slug:", tagSlug);
-  useRouter().push(`/${tagSlug}/`);
+  useRouter().push(`/tag/${tagId}/${tagSlug}/`);
 };
 
 const extractParagraphs = (htmlContent) => {

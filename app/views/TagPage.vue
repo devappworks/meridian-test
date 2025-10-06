@@ -144,12 +144,12 @@ export default {
   },
   computed: {
     tagTitle() {
-      return this.tagName ? this.tagName.toUpperCase() : "TAG";
+      return this.tagName ? this.tagName.replace(/-/g, ' ').toUpperCase() : "TAG";
     },
   },
   watch: {
     tagId: {
-      handler() {
+      handler(newTagId, oldTagId) {
         this.resetNews();
         this.fetchTagArticles();
       },
@@ -183,7 +183,7 @@ export default {
       };
     },
 
-    async fetchTagArticles() {
+    async fetchTagArticles() {      
       this.loading = {
         featured: true,
         main: true,
@@ -193,11 +193,13 @@ export default {
       };
 
       try {
-        const tagData = await fetchFromApi("/getArticles", {
+        const apiParams = {
           articleLimit: 56,
           "tag[]": this.tagId,
           page: 1,
-        });
+        };
+        
+        const tagData = await fetchFromApi("/getArticles", apiParams);
 
         const articles = tagData.result.articles;
 
@@ -414,7 +416,7 @@ export default {
 
     navigateToArticle(id) {
       const found = [...this.tagNews, ...this.loadMoreTagNews].find((a) => a.id === id);
-      const target = `/${found.category}/${found.slug}`;
+      const target = `/${found.category}/${found.slug}/`;
       this.$router.push(target);
     },
   },
