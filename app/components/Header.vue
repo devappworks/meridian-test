@@ -56,7 +56,7 @@
 
           <!-- Login Link for non-logged-in users (no dropdown) -->
           <div class="user-icon" v-else>
-            <router-link to="/prijava">
+            <router-link to="/prijava/">
               <i class="fa-regular fa-circle-user"></i>
             </router-link>
           </div>
@@ -806,7 +806,7 @@ export default {
     },
     goToProfile() {
       this.hideUserDropdown();
-      this.$router.push("/account-page");
+      this.$router.push("/account-page/");
     },
     logout() {
       this.hideUserDropdown();
@@ -1173,7 +1173,7 @@ export default {
   },
   watch: {
     $route(to, from) {
-      if (to.path === "/" && from.path === "/prijava") {
+      if (to.path === "/" && from.path === "/prijava/") {
         this.checkUserLoggedIn();
       }
       // Update underline position when route changes

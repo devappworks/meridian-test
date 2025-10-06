@@ -88,7 +88,7 @@
             </button>
             <p class="register-link">
               Nemate nalog?
-              <router-link to="/registracija" class="register-link-text"
+              <router-link to="/registracija/" class="register-link-text"
                 >Registruj se</router-link
               >
             </p>
