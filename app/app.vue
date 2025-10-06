@@ -13,10 +13,10 @@
 </template>
 
 <script setup>
-function disableConsoleLog() {
+/* function disableConsoleLog() {
   console.log = function () {};
-}
+} */
 
 // Isključivanje console.log poziva prilikom učitavanja aplikacije
-disableConsoleLog();
+//disableConsoleLog();
 </script>

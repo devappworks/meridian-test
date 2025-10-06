@@ -16,13 +16,13 @@ useHead(() => {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: 'https://meridiansport.rs',
+        item: 'https://meridiansport.rs/',
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: displayTitle.value,
-        item: `https://meridiansport.rs/${slug}`,
+        item: `https://meridiansport.rs/${slug}/`,
       },
     ],
   };
