@@ -562,7 +562,7 @@ export default {
     },
 
     formatDate(dateString) {
-      // Robust parse and humanize; gracefully handle invalid inputs
+      // Robust parse and return ISO 8601 format
       if (!dateString) return "";
 
       let date;
@@ -598,19 +598,15 @@ export default {
 
       if (!(date instanceof Date) || isNaN(date.getTime())) return "";
 
-      const now = new Date();
-      const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
-      const diffInDays = Math.floor(diffInHours / 24);
+      // Return ISO 8601 format: YYYY-MM-DDTHH:mm:ss
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+      const seconds = String(date.getSeconds()).padStart(2, "0");
 
-      if (diffInHours < 1) {
-        return "Just now";
-      } else if (diffInHours < 24) {
-        return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`;
-      } else if (diffInDays < 7) {
-        return `${diffInDays} ${diffInDays === 1 ? "day" : "days"} ago`;
-      } else {
-        return date.toLocaleDateString();
-      }
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     },
     stripHtml(html) {
       const div = document.createElement("div");
