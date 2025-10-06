@@ -446,7 +446,7 @@ const slideMatchOdds = (direction) => {
       <div class="sidebar-news">
         <div class="sidebar-header">
           <h3>NAJNOVIJE VESTI</h3>
-          <NuxtLink to="/najnovije-vesti" class="see-all">Sve vesti</NuxtLink>
+          <NuxtLink to="/najnovije-vesti/" class="see-all">Sve vesti</NuxtLink>
         </div>
         <!-- Sidebar News with Loading State -->
         <SkeletonSidebar v-if="homepagePending || latestNews.length === 0" />
