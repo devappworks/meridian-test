@@ -38,7 +38,7 @@ useHead(() => {
   const rawDesc = a.excerpt || a.subtitle || stripHtml(a.contents || "") || a.title || "";
   const description = truncate(stripHtml(rawDesc), 160) || a.title || "";
   const filledDescription = description || (title !== "Article" ? title : siteName) || siteName || "Meridian Sport";
-  const imageUrl = a?.images?.large?.url || a?.images?.small?.url || undefined;
+  const imageUrl = a?.images?.extra_large?.url || a?.images?.large?.url || a?.images?.small?.url || undefined;
   const authorName = a?.author || "Redakcija";
   // Prefer primary date, fallback to publish_date if present
   const publishedTime = a?.date || a?.publish_date || undefined;
@@ -72,7 +72,7 @@ useHead(() => {
 
   const meta = [
     { key: "description", name: "description", content: filledDescription },
-    { key: "robots", name: "robots", content: "index, follow" },
+    { key: "robots", name: "robots", content: "index, follow", content: "max-image-preview:large" },
     // Open Graph
     { key: "og:type", property: "og:type", content: "article" },
     siteName ? { key: "og:site_name", property: "og:site_name", content: siteName } : null,
