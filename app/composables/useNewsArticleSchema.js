@@ -26,6 +26,13 @@ export function useNewsArticleSchema(article) {
                      stripHtml(article.contents).substring(0, 160) ||
                      article.title;
 
+  // Convert dates to ISO 8601 format
+  const publishDate = article.publish_date || article.date;
+  const modifiedDate = article.updated_at || article.publish_date || article.date;
+
+  const datePublishedISO = publishDate ? new Date(publishDate).toISOString() : undefined;
+  const dateModifiedISO = modifiedDate ? new Date(modifiedDate).toISOString() : undefined;
+
   return {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
@@ -35,8 +42,8 @@ export function useNewsArticleSchema(article) {
     },
     headline: article.title,
     image: mainImage ? [mainImage] : [],
-    datePublished: article.publish_date || article.date,
-    dateModified: article.updated_at || article.publish_date || article.date,
+    datePublished: datePublishedISO,
+    dateModified: dateModifiedISO,
     author: {
       '@type': 'Organization',
       name: authorName,

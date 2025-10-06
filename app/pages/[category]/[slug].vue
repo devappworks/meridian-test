@@ -47,6 +47,9 @@ useHead(() => {
   const publishedTime = a?.date || a?.publish_date || undefined;
   const tags = Array.isArray(a?.tags) ? a.tags.map((t) => t?.name).filter(Boolean) : [];
 
+  // Convert publishedTime to ISO 8601 format
+  const publishedTimeISO = publishedTime ? new Date(publishedTime).toISOString() : undefined;
+
   const ld = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -69,8 +72,8 @@ useHead(() => {
             : undefined,
         }
       : undefined,
-    datePublished: publishedTime,
-    dateModified: publishedTime,
+    datePublished: publishedTimeISO,
+    dateModified: publishedTimeISO,
   };
 
   const meta = [
