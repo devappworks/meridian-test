@@ -37,7 +37,7 @@ useHead(() => {
   const siteName = config.public?.SITE_NAME || "";
   const twitterHandle = config.public?.TWITTER_HANDLE || "";
   const canonicalCategory = getCanonicalCategory(a.categories, category);
-  const canonicalUrl = siteUrl ? `${siteUrl}/${canonicalCategory}/${slug}` : undefined;
+  const canonicalUrl = siteUrl ? `${siteUrl}/${canonicalCategory}/${slug}/` : undefined;
   const title = a.title || siteName || "Meridian Sport";
   const rawDesc = a.excerpt || a.subtitle || stripHtml(a.contents || "") || a.title || "";
   const description = truncate(stripHtml(rawDesc), 160) || a.title || "";
@@ -102,7 +102,7 @@ useHead(() => {
   const breadcrumbs = a.categories?.[0]?.name ? [
     {
       name: a.categories[0].name,
-      url: `/${canonicalCategory}`,
+      url: `/${canonicalCategory}/`,
     },
     {
       name: a.title,

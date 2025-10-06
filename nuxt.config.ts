@@ -8,7 +8,7 @@ loadDotenv()
 export default defineNuxtConfig({
   // Enable SSR for all routes
   ssr: true,
-  
+
   nitro: {
     preset: 'node-server',
     // Remove static output configuration for SSR

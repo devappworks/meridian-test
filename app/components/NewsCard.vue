@@ -81,7 +81,7 @@ export default {
     navigateToArticle() {
       // Use canonical category for navigation
       const canonicalCategory = getCanonicalCategoryFromSlug(this.category);
-      const target = `/${canonicalCategory}/${this.slug}`;
+      const target = `/${canonicalCategory}/${this.slug}/`;
 
       console.log("🔵 NewsCard clicked!", {
         id: this.id,

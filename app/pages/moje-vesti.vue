@@ -594,7 +594,8 @@ export default {
     },
     navigateToArticle(articleId) {
       const found = [...this.newsItems, ...this.otherNewsItems, ...this.relatedNews].find((a) => a.id === articleId)
-      const target = `/${found.sport.toLowerCase()}/${found.slug}`
+      // Add trailing slash to match the site's routing convention
+      const target = `/${found.sport.toLowerCase()}/${found.slug}/`
       this.$router.push(target);
     },
   },

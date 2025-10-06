@@ -185,7 +185,7 @@ export default {
         this.resetForm();
 
         setTimeout(() => {
-          this.$router.push("/prijava");
+          this.$router.push("/prijava/");
         }, 3000);
       } catch (error) {
         if (error.response && error.response.data) {

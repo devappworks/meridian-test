@@ -91,13 +91,14 @@ export default {
       }
 
       // Check if this category has a dedicated page route
+      // Return clean paths without query parameters
       const dedicatedRoutes = {
-        NAJNOVIJE: "/najnovije-vesti",
-        FUDBAL: "/fudbal",
-        KOŠARKA: "/kosarka",
-        ODBOJKA: "/odbojka",
-        TENIS: "/tenis",
-        "OSTALI SPORTOVI": "/ostali-sportovi",
+        NAJNOVIJE: "/najnovije-vesti/",
+        FUDBAL: "/fudbal/",
+        KOŠARKA: "/kosarka/",
+        ODBOJKA: "/odbojka/",
+        TENIS: "/tenis/",
+        "OSTALI SPORTOVI": "/ostali-sportovi/",
       };
 
       // Use dedicated route if available
@@ -105,7 +106,7 @@ export default {
         return dedicatedRoutes[child.label.toUpperCase()];
       }
 
-      // If child has web_categories, create dynamic route with category data
+      // If child has web_categories, return clean path with slug
       if (child.web_categories && child.web_categories.length > 0) {
         // Convert label to slug format (lowercase, replace spaces with hyphens)
         const slug = child.label
@@ -117,15 +118,9 @@ export default {
           .replace(/đ/g, "d")
           .replace(/\s+/g, "-");
 
-        // Return route object with query parameters for category data
-        // Use same pattern as Header component - only category slug in path
-        return {
-          path: `/${slug}`,
-          query: {
-            categoryId: child.web_categories[0].toString(), // Use first category ID as string
-            title: child.label.toUpperCase(),
-          },
-        };
+        // Return clean path without query parameters
+        // The CategoryPage will resolve the category from the slug
+        return `/${slug}/`;
       }
 
       // Default fallback

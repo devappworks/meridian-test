@@ -28,7 +28,7 @@ const siteUrl = (config.public?.SITE_URL || "").replace(/\/$/, "");
 const siteName = config.public?.SITE_NAME || "Meridian Sport";
 const siteDescription = config.public?.SITE_DESCRIPTION || "";
 const twitterHandle = config.public?.TWITTER_HANDLE || "";
-const canonicalUrl = siteUrl || undefined;
+const canonicalUrl = siteUrl ? `${siteUrl}/` : undefined;
 
 const title = siteName;
 const description = stripHtml(siteDescription) || siteName;

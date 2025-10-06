@@ -87,7 +87,7 @@ export default {
         /* const target = this.article.url
           ? this.resolveArticleRoute(this.article.url, this.article.id)
           : `/article/${this.article.id}` */
-        const target = `/${this.article.category}/${this.article.slug}`
+        const target = `/${this.article.category}/${this.article.slug}/`
         this.$router.push(target);
       }
     },

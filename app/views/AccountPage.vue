@@ -330,7 +330,7 @@ export default {
 
           localStorage.removeItem("token");
           sessionStorage.removeItem("token");
-          this.$router.push("/login");
+          this.$router.push("/prijava/");
         } else {
           alert("Failed to change password. Please try again.");
         }

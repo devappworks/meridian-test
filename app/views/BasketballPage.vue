@@ -429,15 +429,18 @@ const loadMore = async () => {
 
 // Lifecycle hooks
 onMounted(() => {
-  window.addEventListener("basketball-category-changed", handleGlobalCategoryChange);
+  // Listen for the event using the sport key that matches what Header emits
+  // Header uses the sport key "kosarka" (lowercase slug), not "basketball"
+  window.addEventListener("kosarka-category-changed", handleGlobalCategoryChange);
   
+  // Notify Header about the current category
   window.dispatchEvent(new CustomEvent("basketball-category-updated", {
     detail: { categoryId: currentCategory.value }
   }));
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("basketball-category-changed", handleGlobalCategoryChange);
+  window.removeEventListener("kosarka-category-changed", handleGlobalCategoryChange);
 });
 </script>
 

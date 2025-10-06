@@ -170,14 +170,14 @@ export default {
       if (!this.sport || typeof this.sport !== 'string') {
         return "/";
       }
-      
+
       const routeMap = {
-        FUDBAL: "/fudbal",
-        KOŠARKA: "/kosarka",
-        TENIS: "/tenis",
-        ODBOJKA: "/odbojka",
-        NAJNOVIJE: "/najnovije-vesti",
-        "OSTALE VESTI": "/ostali-sportovi",
+        FUDBAL: "/fudbal/",
+        KOŠARKA: "/kosarka/",
+        TENIS: "/tenis/",
+        ODBOJKA: "/odbojka/",
+        NAJNOVIJE: "/najnovije-vesti/",
+        "OSTALE VESTI": "/ostali-sportovi/",
       };
       return routeMap[this.sport] || "/";
     },
@@ -246,7 +246,7 @@ export default {
         if (article && article.category && article.slug) {
           // Navigate directly to the article
           if (this.$router && this.$router.push) {
-            this.$router.push(`/${article.category}/${article.slug}`);
+            this.$router.push(`/${article.category}/${article.slug}/`);
           }
         } else {
           console.warn('Article not found or missing category/slug:', articleId);

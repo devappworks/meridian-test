@@ -745,7 +745,7 @@ export default {
         ) {
           // Use browser History API instead of Vue Router to avoid triggering watchers
           
-          const cleanUrl = `${this.parent_slug}`;
+          const cleanUrl = `${this.parent_slug}/`;
           window.history.replaceState(null, "", cleanUrl);
           this.parent_slug = "";
         }
@@ -754,7 +754,7 @@ export default {
 
     navigateToArticle(articleId) {
       const found = [...this.categoryNews, ...this.loadMoreCategoryNews, ...this.relatedNews].find((a) => a.id === articleId);
-      const target = `/${found.category}/${found.slug}`;
+      const target = `/${found.category}/${found.slug}/`;
       this.$router.push(target);
     },
 
@@ -796,6 +796,12 @@ export default {
     async setupDynamicEventListener() {
       // Create dynamic event name based on current categoryId
       const eventName = `${this.sport || this.currentCategoryId || 'default'}-category-changed`;
+      
+      console.log("CategoryPage: Setting up event listener:", eventName, {
+        sport: this.sport,
+        slug: this.slug,
+        currentCategoryId: this.currentCategoryId
+      });
      
       const parent_slug = await this.getParentSlug();
       // Store the event name and handler for cleanup
@@ -826,20 +832,29 @@ export default {
     async handleGlobalCategoryChange(event) {
       const { categoryId, sport, parent_slug } = event.detail;
 
-      console.log("EVENT RECEIVED: ", event.detail)
+      console.log("CategoryPage: EVENT RECEIVED!", event.type, "detail:", event.detail);
 
       // Don't handle category changes if we're not on a category page
       const currentPath = this.$route.path;
-      const isArticlePage = currentPath.includes('/') && currentPath.split('/').length > 2;
+      // Filter out empty segments to handle trailing slashes correctly
+      const pathSegments = currentPath.split('/').filter(segment => segment.length > 0);
+      const isArticlePage = pathSegments.length > 1;
+
+      console.log("CategoryPage: pathSegments:", pathSegments, "isArticlePage:", isArticlePage);
 
       if (isArticlePage) {
+        console.log("CategoryPage: Skipping - on article page");
         return;
       }
+
+      console.log("CategoryPage: Updating to categoryId:", categoryId);
 
       // Update current category and sport information
       this.currentCategoryId = categoryId;
       this.sport = sport; // Store the sport value for future use
       this.parent_slug = parent_slug;
+
+      console.log("CategoryPage: Updated currentCategoryId to:", this.currentCategoryId);
 
       // Don't overwrite storedCategoryTitle if we already have a proper title
       // Only update if we don't have a stored title yet
@@ -849,6 +864,7 @@ export default {
 
       // Reset all data
       this.resetNews();
+      console.log("CategoryPage: Reset news data");
 
       // Set loading states
       this.loading = {
@@ -857,9 +873,11 @@ export default {
         other: true,
         sidebar: true,
       };
+      console.log("CategoryPage: Set loading states, now fetching articles...");
 
       // Fetch new data for the category
       await this.fetchCategoryArticles();
+      console.log("CategoryPage: Finished fetching articles");
 
       // cleanUpUrl() is already called within fetchCategoryArticles()
     },

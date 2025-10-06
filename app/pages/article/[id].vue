@@ -33,7 +33,7 @@ useHead(() => {
   const siteUrl = (config.public?.SITE_URL || "").replace(/\/$/, "");
   const siteName = config.public?.SITE_NAME || "";
   const twitterHandle = config.public?.TWITTER_HANDLE || "";
-  const canonicalUrl = siteUrl ? `${siteUrl}/article/${id}` : undefined;
+  const canonicalUrl = siteUrl ? `${siteUrl}/article/${id}/` : undefined;
   const title = a.title || siteName || "Meridian Sport";
   const rawDesc = a.excerpt || a.subtitle || stripHtml(a.contents || "") || a.title || "";
   const description = truncate(stripHtml(rawDesc), 160) || a.title || "";
@@ -99,7 +99,7 @@ useHead(() => {
   const breadcrumbs = a.categories?.[0] ? [
     {
       name: a.categories[0].name,
-      url: `/${a.categories[0].slug}`,
+      url: `/${a.categories[0].slug}/`,
     },
     {
       name: a.title,

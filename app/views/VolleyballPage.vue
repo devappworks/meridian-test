@@ -429,7 +429,9 @@ const loadMore = async () => {
 
 // Lifecycle hooks
 onMounted(() => {
-  window.addEventListener("volleyball-category-changed", handleGlobalCategoryChange);
+  // Listen for the event using the sport key that matches what Header emits
+  // Header uses the sport key "odbojka" (lowercase slug), not "volleyball"
+  window.addEventListener("odbojka-category-changed", handleGlobalCategoryChange);
   
   window.dispatchEvent(new CustomEvent("volleyball-category-updated", {
     detail: { categoryId: currentCategory.value }
@@ -437,7 +439,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("volleyball-category-changed", handleGlobalCategoryChange);
+  window.removeEventListener("odbojka-category-changed", handleGlobalCategoryChange);
 });
 </script>
 

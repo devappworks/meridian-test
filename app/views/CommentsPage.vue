@@ -445,7 +445,7 @@ export default {
       if (!this.isLoggedIn) {
         this.showCommentMessage("Morate biti prijavljeni da biste ostavili komentar.", "error");
         setTimeout(() => {
-          this.$router.push("/prijava");
+          this.$router.push("/prijava/");
         }, 2000);
         return;
       }
@@ -494,7 +494,7 @@ export default {
       if (!this.isLoggedIn) {
         this.showReplyMessage("Morate biti prijavljeni da biste odgovorili na komentar.", "error");
         setTimeout(() => {
-          this.$router.push("/prijava");
+          this.$router.push("/prijava/");
         }, 2000);
         return;
       }
@@ -545,7 +545,7 @@ export default {
       if (!this.isLoggedIn) {
         this.showCommentMessage("Morate biti prijavljeni da biste odgovorili na komentar.", "error");
         setTimeout(() => {
-          this.$router.push("/prijava");
+          this.$router.push("/prijava/");
         }, 2000);
         return;
       }
@@ -733,7 +733,7 @@ export default {
       if (!this.isLoggedIn) {
         this.showCommentMessage("Morate biti prijavljeni da biste glasali.", "error");
         setTimeout(() => {
-          this.$router.push("/prijava");
+          this.$router.push("/prijava/");
         }, 2000);
         return;
       }

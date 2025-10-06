@@ -838,11 +838,11 @@ const navigateToArticle = (id) => {
 
   let target;
   if (foundInJos?.category && foundInJos?.slug) {
-    target = `/${foundInJos.category}/${foundInJos.slug}`;
+    target = `/${foundInJos.category}/${foundInJos.slug}/`;
   } else if (foundInRelated?.category && foundInRelated?.slug) {
-    target = `/${foundInRelated.category}/${foundInRelated.slug}`;
+    target = `/${foundInRelated.category}/${foundInRelated.slug}/`;
   } else if (foundInOther?.category && foundInOther?.slug) {
-    target = `/${foundInOther.category}/${foundInOther.slug}`;
+    target = `/${foundInOther.category}/${foundInOther.slug}/`;
   } else {
     console.error('🔴 Could not find article for navigation:', id);
     return;
@@ -853,12 +853,29 @@ const navigateToArticle = (id) => {
   useRouter().push(target)
 };
 
+// Generate URL-friendly slug from tag name
+const generateSlugFromTagName = (tagName) => {
+  return tagName
+    .toLowerCase()
+    .replace(/š/g, "s")
+    .replace(/č/g, "c")
+    .replace(/ć/g, "c")
+    .replace(/ž/g, "z")
+    .replace(/đ/g, "d")
+    .replace(/\s+/g, "-")  // Replace spaces with hyphens
+    .replace(/[^a-z0-9-]/g, "")  // Remove non-alphanumeric characters except hyphens
+    .replace(/-+/g, "-")  // Replace multiple hyphens with single hyphen
+    .replace(/^-|-$/g, "");  // Remove leading/trailing hyphens
+};
+
 const navigateToTag = (tagId, tagName) => {
   if (!tagId || !tagName) {
     console.error("🔴 NavigateToTag: Invalid tag data", { tagId, tagName });
     return;
   }
-  useRouter().push(`/${tagName}`);
+  const tagSlug = generateSlugFromTagName(tagName);
+  console.log("🔴 ArticlePage navigating to tag:", tagName, "→ slug:", tagSlug);
+  useRouter().push(`/${tagSlug}/`);
 };
 
 const extractParagraphs = (htmlContent) => {

@@ -68,7 +68,7 @@ export default {
     },
     navigateToArticle(item) {
       if (item && item.id) {
-        const target = `/${item.category}/${item.slug}`
+        const target = `/${item.category}/${item.slug}/`
         this.$router.push(target);
       }
     },

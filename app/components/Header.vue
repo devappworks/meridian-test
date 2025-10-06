@@ -90,7 +90,7 @@
             </li>
             <li>
               <router-link
-                :to="isUserLoggedIn ? '/account-page' : '/prijava'"
+                :to="isUserLoggedIn ? '/account-page/' : '/prijava/'"
                 active-class="active"
                 @click="closeMobileMenu"
                 >{{ isUserLoggedIn ? "ACCOUNT" : "LOGIN" }}</router-link
@@ -289,7 +289,7 @@ export default {
       if (route.path === "/moje-vesti") {
         router.push("/");
       } else {
-        router.push("/moje-vesti");
+        router.push("/moje-vesti/");
       }
     };
 
@@ -403,30 +403,36 @@ export default {
         }
       }
       
-      // If still no match, try to match based on route slug/title
-      const routeSlug = this.$route.path.split('/').pop();
-      const routeTitle = this.$route.query.title;
+      // If still no match, try to match based on route slug
+      // Extract slug properly from path (handle trailing slashes)
+      const pathParts = this.$route.path.split('/').filter(part => part.length > 0);
+      const routeSlug = pathParts[pathParts.length - 1]; // Get the last non-empty part
       
-      if (routeSlug || routeTitle) {
+      console.log("Header.currentSport: routeSlug:", routeSlug, "sportMenuData keys:", Object.keys(this.sportMenuData));
+      
+      if (routeSlug) {
         for (const [sportKey, menuData] of Object.entries(this.sportMenuData)) {
           // Check if the slug matches the menu item title
           const menuSlug = this.generateSlugFromTitle(menuData.title);
+          console.log("  Checking sportKey:", sportKey, "menuSlug:", menuSlug, "match?", routeSlug === menuSlug);
           if (routeSlug === menuSlug) {
+            console.log("  → MATCH! Returning sportKey:", sportKey);
             return sportKey;
           }
           
-          // Check submenu items
+          // Check submenu items (subcategories)
           if (menuData.sub_menu) {
             for (const subMenu of menuData.sub_menu) {
               const subMenuSlug = this.generateSlugFromTitle(subMenu.title);
-              if (routeSlug === subMenuSlug || routeTitle === subMenu.title) {
-                return sportKey;
+              if (routeSlug === subMenuSlug) {
+                return sportKey; // Return parent sport key for subcategories
               }
             }
           }
         }
       }
       
+      console.log("Header.currentSport: No match found, returning null");
       return null;
     },
     currentSportMenuData() {
@@ -435,13 +441,37 @@ export default {
     currentSportCategory() {
       if (!this.currentSport) return null;
       
-      // If we have a categoryId in the route query, use that as the current category
-      if (this.$route.query.categoryId) {
-        return parseInt(this.$route.query.categoryId);
+      const menuData = this.currentSportMenuData;
+      if (!menuData) return null;
+      
+      // First priority: Check if we have a stored category for this sport
+      // This allows subcategory selection to persist while staying on parent URL
+      if (this.currentCategories[this.currentSport]) {
+        return this.currentCategories[this.currentSport];
       }
       
-      // Otherwise, fall back to the stored current category
-      return this.currentCategories[this.currentSport] || null;
+      // Second priority: Check the route slug to determine initial category
+      const pathParts = this.$route.path.split('/').filter(part => part.length > 0);
+      const routeSlug = pathParts[pathParts.length - 1];
+      
+      // Check if we're on the main category page
+      const mainSlug = this.generateSlugFromTitle(menuData.title);
+      if (routeSlug === mainSlug) {
+        return menuData.web_categories?.[0] || null;
+      }
+      
+      // Check if we're on a subcategory page
+      if (menuData.sub_menu) {
+        for (const subMenu of menuData.sub_menu) {
+          const subSlug = this.generateSlugFromTitle(subMenu.title);
+          if (routeSlug === subSlug) {
+            return subMenu.web_categories?.[0] || null;
+          }
+        }
+      }
+      
+      // Final fallback: use main category
+      return menuData.web_categories?.[0] || null;
     },
   },
   mounted() {
@@ -595,6 +625,7 @@ export default {
      * Generate a consistent sport key from menu title
      */
     generateSportKey(title) {
+      // Use hyphens instead of underscores to match URL slugs
       return title
         .toLowerCase()
         .replace(/š/g, "s")
@@ -602,8 +633,8 @@ export default {
         .replace(/ć/g, "c")
         .replace(/ž/g, "z")
         .replace(/đ/g, "d")
-        .replace(/\s+/g, "_")
-        .replace(/[^a-z0-9_]/g, "");
+        .replace(/\s+/g, "-")  // Changed from "_" to "-" to match URL format
+        .replace(/[^a-z0-9-]/g, "");  // Changed to allow hyphens
     },
     async fetchHelperNavigationData() {
       try {
@@ -647,66 +678,51 @@ export default {
     },
 
     generateHelperRouteFromTitle(title, item) {
+      // Return clean paths without query parameters
+      // The CategoryPage will resolve the category from the slug
       const dedicatedSportPages = {
-        FUDBAL: "/fudbal",
-        KOŠARKA: "/kosarka",
-        ODBOJKA: "/odbojka",
-        TENIS: "/tenis",   
+        FUDBAL: "/fudbal/",
+        KOŠARKA: "/kosarka/",
+        ODBOJKA: "/odbojka/",
+        TENIS: "/tenis/",   
       };
 
       // If we have a dedicated sport page, use it
       if (dedicatedSportPages[title]) {
-        return {
-          path: dedicatedSportPages[title],
-          query: {
-            title: title,
-          },
-        };
+        return dedicatedSportPages[title];
       }
 
-      // For all other categories, create dynamic routes
-      if (item && item.web_categories && item.web_categories.length > 0) {
-        const categoryId = item.web_categories[0];
-        const slug = this.generateSlugFromTitle(title);
-
-        return {
-          path: `/${slug}`,
-          query: {
-            categoryId: categoryId,
-            tagId: item.content[0]?.options?.tags[0],
-            title: title,
-          },
-        };
-      }
-
-      // Categories without specific IDs (like team pages that might not have articles)
+      // For all other categories, return clean path with slug
       const slug = this.generateSlugFromTitle(title);
-
-      return {
-        path: `/${slug}`,
-        query: {
-          title: title,
-        },
-      };
+      return `/${slug}/`;
     },
 
     generateRouteFromHref(href) {
       if (!href) return "#";
 
-      // If it's already a relative path, return as is
+      let path = '';
+
+      // If it's already a relative path
       if (href.startsWith("/")) {
-        return href;
+        path = href;
+      }
+      // If it's an absolute URL, extract the path
+      else {
+        try {
+          const url = new URL(href);
+          path = url.pathname;
+        } catch (e) {
+          // If URL parsing fails, it's likely a simple slug that needs a "/" prefix
+          path = "/" + href;
+        }
       }
 
-      // If it's an absolute URL, extract the path
-      try {
-        const url = new URL(href);
-        return url.pathname;
-      } catch (e) {
-        // If URL parsing fails, it's likely a simple slug that needs a "/" prefix
-        // Handle common route slugs by converting them to proper paths
-        return "/" + href;
+      // Add trailing slash if not present (except for root)
+      if (path !== '/' && !path.endsWith('/')) {
+        path += '/';
       }
+
+      return path;
     },
 
     toggleSearch() {
@@ -1049,13 +1065,7 @@ export default {
       }
     },
     handleCategoryChange(categoryId) {
-      if (!this.currentSport) return;
-
-      // Don't handle category changes if we're on an article page
-      const currentPath = this.$route.path;
-      const isArticlePage = currentPath.split('/').length > 2;
-      
-      if (isArticlePage) {
+      if (!this.currentSport) {
         return;
       }
 
@@ -1064,65 +1074,63 @@ export default {
 
       // Find the menu item and subcategory that corresponds to this categoryId
       const currentMenuData = this.currentSportMenuData;
-      let targetTitle = null;
-      let targetSlug = null;
+      let isMainCategory = false;
+      let isSubcategory = false;
 
       if (currentMenuData) {
         // Check if it's the main category
         if (currentMenuData.web_categories && currentMenuData.web_categories.includes(categoryId)) {
-          targetTitle = currentMenuData.title;
-          targetSlug = this.generateSlugFromTitle(currentMenuData.title);
+          isMainCategory = true;
         } else if (currentMenuData.sub_menu) {
           // Check subcategories
           for (const subMenu of currentMenuData.sub_menu) {
             if (subMenu.web_categories && subMenu.web_categories.includes(categoryId)) {
-              targetTitle = subMenu.title;
-              targetSlug = this.generateSlugFromTitle(subMenu.title);
+              isSubcategory = true;
               break;
             }
           }
         }
       }
 
-      if (!targetSlug) {
+      if (!isMainCategory && !isSubcategory) {
         return;
       }
 
-      // Navigate to the category page with the appropriate route
+      // For CategoryPageNav clicks, we always stay on the parent category page
+      // The parent category slug is the current sport's main slug
+      const parentSlug = this.generateSlugFromTitle(currentMenuData.title);
+      const targetPath = `/${parentSlug}/`;
+      const normalizedCurrentPath = this.$route.path.endsWith('/') ? this.$route.path : `${this.$route.path}/`;
       
-      const route = {
-        path: `/${targetSlug}`,
-        query: {
-          categoryId: categoryId,
-          title: targetTitle,
-        },
-      };
-               
-      console.log("prvi")
-      // Already on the same page, just emit the event to update content
+      // Always emit the event to update content
       const eventName = `${this.currentSport || categoryId || 'default'}-category-changed`;
-      console.log("eventName: ", eventName)
-      let detail = {
-        categoryId,
-        sport: this.currentSport
-      }
-      console.log("sending detail: ", detail)
-
+      
+      console.log("Header: Dispatching event:", eventName, "with categoryId:", categoryId, "currentSport:", this.currentSport);
+      
       window.dispatchEvent(
         new CustomEvent(eventName, {
-          detail: detail,
+          detail: {
+            categoryId,
+            sport: this.currentSport
+          }
         })
       );
+      
+      // Check if we need to navigate to the parent category page
+      const needsNavigation = normalizedCurrentPath !== targetPath;
+      
+      if (needsNavigation) {
+        // Navigate to the parent category page after emitting event
+        // Use nextTick to ensure the event is processed first
+        this.$nextTick(() => {
+          this.$router.push(targetPath);
+        });
+      }
+      
       // Update main navigation underline to ensure parent sport is highlighted
       this.$nextTick(() => {
         this.updateActiveUnderline();
       });
-    
-      console.log("drugi")
-      // Navigate to the category page
-      this.$router.push(route);
-      
-      
     
     },
     /**

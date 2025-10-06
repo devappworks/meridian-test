@@ -427,7 +427,9 @@ const loadMore = async () => {
 
 // Lifecycle hooks
 onMounted(() => {
-  window.addEventListener("football-category-changed", handleGlobalCategoryChange);
+  // Listen for the event using the sport key that matches what Header emits
+  // Header uses the sport key "fudbal" (lowercase slug), not "football"
+  window.addEventListener("fudbal-category-changed", handleGlobalCategoryChange);
   
   window.dispatchEvent(new CustomEvent("football-category-updated", {
     detail: { categoryId: currentCategory.value }
@@ -435,7 +437,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("football-category-changed", handleGlobalCategoryChange);
+  window.removeEventListener("fudbal-category-changed", handleGlobalCategoryChange);
 });
 </script>
 

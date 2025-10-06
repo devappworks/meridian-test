@@ -80,6 +80,7 @@ import NewsGrid from "@/components/NewsGrid.vue";
 import SkeletonNewsGrid from "@/components/skeletons/SkeletonNewsGrid.vue";
 import SkeletonRelatedNews from "@/components/skeletons/SkeletonRelatedNews.vue";
 import { fetchFromApi } from "@/services/api";
+import { onMounted, onBeforeUnmount } from 'vue';
 
 // Reactive state
 const loading = ref({
@@ -264,6 +265,87 @@ const loadMore = async () => {
     loading.value.loadMore = false;
   }
 };
+
+// Current category tracking
+const currentCategory = ref(38); // Default: OSTALI SPORTOVI category ID
+const isSwitchingCategory = ref(false);
+
+// Switch category and fetch filtered content
+const switchCategory = async (categoryId) => {
+  currentCategory.value = categoryId;
+  isSwitchingCategory.value = true;
+  
+  loading.value = {
+    main: true,
+    loadMore: false,
+    additional: true,
+    sidebar: true,
+  };
+  
+  try {
+    const [otherDataResponse, latestArticlesResponse] = await Promise.all([
+      fetchFromApi("/getArticles", {
+        articleLimit: 53,
+        "category[]": categoryId,
+        page: 1
+      }),
+      fetchFromApi("/getArticles", {
+        articleLimit: 50,
+      })
+    ]);
+
+    const articles = otherDataResponse.result.articles;
+    const filteredArticles = filterOutSportsArticles(articles);
+
+    if (filteredArticles.length > 0) {
+      otherNews.value = filteredArticles.slice(0, 12).map(mapArticle);
+      loadMoreOtherNews.value = filteredArticles.slice(12, 24).map(mapArticle);
+      additionalNews.value = filteredArticles.slice(24, 48).map(mapArticle);
+
+      const articlesUsed = 48;
+      hasMorePages.value = filteredArticles.length > articlesUsed;
+    }
+
+    // Update sidebar with latest articles
+    if (latestArticlesResponse?.result.articles?.length > 0) {
+      relatedNews.value = latestArticlesResponse.result.articles
+        .slice(0, 8)
+        .map(mapSidebarArticle);
+    }
+  } catch (error) {
+    console.error("Error switching category:", error);
+  } finally {
+    loading.value = {
+      main: false,
+      loadMore: false,
+      additional: false,
+      sidebar: false,
+    };
+    isSwitchingCategory.value = false;
+  }
+};
+
+// Handle category change events from Header/CategoryPageNav
+const handleGlobalCategoryChange = (event) => {
+  const { categoryId } = event.detail;
+  switchCategory(categoryId);
+};
+
+// Lifecycle hooks - Listen for category change events
+onMounted(() => {
+  // Listen for the event using the sport key that matches what Header emits
+  // Header uses the sport key "ostali-sportovi" (lowercase slug)
+  window.addEventListener("ostali-sportovi-category-changed", handleGlobalCategoryChange);
+  
+  // Notify Header about the current category
+  window.dispatchEvent(new CustomEvent("other-sports-category-updated", {
+    detail: { categoryId: currentCategory.value }
+  }));
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("ostali-sportovi-category-changed", handleGlobalCategoryChange);
+});
 </script>
 
 <style scoped>

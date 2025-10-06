@@ -429,7 +429,9 @@ const loadMore = async () => {
 
 // Lifecycle hooks
 onMounted(() => {
-  window.addEventListener("tennis-category-changed", handleGlobalCategoryChange);
+  // Listen for the event using the sport key that matches what Header emits
+  // Header uses the sport key "tenis" (lowercase slug), not "tennis"
+  window.addEventListener("tenis-category-changed", handleGlobalCategoryChange);
   
   window.dispatchEvent(new CustomEvent("tennis-category-updated", {
     detail: { categoryId: currentCategory.value }
@@ -437,7 +439,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("tennis-category-changed", handleGlobalCategoryChange);
+  window.removeEventListener("tenis-category-changed", handleGlobalCategoryChange);
 });
 </script>
 

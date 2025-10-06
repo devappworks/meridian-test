@@ -162,12 +162,12 @@ export default {
     },
     categoryRoute() {
       const routeMap = {
-        FUDBAL: "/fudbal",
-        KOŠARKA: "/kosarka",
-        TENIS: "/tenis",
-        ODBOJKA: "/odbojka",
-        NAJNOVIJE: "/najnovije-vesti",
-        "OSTALE VESTI": "/ostali-sportovi",
+        FUDBAL: "/fudbal/",
+        KOŠARKA: "/kosarka/",
+        TENIS: "/tenis/",
+        ODBOJKA: "/odbojka/",
+        NAJNOVIJE: "/najnovije-vesti/",
+        "OSTALE VESTI": "/ostali-sportovi/",
       };
       return routeMap[this.sport] || "/";
     },
@@ -284,8 +284,8 @@ export default {
         
         const categorySlug = sportToCategory[this.sport] || 'najnovije-vesti';
         console.log(this.sport, "CATEGORY SLUG");
-        const target = `/${categorySlug}/${item.slug}`;
-        
+        const target = `/${categorySlug}/${item.slug}/`;
+
         console.log("🟡 NewsSlider navigating to:", target, "from sport:", this.sport);
         this.$router.push(target);
       }
