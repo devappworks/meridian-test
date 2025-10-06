@@ -72,8 +72,7 @@ useHead(() => {
 
   const meta = [
     { key: "description", name: "description", content: filledDescription },
-    { key: "robots", name: "robots", content: "index, follow" },
-    { key: "robots", name: "robots", content: "max-image-preview:large" },
+    { key: "robots", name: "robots", content: "index, follow, max-image-preview:large" },
     // Open Graph
     { key: "og:type", property: "og:type", content: "article" },
     siteName ? { key: "og:site_name", property: "og:site_name", content: siteName } : null,
