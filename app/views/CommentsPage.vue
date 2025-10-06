@@ -562,7 +562,7 @@ export default {
     },
 
     formatDate(dateString) {
-      // Robust parse and return ISO 8601 format
+      // Robust parse and humanize; gracefully handle invalid inputs
       if (!dateString) return "";
 
       let date;
@@ -598,15 +598,19 @@ export default {
 
       if (!(date instanceof Date) || isNaN(date.getTime())) return "";
 
-      // Return ISO 8601 format: YYYY-MM-DDTHH:mm:ss
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      const seconds = String(date.getSeconds()).padStart(2, "0");
+      const now = new Date();
+      const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+      const diffInDays = Math.floor(diffInHours / 24);
 
-      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      if (diffInHours < 1) {
+        return "Upravo sada";
+      } else if (diffInHours < 24) {
+        return `${diffInHours} ${diffInHours === 1 ? "sat" : "sati"} ranije`;
+      } else if (diffInDays < 7) {
+        return `${diffInDays} ${diffInDays === 1 ? "dan" : "dana"} ranije`;
+      } else {
+        return date.toLocaleDateString();
+      }
     },
     stripHtml(html) {
       const div = document.createElement("div");
