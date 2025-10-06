@@ -25,9 +25,11 @@ function truncate(input, max = 160) {
 const { data: article } = await useAsyncData(
   `article-slug-${category}-${slug}`,
   async () => {
-    return await $fetch(`/api/articles/resolve`, {
+    const result = await $fetch(`/api/articles/resolve`, {
       query: { category, slug }
     })
+    
+    return result
   }
 )
 
@@ -42,7 +44,8 @@ useHead(() => {
   const rawDesc = a.excerpt || a.subtitle || stripHtml(a.contents || "") || a.title || "";
   const description = truncate(stripHtml(rawDesc), 160) || a.title || "";
   const filledDescription = description || (title !== "Article" ? title : siteName) || siteName || "Meridian Sport";
-  const imageUrl = a?.images?.large?.url || a?.images?.small?.url || undefined;
+  const imageUrl = a?.feat_images?.['extra-large']?.url || a?.images?.small?.url || undefined;
+
   const authorName = a?.authors?.[0]?.name || "Redakcija";
   const publishedTime = a?.date || a?.publish_date || undefined;
   const tags = Array.isArray(a?.tags) ? a.tags.map((t) => t?.name).filter(Boolean) : [];
