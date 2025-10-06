@@ -161,9 +161,9 @@ if (latestNewsData.value?.result.articles?.length > 0) {
   const articles = latestNewsData.value.result.articles;
 
   // Main latest news grid (first 12 articles)
-  latestNews.value = articles.slice(8, 20).map(mapArticle);
-  loadMoreLatestNews.value = articles.slice(20, 32).map(mapArticle);
-  otherNews.value = articles.slice(32, 48).map(mapArticle);
+  latestNews.value = articles.slice(0, 12).map(mapArticle);
+  loadMoreLatestNews.value = articles.slice(12, 24).map(mapArticle);
+  otherNews.value = articles.slice(24, 40).map(mapArticle);
   relatedNews.value = articles.slice(0, 8).map(mapSidebarArticle);
 
   // Check if we have more pages
