@@ -485,10 +485,15 @@ export default {
       };
 
       try {
-        const categoryData = await fetchFromApi("/getArticles", {
-          articleLimit: 53,
-          "category[]": this.currentCategoryId,
-        });
+        const [categoryData, latestArticlesData] = await Promise.all([
+          fetchFromApi("/getArticles", {
+            articleLimit: 53,
+            "category[]": this.currentCategoryId,
+          }),
+          fetchFromApi("/getArticles", {
+            articleLimit: 50,
+          })
+        ]);
         /* if (this.categoryData.result.articles[0].categories[0].name.toLowerCase().includes(this.displayTitle.toLowerCase())) {
            
         } */
@@ -541,16 +546,18 @@ export default {
           // Other news
           this.otherNews = allArticles.slice(24, 48).map(this.mapArticle);
 
-          // Related news sidebar (last 5 articles)
-          this.relatedNews = allArticles
-            .slice(48, 53)
-            .map(this.mapSidebarArticle);
-
           // Check if we have more pages
           this.hasMorePages = allArticles.length >= 53;
           this.currentPage = 1;
         } else {
           this.resetNews();
+        }
+
+        // Process latest articles for sidebar
+        if (latestArticlesData?.result.articles?.length > 0) {
+          this.relatedNews = latestArticlesData.result.articles
+            .slice(0, 8)
+            .map(this.mapSidebarArticle);
         }
 
         this.loading = {

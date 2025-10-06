@@ -488,10 +488,16 @@ export default {
           categoryParams[`category[${index}]`] = categoryId;
         });
 
-        const response = await fetchFromApi("/getArticles", {
-          articleLimit: 50,
-          ...categoryParams,
-        });
+        // Fetch both selected categories articles and latest articles globally
+        const [response, latestResponse] = await Promise.all([
+          fetchFromApi("/getArticles", {
+            articleLimit: 50,
+            ...categoryParams,
+          }),
+          fetchFromApi("/getArticles", {
+            articleLimit: 50,
+          })
+        ]);
 
         console.log(response, "RESPONSE");
 
@@ -502,10 +508,15 @@ export default {
           // Map articles to the required format
           this.newsItems = allArticles.slice(0, 32).map(this.mapArticle);
           this.otherNewsItems = allArticles.slice(32, 40).map(this.mapArticle);
-          this.relatedNews = allArticles.slice(-6).map(this.mapSidebarArticle);
 
           this.hasMorePages = allArticles.length >= 50;
           this.page = 1;
+        }
+
+        // Process latest articles for sidebar
+        if (latestResponse.success && latestResponse.result.articles) {
+          console.log(latestResponse.result.articles, "LATEST RESPONSE");
+          this.relatedNews = latestResponse.result.articles.slice(0, 8).map(this.mapSidebarArticle);
         }
       } catch (error) {
         console.error(
@@ -801,7 +812,7 @@ export default {
 
 .related-news-item .category.ostali,
 .related-news-item .category.ostale {
-  color: var(--text-25);
+  color: var(--yellow-primary);
 }
 
 .related-news-item h3 {

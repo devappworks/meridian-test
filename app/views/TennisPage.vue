@@ -62,7 +62,7 @@
             >
               <div class="number">{{ index + 1 }}</div>
               <div class="content">
-                <div class="category tennis">{{ news.sport }}</div>
+                <div class="category" :class="getCategoryClass(news.sport)">{{ news.sport }}</div>
                 <h3>{{ news.title }}</h3>
                 <div class="timestamp">
                   <span>{{ news.date }}</span>
@@ -143,6 +143,21 @@ const buildCategoryArray = () => {
 
 const filterArticlesBySubcategory = (articles) => articles;
 
+const getCategoryClass = (sport) => {
+  switch (sport) {
+    case "FUDBAL":
+      return "football";
+    case "KOŠARKA":
+      return "basketball";
+    case "TENIS":
+      return "tennis";
+    case "ODBOJKA":
+      return "volleyball";
+    default:
+      return "other";
+  }
+};
+
 // Computed values  
 const currentCategoryName = computed(() => {
   return categoryNameMap.value[currentCategory.value] || "TENIS";
@@ -153,12 +168,22 @@ const { data: webSettings } = await useAsyncData('tennis-web-settings', () =>
   fetchFromApi('/getWebSettings')
 );
 
-const { data: tennisData, pending: tennisPending } = await useAsyncData('tennis-articles', () => 
-  fetchFromApi('/getArticles', {
-    articleLimit: 50,
-    'category[]': 41 // Default tennis category
-  })
-);
+const [
+  { data: tennisData, pending: tennisPending },
+  { data: latestArticlesData }
+] = await Promise.all([
+  useAsyncData('tennis-articles', () =>
+    fetchFromApi('/getArticles', {
+      articleLimit: 50,
+      'category[]': 41 // Default tennis category
+    })
+  ),
+  useAsyncData('tennis-latest-sidebar', () =>
+    fetchFromApi('/getArticles', {
+      articleLimit: 50
+    })
+  )
+]);
 
 // Process SSR data
 if (webSettings.value?.success && webSettings.value.result.languages?.length > 0) {
@@ -216,11 +241,33 @@ if (tennisData.value?.result.articles?.length > 0) {
     tennisNews.value = filteredArticles.slice(1, 17).map(mapArticle);
     loadMoreTennisNews.value = filteredArticles.slice(17, 29).map(mapArticle);
     otherNews.value = filteredArticles.slice(29, 37).map(mapArticle);
-    relatedNews.value = filteredArticles.slice(-3).map(mapSidebarArticle);
-    
+
     const articlesUsed = 40;
     hasMorePages.value = filteredArticles.length > articlesUsed;
   }
+}
+
+// Process latest articles for sidebar from SSR
+if (latestArticlesData.value?.result.articles?.length > 0) {
+  const getSportFromCategories = (categories) => {
+    const sportMap = {
+      Fudbal: "FUDBAL",
+      Košarka: "KOŠARKA",
+      Tenis: "TENIS",
+      Odbojka: "ODBOJKA",
+    };
+    const sportCategory = categories.find((cat) => sportMap[cat.name]);
+    return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
+  };
+
+  relatedNews.value = latestArticlesData.value.result.articles.slice(0, 8).map((article) => ({
+    id: article.id,
+    title: article.title,
+    sport: getSportFromCategories(article.categories),
+    date: article.date,
+    category: article.categories[0].slug,
+    slug: article.slug,
+  }));
 }
 
 // Client-side functions
@@ -237,14 +284,19 @@ const switchCategory = async (categoryId) => {
   };
   
   try {
-    const tennisDataResponse = await fetchFromApi("/getArticles", {
-      articleLimit: 50,
-      "category[]": buildCategoryArray(),
-    });
-    
+    const [tennisDataResponse, latestArticlesResponse] = await Promise.all([
+      fetchFromApi("/getArticles", {
+        articleLimit: 50,
+        "category[]": buildCategoryArray(),
+      }),
+      fetchFromApi("/getArticles", {
+        articleLimit: 50,
+      })
+    ]);
+
     const allArticles = tennisDataResponse.result.articles;
     const filteredArticles = filterArticlesBySubcategory(allArticles);
-    
+
     if (filteredArticles.length > 0) {
       featuredArticle.value = {
         id: filteredArticles[0].id,
@@ -258,14 +310,36 @@ const switchCategory = async (categoryId) => {
         category: filteredArticles[0].categories[0].slug,
         slug: filteredArticles[0].slug,
       };
-      
+
       tennisNews.value = filteredArticles.slice(1, 17).map(mapArticle);
       loadMoreTennisNews.value = filteredArticles.slice(17, 29).map(mapArticle);
       otherNews.value = filteredArticles.slice(29, 37).map(mapArticle);
-      relatedNews.value = filteredArticles.slice(-3).map(mapSidebarArticle);
-      
+
       const articlesUsed = 40;
       hasMorePages.value = filteredArticles.length > articlesUsed;
+    }
+
+    // Update sidebar with latest articles globally
+    if (latestArticlesResponse?.result.articles?.length > 0) {
+      const getSportFromCategories = (categories) => {
+        const sportMap = {
+          Fudbal: "FUDBAL",
+          Košarka: "KOŠARKA",
+          Tenis: "TENIS",
+          Odbojka: "ODBOJKA",
+        };
+        const sportCategory = categories.find((cat) => sportMap[cat.name]);
+        return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
+      };
+
+      relatedNews.value = latestArticlesResponse.result.articles.slice(0, 8).map((article) => ({
+        id: article.id,
+        title: article.title,
+        sport: getSportFromCategories(article.categories),
+        date: article.date,
+        category: article.categories[0].slug,
+        slug: article.slug,
+      }));
     }
     
     loading.value = {
@@ -422,8 +496,24 @@ onBeforeUnmount(() => {
   margin-bottom: 8px;
 }
 
+.related-news-item .category.football {
+  color: var(--green-primary);
+}
+
+.related-news-item .category.basketball {
+  color: var(--orange-primary);
+}
+
 .related-news-item .category.tennis {
   color: var(--blue-primary);
+}
+
+.related-news-item .category.volleyball {
+  color: var(--red-primary);
+}
+
+.related-news-item .category.other {
+  color: var(--yellow-primary);
 }
 
 .related-news-item h3 {

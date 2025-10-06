@@ -549,6 +549,7 @@ export default {
   font-size: 24px;
   line-height: 26px;
   color: var(--yellow-primary);
+  border-color: var(--yellow-primary);
 }
 
 .related-news-list {

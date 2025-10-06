@@ -581,20 +581,9 @@ const fetchRelatedNews = async () => {
       josVestiNews.value = [];
     }
 
-    // Still fetch category-based articles for sidebar related news
-    const categoryId = article.value.categories.find((cat) =>
-      cat?.slug && ["fudbal", "kosarka", "tenis", "odbojka"].includes(cat.slug)
-    )?.id || article.value.categories[0]?.id;
-
-    if (!categoryId) {
-      console.log("🔴 fetchRelatedNews: No valid category ID found");
-      loading.value.relatedNews = false;
-      return;
-    }
-
+    // Fetch newest articles globally for sidebar related news
     const response = await fetchFromApi(`/getArticles`, {
-      "category[]": categoryId,
-      articleLimit: 8,
+      articleLimit: 50,
     });
 
     const articles = (response.result.articles || []).filter(
@@ -602,13 +591,13 @@ const fetchRelatedNews = async () => {
     );
 
     relatedNews.value = articles
-      .slice(0, 3)
+      .slice(0, 8)
       .filter(article => article && article.categories && article.categories.length > 0)
       .map((article) => ({
         id: article.id,
         title: article.title,
         date: formatDate(article.date || article.publish_date),
-        sport: sportCategory,
+        sport: getSportFromCategories(article.categories),
         url: article.url || null,
         category: article.categories[0]?.slug,
         categoryName: article.categories[0]?.name,
@@ -869,7 +858,7 @@ const navigateToTag = (tagId, tagName) => {
     console.error("🔴 NavigateToTag: Invalid tag data", { tagId, tagName });
     return;
   }
-  useRouter().push(`/tag/${tagId}/${encodeURIComponent(tagName)}`);
+  useRouter().push(`/${tagName}`);
 };
 
 const extractParagraphs = (htmlContent) => {
