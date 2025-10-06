@@ -43,7 +43,7 @@ useHead(() => {
   const description = truncate(stripHtml(rawDesc), 160) || a.title || "";
   const filledDescription = description || (title !== "Article" ? title : siteName) || siteName || "Meridian Sport";
   const imageUrl = a?.images?.large?.url || a?.images?.small?.url || undefined;
-  const authorName = a?.author || "Redakcija";
+  const authorName = a?.authors?.[0]?.name || "Redakcija";
   const publishedTime = a?.date || a?.publish_date || undefined;
   const tags = Array.isArray(a?.tags) ? a.tags.map((t) => t?.name).filter(Boolean) : [];
 
@@ -78,7 +78,7 @@ useHead(() => {
 
   const meta = [
     { key: "description", name: "description", content: filledDescription },
-    { key: "robots", name: "robots", content: "index, follow" },
+    { key: "robots", name: "robots", content: "index, follow, max-image-preview:large" },
     { key: "og:type", property: "og:type", content: "article" },
     siteName ? { key: "og:site_name", property: "og:site_name", content: siteName } : null,
     { key: "og:title", property: "og:title", content: title },

@@ -39,7 +39,7 @@ useHead(() => {
   const description = truncate(stripHtml(rawDesc), 160) || a.title || "";
   const filledDescription = description || (title !== "Article" ? title : siteName) || siteName || "Meridian Sport";
   const imageUrl = a?.images?.extra_large?.url || a?.images?.large?.url || a?.images?.small?.url || undefined;
-  const authorName = a?.author || "Redakcija";
+  const authorName = a?.authors?.[0]?.name || "Redakcija";
   // Prefer primary date, fallback to publish_date if present
   const publishedTime = a?.date || a?.publish_date || undefined;
   const tags = Array.isArray(a?.tags) ? a.tags.map((t) => t?.name).filter(Boolean) : [];
