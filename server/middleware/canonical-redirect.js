@@ -1,8 +1,6 @@
 export default defineEventHandler(async (event) => {
-  // TEMPORARILY DISABLED to fix 500 errors
-  // This middleware was causing issues with article loading
-  // TODO: Re-implement with better error handling
-  return
+  // Server middleware: Handles canonical category redirects for article URLs
+  // Ensures articles are accessed via their main category URL
 
   const url = getRequestURL(event)
   const path = url.pathname
@@ -61,83 +59,98 @@ export default defineEventHandler(async (event) => {
     const backendUrl = config.public.BACKEND_URL
     const apiKey = config.public.API_KEY
 
+    if (!backendUrl) {
+      console.warn(`[SERVER MW] No BACKEND_URL configured, skipping redirect`)
+      return
+    }
+
     // Fetch article data to determine canonical category (use same endpoint as page component)
     const apiUrl = `${backendUrl}/getArticlesBySlug/${encodeURIComponent(category)}/${encodeURIComponent(slug)}`
 
     console.log(`[SERVER MW] Fetching article data from: ${apiUrl}`)
 
     const response = await $fetch(apiUrl, {
-      headers: apiKey ? { 'X-API-Key': apiKey } : {},
+      headers: apiKey ? { 'Authorization': apiKey } : {},
+      // Add timeout to prevent hanging
+      timeout: 5000,
+      // Retry once on failure
+      retry: 1,
       // Don't throw on error - handle gracefully
-      ignoreResponseError: true
+      onResponseError({ response }) {
+        console.warn(`[SERVER MW] API error: ${response.status} ${response.statusText}`)
+      }
+    }).catch(err => {
+      console.warn(`[SERVER MW] Failed to fetch article data:`, err.message)
+      return null
     })
 
     console.log(`[SERVER MW] API response received:`, response ? 'has data' : 'no data')
 
     // API now only returns article data (no redirects)
     // Validate response structure
-    if (response && response.article && response.article.categories) {
-      const article = response.article
+    if (!response || !response.article || !response.article.categories) {
+      console.log(`[SERVER MW] Invalid response or no article data, skipping redirect`)
+      return
+    }
 
-      if (!Array.isArray(article.categories)) {
-        console.log(`[SERVER MIDDLEWARE] Article has no valid categories array`)
-        return
-      }
+    const article = response.article
 
-      // Extract category slugs from the article (consistent with API resolve logic)
-      const articleCategories = article.categories
-        .map(cat => cat.slug || cat.name || cat)
-        .filter(Boolean)
-        .map(name => name.toLowerCase())
+    if (!Array.isArray(article.categories) || article.categories.length === 0) {
+      console.log(`[SERVER MW] Article has no valid categories array`)
+      return
+    }
 
-      console.log(`[SERVER MIDDLEWARE] Article categories:`, articleCategories)
+    // Extract category slugs from the article (consistent with API resolve logic)
+    const articleCategories = article.categories
+      .map(cat => cat.slug || cat.name || cat)
+      .filter(Boolean)
+      .map(name => name.toLowerCase())
 
-      // Find if any main category exists in the article categories
-      const foundMainCategory = mainCategories.find(mainCat =>
-        articleCategories.includes(mainCat)
-      )
+    console.log(`[SERVER MW] Article categories:`, articleCategories)
 
-      let canonicalCategory
-      if (foundMainCategory) {
-        // Use the main category as canonical
-        canonicalCategory = foundMainCategory
-        console.log(`[SERVER MIDDLEWARE] Found main category: ${canonicalCategory}`)
-      } else {
-        // Use the first category as canonical if no main category found
-        canonicalCategory = articleCategories[0]
-        console.log(`[SERVER MIDDLEWARE] Using first category: ${canonicalCategory}`)
-      }
+    // Find if any main category exists in the article categories
+    const foundMainCategory = mainCategories.find(mainCat =>
+      articleCategories.includes(mainCat)
+    )
 
-      // If the current URL doesn't use the canonical category, redirect
-      if (canonicalCategory && category.toLowerCase() !== canonicalCategory.toLowerCase()) {
-        // Preserve trailing slash (url-normalization ensures it exists)
-        const redirectUrl = `/${canonicalCategory}/${slug}/`
-
-        // Prevent redirect loop: don't redirect if target URL is the same as current
-        if (redirectUrl === path || redirectUrl + '/' === path || redirectUrl === path + '/') {
-          console.log(`[SERVER MIDDLEWARE] Skipping redirect - target URL same as current: ${path}`)
-          return
-        }
-
-        console.log(`[SERVER MIDDLEWARE] Category mismatch detected: ${path} -> ${redirectUrl}`)
-
-        // Preserve query string if present
-        const queryString = url.search || ''
-        const finalRedirectUrl = redirectUrl + queryString
-
-        // Send 301 redirect
-        await sendRedirect(event, finalRedirectUrl, 301)
-        return
-      } else {
-        console.log(`[SERVER MIDDLEWARE] Category is correct, no redirect needed`)
-      }
+    let canonicalCategory
+    if (foundMainCategory) {
+      // Use the main category as canonical
+      canonicalCategory = foundMainCategory
+      console.log(`[SERVER MW] Found main category: ${canonicalCategory}`)
     } else {
-      console.log(`[SERVER MIDDLEWARE] No valid article data found in response`)
+      // Use the first category as canonical if no main category found
+      canonicalCategory = articleCategories[0]
+      console.log(`[SERVER MW] Using first category: ${canonicalCategory}`)
+    }
+
+    // If the current URL doesn't use the canonical category, redirect
+    if (canonicalCategory && category.toLowerCase() !== canonicalCategory.toLowerCase()) {
+      // Preserve trailing slash (url-normalization ensures it exists)
+      const redirectUrl = `/${canonicalCategory}/${slug}/`
+
+      // Prevent redirect loop: don't redirect if target URL is the same as current
+      if (redirectUrl === path || redirectUrl + '/' === path || redirectUrl === path + '/') {
+        console.log(`[SERVER MW] Skipping redirect - target URL same as current: ${path}`)
+        return
+      }
+
+      console.log(`[SERVER MW] Category mismatch detected: ${path} -> ${redirectUrl}`)
+
+      // Preserve query string if present
+      const queryString = url.search || ''
+      const finalRedirectUrl = redirectUrl + queryString
+
+      // Send 301 redirect
+      await sendRedirect(event, finalRedirectUrl, 301)
+      return
+    } else {
+      console.log(`[SERVER MW] Category is correct, no redirect needed`)
     }
 
   } catch (error) {
-    // If API call fails, let the request proceed normally
-    console.warn('[SERVER MIDDLEWARE] API call failed:', error.message)
+    // If API call fails, let the request proceed normally (don't block the page)
+    console.warn('[SERVER MW] Unexpected error:', error.message)
     return
   }
 
