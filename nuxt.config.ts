@@ -63,10 +63,10 @@ export default defineNuxtConfig({
     head: {
       script: [
         // Google Analytics 4 (GA4) - async to prevent render blocking
+        // FIXED: Use only 'async' (not both async and defer which causes conflicts)
         {
           src: `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`,
-          async: true,
-          defer: true
+          async: true
         },
         {
           innerHTML: `window.dataLayer = window.dataLayer || [];
@@ -74,10 +74,10 @@ export default defineNuxtConfig({
           gtag('js', new Date());
           gtag('config', '${gaMeasurementId}', {
             send_page_view: true,
-            cookie_flags: 'SameSite=None;Secure'
+            cookie_flags: 'SameSite=None;Secure',
+            anonymize_ip: true
           });`,
-          type: 'text/javascript',
-          defer: true
+          type: 'text/javascript'
         },
         // Bootstrap and jQuery - deferred to prevent render blocking
         {
@@ -101,7 +101,10 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://cdnjs.cloudflare.com' },
         { rel: 'preconnect', href: 'https://cdn.jsdelivr.net' },
-        { rel: 'dns-prefetch', href: 'https://www.googletagmanager.com' },
+        // CRITICAL: Preconnect to Google Analytics for faster tracking
+        { rel: 'preconnect', href: 'https://www.googletagmanager.com' },
+        { rel: 'preconnect', href: 'https://www.google-analytics.com' },
+        { rel: 'dns-prefetch', href: 'https://analytics.google.com' },
         // Preload critical CSS with high priority
         { rel: 'preload', as: 'style', href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css' },
         { rel: 'preload', as: 'style', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css' },
