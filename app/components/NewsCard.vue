@@ -1,16 +1,24 @@
 <template>
   <div class="news-card" @click.stop="navigateToArticle">
     <div class="news-image">
-      <img
-        :src="responsiveImage.src"
-        :srcset="responsiveImage.srcset"
-        :sizes="responsiveImage.sizes"
-        :alt="title"
-        loading="lazy"
-        decoding="async"
-        width="640"
-        height="360"
-      />
+      <picture>
+        <source
+          v-if="responsiveImage.srcsetWebp"
+          type="image/webp"
+          :srcset="responsiveImage.srcsetWebp"
+          :sizes="responsiveImage.sizes"
+        />
+        <img
+          :src="responsiveImage.src"
+          :srcset="responsiveImage.srcset"
+          :sizes="responsiveImage.sizes"
+          :alt="title"
+          loading="lazy"
+          decoding="async"
+          width="640"
+          height="360"
+        />
+      </picture>
       <div class="category-tag" v-if="showSportTag">
         <span :class="['sport-tag', sportClass]">{{ sport }}</span>
       </div>
@@ -126,6 +134,7 @@ export default {
         return {
           src: this.image,
           srcset: '',
+          srcsetWebp: '',
           sizes: ''
         };
       }
@@ -139,6 +148,7 @@ export default {
       return {
         src: '',
         srcset: '',
+        srcsetWebp: '',
         sizes: ''
       };
     },

@@ -374,6 +374,7 @@ export default {
           article.feat_images && article.feat_images["small"]
             ? article.feat_images["small"].url
             : NewsImage,
+        featImages: article.feat_images || null, // Include full feat_images for WebP support
         //category: sportTag, // Use the computed sport tag as category too
         categoryName: categoryName,
         category: article.categories[0].slug,

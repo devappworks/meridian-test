@@ -460,6 +460,7 @@ export default {
         image: article.feat_images["small"]
           ? article.feat_images["small"].url
           : null,
+        featImages: article.feat_images || null, // Include full feat_images for WebP support
         category: article.categories[0].slug,
         slug: article.slug,
       };

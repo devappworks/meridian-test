@@ -113,19 +113,29 @@
             />
           </div>
           <div v-else>
-            <!-- Featured image -->
+            <!-- Featured image with WebP support -->
             <div
               class="featured-image"
               v-if="article?.feat_images?.['extra-large']?.url"
             >
-              <img
-                :src="article.feat_images['extra-large'].url"
-                :alt="article?.title || ''"
-                fetchpriority="high"
-                decoding="async"
-                width="1200"
-                height="675"
-              />
+              <picture>
+                <source
+                  v-if="articleImage.srcsetWebp"
+                  type="image/webp"
+                  :srcset="articleImage.srcsetWebp"
+                  :sizes="articleImage.sizes"
+                />
+                <img
+                  :src="articleImage.src"
+                  :srcset="articleImage.srcset"
+                  :sizes="articleImage.sizes"
+                  :alt="article?.title || ''"
+                  fetchpriority="high"
+                  decoding="async"
+                  width="1200"
+                  height="675"
+                />
+              </picture>
               <div class="image-caption" v-if="article?.featured_image_caption">
                 {{ article.featured_image_caption }}
               </div>
@@ -342,6 +352,7 @@ import SkeletonRelatedNews from "@/components/skeletons/SkeletonRelatedNews.vue"
 import SkeletonNewsGrid from "@/components/skeletons/SkeletonNewsGrid.vue";
 
 import { fetchFromApi, fetchAllComments } from "@/services/api";
+import { generateArticleImageAttrs } from "@/utils/responsiveImage";
 
 // Nuxt composables
 const nuxtApp = useNuxtApp();
@@ -449,6 +460,13 @@ const hasMultipleCommentPages = computed(() => {
   return commentsPagination.value && 
          commentsPagination.value.last_page > 1 && 
          !showingAllComments.value;
+});
+
+// Generate responsive image attributes with WebP support for article featured image
+const articleImage = computed(() => {
+  return article.value?.feat_images 
+    ? generateArticleImageAttrs(article.value.feat_images)
+    : { src: '', srcset: '', srcsetWebp: '', sizes: '' };
 });
 
 

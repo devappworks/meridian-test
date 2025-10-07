@@ -122,6 +122,7 @@ const mapArticle = (article) => ({
   date: article.date,
   url: article.url,
   image: article.feat_images["small"]?.url || null,
+  featImages: article.feat_images || null, // Include full feat_images for WebP support
   category: article.categories[0].slug,
   slug: article.slug,
 });
@@ -231,6 +232,7 @@ if (tennisData.value?.result.articles?.length > 0) {
       date: filteredArticles[0].date,
       url: filteredArticles[0].url,
       image: filteredArticles[0].feat_images["medium"]?.url || null,
+      featImages: filteredArticles[0].feat_images || null, // Include full feat_images for WebP support
       content: filteredArticles[0].contents,
       featured: true,
       category: filteredArticles[0].categories[0].slug,
@@ -305,6 +307,7 @@ const switchCategory = async (categoryId) => {
         date: filteredArticles[0].date,
         url: filteredArticles[0].url,
         image: filteredArticles[0].feat_images["medium"]?.url || null,
+        featImages: filteredArticles[0].feat_images || null, // Include full feat_images for WebP support
         content: filteredArticles[0].contents,
         featured: true,
         category: filteredArticles[0].categories[0].slug,

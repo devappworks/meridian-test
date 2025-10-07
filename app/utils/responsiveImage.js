@@ -39,59 +39,142 @@ export function generateResponsiveImageAttrs(featImages, defaultSize = 'small') 
 }
 
 /**
- * Generate srcset for news cards (smaller images)
+ * Generate srcset for news cards (smaller images) with WebP support
  * @param {Object} featImages - The feat_images object from API
- * @returns {Object} - Object containing src, srcset, and sizes
+ * @returns {Object} - Object containing src, srcset, srcsetWebp, and sizes
  */
 export function generateNewsCardImageAttrs(featImages) {
   if (!featImages || typeof featImages !== 'object') {
-    return { src: '', srcset: '', sizes: '' };
+    return { src: '', srcset: '', srcsetWebp: '', sizes: '' };
   }
 
   const src = featImages.small?.url || featImages.medium?.url || '';
 
   const srcsetParts = [];
+  const srcsetWebpParts = [];
 
   // For news cards, use smaller sizes
-  if (featImages['thumb-small']?.url) srcsetParts.push(`${featImages['thumb-small'].url} 300w`);
-  if (featImages.small?.url) srcsetParts.push(`${featImages.small.url} 640w`);
-  if (featImages.medium?.url) srcsetParts.push(`${featImages.medium.url} 960w`);
+  if (featImages['thumb-small']?.url) {
+    srcsetParts.push(`${featImages['thumb-small'].url} 300w`);
+    if (featImages['thumb-small']?.webp) {
+      srcsetWebpParts.push(`${featImages['thumb-small'].webp} 300w`);
+    }
+  }
+  if (featImages.small?.url) {
+    srcsetParts.push(`${featImages.small.url} 640w`);
+    if (featImages.small?.webp) {
+      srcsetWebpParts.push(`${featImages.small.webp} 640w`);
+    }
+  }
+  if (featImages.medium?.url) {
+    srcsetParts.push(`${featImages.medium.url} 960w`);
+    if (featImages.medium?.webp) {
+      srcsetWebpParts.push(`${featImages.medium.webp} 960w`);
+    }
+  }
 
   const srcset = srcsetParts.join(', ');
+  const srcsetWebp = srcsetWebpParts.join(', ');
 
   // Sizes attribute for responsive layout
   // Mobile: full width, Tablet: 50%, Desktop: 25-33%
   const sizes = '(max-width: 576px) 100vw, (max-width: 1024px) 50vw, 33vw';
 
-  return { src, srcset, sizes };
+  return { src, srcset, srcsetWebp, sizes };
 }
 
 /**
- * Generate srcset for featured images (larger images)
+ * Generate srcset for featured images (larger images) with WebP support
  * @param {Object} featImages - The feat_images object from API
- * @returns {Object} - Object containing src, srcset, and sizes
+ * @returns {Object} - Object containing src, srcset, srcsetWebp, and sizes
  */
 export function generateFeaturedImageAttrs(featImages) {
   if (!featImages || typeof featImages !== 'object') {
-    return { src: '', srcset: '', sizes: '' };
+    return { src: '', srcset: '', srcsetWebp: '', sizes: '' };
   }
 
   const src = featImages.medium?.url || featImages.large?.url || '';
 
   const srcsetParts = [];
+  const srcsetWebpParts = [];
 
   // For featured images, use medium to extra-large sizes
-  if (featImages.small?.url) srcsetParts.push(`${featImages.small.url} 640w`);
-  if (featImages.medium?.url) srcsetParts.push(`${featImages.medium.url} 960w`);
-  if (featImages.large?.url) srcsetParts.push(`${featImages.large.url} 1280w`);
-  if (featImages['extra-large']?.url) srcsetParts.push(`${featImages['extra-large'].url} 1920w`);
+  if (featImages.small?.url) {
+    srcsetParts.push(`${featImages.small.url} 640w`);
+    if (featImages.small?.webp) {
+      srcsetWebpParts.push(`${featImages.small.webp} 640w`);
+    }
+  }
+  if (featImages.medium?.url) {
+    srcsetParts.push(`${featImages.medium.url} 960w`);
+    if (featImages.medium?.webp) {
+      srcsetWebpParts.push(`${featImages.medium.webp} 960w`);
+    }
+  }
+  if (featImages.large?.url) {
+    srcsetParts.push(`${featImages.large.url} 1280w`);
+    if (featImages.large?.webp) {
+      srcsetWebpParts.push(`${featImages.large.webp} 1280w`);
+    }
+  }
+  if (featImages['extra-large']?.url) {
+    srcsetParts.push(`${featImages['extra-large'].url} 1920w`);
+    if (featImages['extra-large']?.webp) {
+      srcsetWebpParts.push(`${featImages['extra-large'].webp} 1920w`);
+    }
+  }
 
   const srcset = srcsetParts.join(', ');
+  const srcsetWebp = srcsetWebpParts.join(', ');
 
   // Featured images are typically larger
   const sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px';
 
-  return { src, srcset, sizes };
+  return { src, srcset, srcsetWebp, sizes };
+}
+
+/**
+ * Generate srcset for article page featured images (extra-large images) with WebP support
+ * @param {Object} featImages - The feat_images object from API
+ * @returns {Object} - Object containing src, srcset, srcsetWebp, and sizes
+ */
+export function generateArticleImageAttrs(featImages) {
+  if (!featImages || typeof featImages !== 'object') {
+    return { src: '', srcset: '', srcsetWebp: '', sizes: '' };
+  }
+
+  const src = featImages['extra-large']?.url || featImages.large?.url || featImages.medium?.url || '';
+
+  const srcsetParts = [];
+  const srcsetWebpParts = [];
+
+  // For article pages, use all available sizes for maximum quality
+  if (featImages.medium?.url) {
+    srcsetParts.push(`${featImages.medium.url} 960w`);
+    if (featImages.medium?.webp) {
+      srcsetWebpParts.push(`${featImages.medium.webp} 960w`);
+    }
+  }
+  if (featImages.large?.url) {
+    srcsetParts.push(`${featImages.large.url} 1280w`);
+    if (featImages.large?.webp) {
+      srcsetWebpParts.push(`${featImages.large.webp} 1280w`);
+    }
+  }
+  if (featImages['extra-large']?.url) {
+    srcsetParts.push(`${featImages['extra-large'].url} 1920w`);
+    if (featImages['extra-large']?.webp) {
+      srcsetWebpParts.push(`${featImages['extra-large'].webp} 1920w`);
+    }
+  }
+
+  const srcset = srcsetParts.join(', ');
+  const srcsetWebp = srcsetWebpParts.join(', ');
+
+  // Article featured images span full content width
+  const sizes = '(max-width: 768px) 100vw, (max-width: 1440px) 90vw, 1280px';
+
+  return { src, srcset, srcsetWebp, sizes };
 }
 
 /**

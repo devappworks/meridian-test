@@ -3,16 +3,24 @@
     <div class="container">
       <div class="featured-content" @click.stop="navigateToArticle">
         <div class="featured-image">
-          <img
-            :src="responsiveImage.src"
-            :srcset="responsiveImage.srcset"
-            :sizes="responsiveImage.sizes"
-            :alt="article.title"
-            fetchpriority="high"
-            decoding="async"
-            width="1200"
-            height="675"
-          />
+          <picture>
+            <source
+              v-if="responsiveImage.srcsetWebp"
+              type="image/webp"
+              :srcset="responsiveImage.srcsetWebp"
+              :sizes="responsiveImage.sizes"
+            />
+            <img
+              :src="responsiveImage.src"
+              :srcset="responsiveImage.srcset"
+              :sizes="responsiveImage.sizes"
+              :alt="article.title"
+              fetchpriority="high"
+              decoding="async"
+              width="1200"
+              height="675"
+            />
+          </picture>
           <div class="category-tag">
             <span class="sport-tag" :class="sportClass(article.sport)">{{
               article.sport
@@ -46,7 +54,7 @@ export default {
   computed: {
     responsiveImage() {
       if (!this.article) {
-        return { src: '', srcset: '', sizes: '' };
+        return { src: '', srcset: '', srcsetWebp: '', sizes: '' };
       }
 
       // If featImages object is provided, use it for responsive images
@@ -59,6 +67,7 @@ export default {
         return {
           src: this.article.image,
           srcset: '',
+          srcsetWebp: '',
           sizes: ''
         };
       }
@@ -72,6 +81,7 @@ export default {
       return {
         src: '',
         srcset: '',
+        srcsetWebp: '',
         sizes: ''
       };
     },

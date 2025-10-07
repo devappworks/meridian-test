@@ -141,25 +141,19 @@ export default {
             );
             const sport =
               sportFromCategories || article.sport || "OSTALE VESTI";
+            
+            // Pass the full feat_images object for WebP support
+            const featImages = article.feat_images || article.images || null;
+            
+            // Fallback image URL for components that don't support WebP yet
             const image =
-              (article.feat_images && article.feat_images["small"]
-                ? article.feat_images["small"].url
-                : null) ||
-              (article.images && article.images["small"]
-                ? article.images["small"].url
-                : null) ||
-              (article.feat_images && article.feat_images["medium"]
-                ? article.feat_images["medium"].url
-                : null) ||
-              (article.images && article.images["medium"]
-                ? article.images["medium"].url
-                : null) ||
+              featImages?.["small"]?.url ||
+              featImages?.["medium"]?.url ||
               null;
 
-              console.log(article, "ARTICLE");
-
-              console.log(article.categories[0].slug, "CATEGORY");
-              console.log(article.slug, "SLUG");
+            console.log(article, "ARTICLE");
+            console.log(article.categories[0].slug, "CATEGORY");
+            console.log(article.slug, "SLUG");
 
             return {
               id: article.id,
@@ -168,6 +162,7 @@ export default {
               date: article.date,
               url: article.url,
               image,
+              featImages, // Include full featImages object for WebP support
               category: article.categories[0].slug,
               slug: article.slug,
             };

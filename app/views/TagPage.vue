@@ -180,6 +180,7 @@ export default {
         date: this.formatDate(article.publish_date),
         url: article.url,
         image: article.feat_images?.medium?.url || null,
+        featImages: article.feat_images || null, // Include full feat_images for WebP support
         category: article.categories[0].slug,
         slug: article.slug,
       };

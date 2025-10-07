@@ -160,6 +160,7 @@ const mapArticleData = (article) => {
     date: article.date,
     url: article.url,
     image: article.feat_images?.["small"]?.url || null,
+    featImages: article.feat_images || null, // Include full feat_images for WebP support
     category: article.categories?.[0]?.slug || '',
     slug: article.slug || '',
   };
