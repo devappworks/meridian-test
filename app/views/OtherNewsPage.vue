@@ -161,14 +161,14 @@ const [
 ] = await Promise.all([
   useAsyncData('other-news-articles', () =>
     fetchFromApi('/getArticles', {
-      articleLimit: 53,
+      articleLimit: 40,
       'category[]': 38,
       page: 1
     })
   ),
   useAsyncData('other-latest-sidebar', () =>
     fetchFromApi('/getArticles', {
-      articleLimit: 50
+      articleLimit: 8
     })
   )
 ]);
@@ -185,7 +185,7 @@ if (otherData.value?.result.articles?.length > 0) {
     additionalNews.value = filteredArticles.slice(24, 48).map(mapArticle);
 
     // Check if we have more pages
-    hasMorePages.value = filteredArticles.length >= 53;
+    hasMorePages.value = filteredArticles.length >= 40;
   }
 }
 
@@ -285,12 +285,12 @@ const switchCategory = async (categoryId) => {
   try {
     const [otherDataResponse, latestArticlesResponse] = await Promise.all([
       fetchFromApi("/getArticles", {
-        articleLimit: 53,
+        articleLimit: 40,
         "category[]": categoryId,
         page: 1
       }),
       fetchFromApi("/getArticles", {
-        articleLimit: 50,
+        articleLimit: 8,
       })
     ]);
 

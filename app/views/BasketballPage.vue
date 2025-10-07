@@ -174,13 +174,13 @@ const [
 ] = await Promise.all([
   useAsyncData('basketball-articles', () =>
     fetchFromApi('/getArticles', {
-      articleLimit: 50,
+      articleLimit: 40,
       'category[]': 25 // Default basketball category
     })
   ),
   useAsyncData('basketball-latest-sidebar', () =>
     fetchFromApi('/getArticles', {
-      articleLimit: 50
+      articleLimit: 8
     })
   )
 ]);
@@ -286,11 +286,11 @@ const switchCategory = async (categoryId) => {
   try {
     const [basketballDataResponse, latestArticlesResponse] = await Promise.all([
       fetchFromApi("/getArticles", {
-        articleLimit: 50,
+        articleLimit: 40,
         "category[]": buildCategoryArray(),
       }),
       fetchFromApi("/getArticles", {
-        articleLimit: 50,
+        articleLimit: 8,
       })
     ]);
 

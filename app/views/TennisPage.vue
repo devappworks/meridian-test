@@ -174,13 +174,13 @@ const [
 ] = await Promise.all([
   useAsyncData('tennis-articles', () =>
     fetchFromApi('/getArticles', {
-      articleLimit: 50,
+      articleLimit: 40,
       'category[]': 41 // Default tennis category
     })
   ),
   useAsyncData('tennis-latest-sidebar', () =>
     fetchFromApi('/getArticles', {
-      articleLimit: 50
+      articleLimit: 8
     })
   )
 ]);
@@ -286,11 +286,11 @@ const switchCategory = async (categoryId) => {
   try {
     const [tennisDataResponse, latestArticlesResponse] = await Promise.all([
       fetchFromApi("/getArticles", {
-        articleLimit: 50,
+        articleLimit: 40,
         "category[]": buildCategoryArray(),
       }),
       fetchFromApi("/getArticles", {
-        articleLimit: 50,
+        articleLimit: 8,
       })
     ]);
 
@@ -315,7 +315,7 @@ const switchCategory = async (categoryId) => {
       loadMoreTennisNews.value = filteredArticles.slice(17, 29).map(mapArticle);
       otherNews.value = filteredArticles.slice(29, 37).map(mapArticle);
 
-      const articlesUsed = 40;
+      const articlesUsed = 48;
       hasMorePages.value = filteredArticles.length > articlesUsed;
     }
 

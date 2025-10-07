@@ -487,11 +487,11 @@ export default {
       try {
         const [categoryData, latestArticlesData] = await Promise.all([
           fetchFromApi("/getArticles", {
-            articleLimit: 53,
+            articleLimit: 40,
             "category[]": this.currentCategoryId,
           }),
           fetchFromApi("/getArticles", {
-            articleLimit: 50,
+            articleLimit: 8,
           })
         ]);
         /* if (this.categoryData.result.articles[0].categories[0].name.toLowerCase().includes(this.displayTitle.toLowerCase())) {
@@ -525,7 +525,7 @@ export default {
           this.currentTagId = this.getTagId();
 
           const tagData = await fetchFromApi("/getArticles", {
-            articleLimit: 53,
+            articleLimit: 40,
             "tag[]": this.currentTagId,
           });
           finalArticles = tagData.result.articles;
@@ -547,7 +547,7 @@ export default {
           this.otherNews = allArticles.slice(24, 48).map(this.mapArticle);
 
           // Check if we have more pages
-          this.hasMorePages = allArticles.length >= 53;
+          this.hasMorePages = allArticles.length >= 40;
           this.currentPage = 1;
         } else {
           this.resetNews();

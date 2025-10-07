@@ -151,7 +151,7 @@ const getCategoryClass = (sport) => {
 // SSR Data Fetching
 const { data: latestNewsData, pending: latestNewsPending } = await useAsyncData('latest-news-articles', () =>
   fetchFromApi('/getArticles', {
-    articleLimit: 56,
+    articleLimit: 40,
     page: 1
   })
 );
@@ -167,7 +167,7 @@ if (latestNewsData.value?.result.articles?.length > 0) {
   relatedNews.value = articles.slice(0, 8).map(mapSidebarArticle);
 
   // Check if we have more pages
-  hasMorePages.value = articles.length >= 56;
+  hasMorePages.value = articles.length >= 40;
 }
 
 // Client-side functions

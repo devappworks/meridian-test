@@ -174,13 +174,13 @@ const [
 ] = await Promise.all([
   useAsyncData('volleyball-articles', () =>
     fetchFromApi('/getArticles', {
-      articleLimit: 50,
+      articleLimit: 40,
       'category[]': 37 // Default volleyball category
     })
   ),
   useAsyncData('volleyball-latest-sidebar', () =>
     fetchFromApi('/getArticles', {
-      articleLimit: 50
+      articleLimit: 8
     })
   )
 ]);
@@ -242,7 +242,7 @@ if (volleyballData.value?.result.articles?.length > 0) {
     loadMoreVolleyballNews.value = filteredArticles.slice(17, 29).map(mapArticle);
     otherNews.value = filteredArticles.slice(29, 37).map(mapArticle);
 
-    const articlesUsed = 40;
+    const articlesUsed = 48;
     hasMorePages.value = filteredArticles.length > articlesUsed;
   }
 }
@@ -286,11 +286,11 @@ const switchCategory = async (categoryId) => {
   try {
     const [volleyballDataResponse, latestArticlesResponse] = await Promise.all([
       fetchFromApi("/getArticles", {
-        articleLimit: 50,
+        articleLimit: 40,
         "category[]": buildCategoryArray(),
       }),
       fetchFromApi("/getArticles", {
-        articleLimit: 50,
+        articleLimit: 8,
       })
     ]);
 
@@ -315,7 +315,7 @@ const switchCategory = async (categoryId) => {
       loadMoreVolleyballNews.value = filteredArticles.slice(17, 29).map(mapArticle);
       otherNews.value = filteredArticles.slice(29, 37).map(mapArticle);
 
-      const articlesUsed = 40;
+      const articlesUsed = 48;
       hasMorePages.value = filteredArticles.length > articlesUsed;
     }
 
