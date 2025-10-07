@@ -159,7 +159,7 @@ const mapArticleData = (article) => {
     sport: getSportFromCategories(article.categories),
     date: article.date,
     url: article.url,
-    image: article.feat_images?.["medium"]?.url || null,
+    image: article.feat_images?.["small"]?.url || null,
     category: article.categories?.[0]?.slug || '',
     slug: article.slug || '',
   };
@@ -226,7 +226,7 @@ if (featuredData.value?.result.articles?.length > 0) {
       sport: getSportFromCategories(featuredArticles[0].categories),
       date: featuredArticles[0].date,
       url: featuredArticles[0].url,
-      image: featuredArticles[0].feat_images?.["large"]?.url || null,
+      image: featuredArticles[0].feat_images?.["medium"]?.url || null,
       content: featuredArticles[0].contents,
       category: featuredArticles[0].categories?.[0]?.slug || '',
       slug: featuredArticles[0].slug || '',
