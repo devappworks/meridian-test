@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="youtube-content">
-      <a :href="`https://www.youtube.com/watch?v=${mappedVideos[0]?.videoId}`" target="_blank">
+      <a :href="`https://www.youtube.com/watch?v=${mappedVideos[0]?.videoId}`" target="_blank" rel="noopener noreferrer">
         <img :src="mappedVideos[0]?.thumbnail" alt="Youtube video" class="youtube-thumb" />
       </a>
     </div>

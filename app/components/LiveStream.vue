@@ -6,6 +6,7 @@
         :key="banner.id"
         :href="banner.url_link"
         target="_blank"
+        rel="noopener noreferrer"
         class="banner-link"
       >
         <img

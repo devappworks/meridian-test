@@ -6,6 +6,7 @@
         <a
           :href="topBanners[0].url_link"
           target="_blank"
+          rel="noopener noreferrer"
           class="banner-link"
         >
           <img
@@ -27,7 +28,7 @@
         />
       </div>
       <div v-if="topBanners.length > 1" class="ad-banner test2">
-        <a :href="topBanners[1].url_link" target="_blank" class="banner-link">
+        <a :href="topBanners[1].url_link" target="_blank" rel="noopener noreferrer" class="banner-link">
           <img
             :src="topBanners[1].creative_image"
             :alt="topBanners[1].name"
