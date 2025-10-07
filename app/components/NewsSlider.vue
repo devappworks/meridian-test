@@ -44,7 +44,15 @@
         <swiper-slide v-for="(item, index) in news" :key="index">
           <div class="news-card" @click.stop="navigateToArticle(item)">
             <div class="news-image">
-              <img :src="item.image" :alt="item.title" draggable="false" />
+              <img
+                :src="item.image"
+                :alt="item.title"
+                draggable="false"
+                loading="lazy"
+                decoding="async"
+                width="400"
+                height="225"
+              />
             </div>
             <div class="news-content">
               <h3 class="news-title">{{ item.title }}</h3>

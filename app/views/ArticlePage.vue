@@ -118,7 +118,14 @@
               class="featured-image"
               v-if="article?.feat_images?.['extra-large']?.url"
             >
-              <img :src="article.feat_images['extra-large'].url" :alt="article?.title || ''"/>
+              <img
+                :src="article.feat_images['extra-large'].url"
+                :alt="article?.title || ''"
+                fetchpriority="high"
+                decoding="async"
+                width="1200"
+                height="675"
+              />
               <div class="image-caption" v-if="article?.featured_image_caption">
                 {{ article.featured_image_caption }}
               </div>

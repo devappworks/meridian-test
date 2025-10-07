@@ -3,7 +3,14 @@
     <div class="container">
       <div class="featured-content" @click.stop="navigateToArticle">
         <div class="featured-image">
-          <img :src="article.image" :alt="article.title" />
+          <img
+            :src="article.image"
+            :alt="article.title"
+            fetchpriority="high"
+            decoding="async"
+            width="1200"
+            height="675"
+          />
           <div class="category-tag">
             <span class="sport-tag" :class="sportClass(article.sport)">{{
               article.sport

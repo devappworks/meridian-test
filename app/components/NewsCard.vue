@@ -1,7 +1,14 @@
 <template>
   <div class="news-card" @click.stop="navigateToArticle">
     <div class="news-image">
-      <img :src="image" :alt="title" />
+      <img
+        :src="image"
+        :alt="title"
+        loading="lazy"
+        decoding="async"
+        width="640"
+        height="360"
+      />
       <div class="category-tag" v-if="showSportTag">
         <span :class="['sport-tag', sportClass]">{{ sport }}</span>
       </div>
