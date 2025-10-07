@@ -18,6 +18,10 @@ export default defineNuxtConfig({
     payloadExtraction: true,
     viewTransition: true
   },
+  // Inline critical CSS to prevent render blocking (Nuxt 4 way)
+  features: {
+    inlineStyles: true
+  },
   nitro: {
     preset: 'node-server',
     // Remove static output configuration for SSR
@@ -29,6 +33,8 @@ export default defineNuxtConfig({
     buildDir: '.output',
     // Enable compression
     compressPublicAssets: true,
+    // Enable minification
+    minify: true,
     routeRules: {
       // Enable SSR for all main routes with caching
       '/': { ssr: true, swr: 60 }, // Cache for 60 seconds
@@ -169,18 +175,36 @@ export default defineNuxtConfig({
           comments: false  // Remove comments from production build
         }
       },
-      // Enable CSS code splitting
-      cssCodeSplit: true,
+      // Disable CSS code splitting to reduce render-blocking CSS files
+      cssCodeSplit: false,
       // Reduce chunk size warnings threshold
       chunkSizeWarningLimit: 1000,
       // Optimize chunk splitting for better caching
       rollupOptions: {
         output: {
-          manualChunks: {
-            // Vendor chunks - separate libraries for better caching
-            'vue-vendor': ['vue', 'vue-router'],
-            'swiper-vendor': ['swiper'],
-          }
+          // Reduce the number of JS chunks
+          manualChunks(id) {
+            // Group all node_modules into vendor chunk
+            if (id.includes('node_modules')) {
+              // Separate large libraries
+              if (id.includes('swiper')) {
+                return 'swiper-vendor';
+              }
+              // All other vendors in one chunk
+              return 'vendor';
+            }
+            // Group component chunks by directory
+            if (id.includes('/components/')) {
+              return 'components';
+            }
+            if (id.includes('/views/')) {
+              return 'views';
+            }
+          },
+          // Optimize asset file names for better caching
+          chunkFileNames: '_nuxt/[name]-[hash].js',
+          entryFileNames: '_nuxt/[name]-[hash].js',
+          assetFileNames: '_nuxt/[name]-[hash][extname]'
         }
       }
     },
