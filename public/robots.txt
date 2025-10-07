@@ -1,4 +1,16 @@
-User-Agent: *
-Disallow:
+User-agent: *
+Allow: /
+
+# Block malformed URL patterns
+Disallow: /*?=?*
+Disallow: /*/page/*=?*
+Disallow: /*viteBooking*
+Disallow: /*Iframe*
+Disallow: /vesti/LIvestEmai/
+
+# Block tracking parameters
+Disallow: /*?*utm_*
+Disallow: /*?*fbclid*
+Disallow: /*?*gclid*
 
 Sitemap: https://meridiansport.rs/sitemap.xml
