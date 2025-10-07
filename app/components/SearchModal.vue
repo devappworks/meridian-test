@@ -200,7 +200,7 @@ export default {
 
       // Use canonical category for navigation
       const canonicalCategory = getCanonicalCategoryFromSlug(found.category);
-      const target = `/${canonicalCategory}/${found.slug}`;
+      const target = `/${canonicalCategory}/${found.slug}/`; // Add trailing slash for consistency
       console.log(`SearchModal: ${found.category} -> ${canonicalCategory}`, "canonical conversion");
       console.log(target, "target");
       this.$router.push(target)

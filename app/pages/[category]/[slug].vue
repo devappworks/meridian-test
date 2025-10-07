@@ -88,11 +88,25 @@ useHead(() => {
   const imageUrl = a?.feat_images?.['extra-large']?.url || a?.images?.small?.url || undefined;
 
   const authorName = a?.authors?.[0]?.name || "Redakcija";
-  const publishedTime = a?.date || a?.publish_date || undefined;
+  // Use publish_date first (ISO format), fallback to date field
+  const publishedTime = a?.publish_date || a?.date || undefined;
   const tags = Array.isArray(a?.tags) ? a.tags.map((t) => t?.name).filter(Boolean) : [];
 
-  // Convert publishedTime to ISO 8601 format
-  const publishedTimeISO = publishedTime ? new Date(publishedTime).toISOString() : undefined;
+  // Convert publishedTime to ISO 8601 format with error handling
+  let publishedTimeISO = undefined;
+  if (publishedTime) {
+    try {
+      const dateObj = new Date(publishedTime);
+      // Check if date is valid
+      if (!isNaN(dateObj.getTime())) {
+        publishedTimeISO = dateObj.toISOString();
+      } else {
+        console.warn('🟢 Invalid date value for article:', publishedTime);
+      }
+    } catch (err) {
+      console.warn('🟢 Error parsing date for article:', publishedTime, err);
+    }
+  }
 
   const ld = {
     "@context": "https://schema.org",

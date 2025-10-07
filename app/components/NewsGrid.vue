@@ -215,8 +215,20 @@ export default {
       
       const { page, id } = payload;
       if (page === "article" && id) {
-        if (this.$router && this.$router.push) {
-          this.$router.push(`/article/${id}`);
+        // Find the article to get category and slug
+        const article = Array.isArray(this.news) 
+          ? this.news.find(item => item && item.id === id)
+          : null;
+        
+        if (article && article.category && article.slug) {
+          // Use category/slug format with trailing slash and canonical category
+          if (this.$router && this.$router.push) {
+            const { getCanonicalCategoryFromSlug } = require('~/utils/canonicalCategory');
+            const canonicalCategory = getCanonicalCategoryFromSlug(article.category);
+            this.$router.push(`/${canonicalCategory}/${article.slug}/`);
+          }
+        } else {
+          console.warn('Article not found or missing category/slug for handlePageChange:', id);
         }
       }
     },
@@ -244,9 +256,12 @@ export default {
           : null;
           
         if (article && article.category && article.slug) {
-          // Navigate directly to the article
+          // Navigate directly to the article using canonical category
           if (this.$router && this.$router.push) {
-            this.$router.push(`/${article.category}/${article.slug}/`);
+            // Use canonical category for consistency
+            const { getCanonicalCategoryFromSlug } = require('~/utils/canonicalCategory');
+            const canonicalCategory = getCanonicalCategoryFromSlug(article.category);
+            this.$router.push(`/${canonicalCategory}/${article.slug}/`);
           }
         } else {
           console.warn('Article not found or missing category/slug:', articleId);

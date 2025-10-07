@@ -26,12 +26,25 @@ export function useNewsArticleSchema(article) {
                      stripHtml(article.contents).substring(0, 160) ||
                      article.title;
 
-  // Convert dates to ISO 8601 format
+  // Convert dates to ISO 8601 format with error handling
+  // Use publish_date (ISO format) before formatted date field
   const publishDate = article.publish_date || article.date;
-  const modifiedDate = article.updated_at || article.publish_date || article.date;
+  const modifiedDate = article.update_date || article.updated_at || article.publish_date || article.date;
 
-  const datePublishedISO = publishDate ? new Date(publishDate).toISOString() : undefined;
-  const dateModifiedISO = modifiedDate ? new Date(modifiedDate).toISOString() : undefined;
+  // Helper function to safely parse dates
+  const safeParseDate = (dateString) => {
+    if (!dateString) return undefined;
+    try {
+      const dateObj = new Date(dateString);
+      return !isNaN(dateObj.getTime()) ? dateObj.toISOString() : undefined;
+    } catch (err) {
+      console.warn('Failed to parse date:', dateString);
+      return undefined;
+    }
+  };
+
+  const datePublishedISO = safeParseDate(publishDate);
+  const dateModifiedISO = safeParseDate(modifiedDate);
 
   return {
     '@context': 'https://schema.org',
