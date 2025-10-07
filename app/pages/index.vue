@@ -32,7 +32,7 @@ const canonicalUrl = siteUrl ? `${siteUrl}/` : undefined;
 
 const title = siteName;
 const description = stripHtml(siteDescription) || siteName;
-const imageUrl = undefined; // Add if you have a social share image at site level
+const imageUrl = siteUrl ? `${siteUrl}/images/homepage-og.jpg` : undefined;
 
 const ld = {
   "@context": "https://schema.org",
@@ -213,10 +213,10 @@ const [
 
 // Process featured articles from SSR
 if (featuredData.value?.result.articles?.length > 0) {
-  const featuredArticles = featuredData.value.result.articles.filter(article => 
+  const featuredArticles = featuredData.value.result.articles.filter(article =>
     article && article.categories && article.categories.length > 0
   );
-  
+
   if (featuredArticles.length > 0) {
     featuredArticle.value = {
       id: featuredArticles[0].id,
@@ -229,7 +229,12 @@ if (featuredData.value?.result.articles?.length > 0) {
       category: featuredArticles[0].categories?.[0]?.slug || '',
       slug: featuredArticles[0].slug || '',
     };
-    
+
+    // Preload featured image for better LCP
+    if (featuredArticle.value.image) {
+      useImagePreload(featuredArticle.value.image);
+    }
+
     latestNewsGrid.value = featuredArticles.slice(1, featuredArticles.length).map(mapArticleData).filter(Boolean);
   }
 }

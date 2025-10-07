@@ -124,6 +124,10 @@ export default defineNuxtConfig({
       'import.meta.env.VITE_API_KEY': JSON.stringify(process.env.API_KEY || process.env.NUXT_PUBLIC_API_KEY || ''),
       'import.meta.env.VITE_BACKEND_URL': JSON.stringify(process.env.BACKEND_URL || process.env.NUXT_PUBLIC_BACKEND_URL || ''),
       'import.meta.env.VITE_COMMENT_BACKEND_URL': JSON.stringify(process.env.COMMENT_BACKEND_URL || process.env.NUXT_PUBLIC_COMMENT_BACKEND_URL || '')
+    },
+    esbuild: {
+      // Remove console.log, console.warn, console.error in production
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : []
     }
   },
   runtimeConfig: {
