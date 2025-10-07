@@ -16,6 +16,14 @@ export default defineEventHandler(async (event) => {
     return
   }
 
+  // Redirect loop protection: check if we've already processed this URL
+  // This prevents infinite redirect loops
+  const redirectCount = event.node.req.headers['x-redirect-count']
+  if (redirectCount && parseInt(redirectCount) > 3) {
+    console.error(`[SERVER MW] Redirect loop detected! Already redirected ${redirectCount} times for: ${path}`)
+    return
+  }
+
   // Check if the path has exactly 2 segments (like /something/slug/)
   // After url-normalization, all URLs should have trailing slash
   const pathMatch = path.match(/^\/([^\/]+)\/([^\/]+)\/?$/i)
@@ -41,12 +49,19 @@ export default defineEventHandler(async (event) => {
   if (canonicalCategory !== category) {
     // Preserve trailing slash (url-normalization ensures it exists)
     const redirectUrl = `/${canonicalCategory}/${slug}/`
+
+    // Prevent redirect loop: don't redirect if target URL is the same as current
+    if (redirectUrl === path || redirectUrl + '/' === path || redirectUrl === path + '/') {
+      console.log(`[SERVER MW] Skipping redirect - target URL same as current: ${path}`)
+      return
+    }
+
     console.log(`[SERVER MW] Subcategory redirect: ${path} -> ${redirectUrl}`)
-    
+
     // Preserve query string if present
     const queryString = url.search || ''
     const finalRedirectUrl = redirectUrl + queryString
-    
+
     await sendRedirect(event, finalRedirectUrl, 301)
     return
   }
@@ -72,20 +87,8 @@ export default defineEventHandler(async (event) => {
       headers: apiKey ? { 'X-API-Key': apiKey } : {}
     })
 
-    // If response is HTML (redirect response), parse the redirect URL
-    if (typeof response === 'string' && response.includes('<!DOCTYPE html>')) {
-      const redirectMatch = response.match(/url=([^"]+)/)
-      if (redirectMatch) {
-        const redirectUrl = redirectMatch[1]
-        console.log(`[SERVER MIDDLEWARE] HTML redirect detected: ${path} -> ${redirectUrl}`)
-
-        // Send 301 redirect
-        await sendRedirect(event, redirectUrl, 301)
-        return
-      }
-    }
-
-    // If response is JSON with article data
+    // API now only returns article data (no redirects)
+    // Validate response structure
     if (response && response.article && response.article.categories) {
       const article = response.article
 
@@ -122,6 +125,13 @@ export default defineEventHandler(async (event) => {
       if (canonicalCategory && category.toLowerCase() !== canonicalCategory.toLowerCase()) {
         // Preserve trailing slash (url-normalization ensures it exists)
         const redirectUrl = `/${canonicalCategory}/${slug}/`
+
+        // Prevent redirect loop: don't redirect if target URL is the same as current
+        if (redirectUrl === path || redirectUrl + '/' === path || redirectUrl === path + '/') {
+          console.log(`[SERVER MIDDLEWARE] Skipping redirect - target URL same as current: ${path}`)
+          return
+        }
+
         console.log(`[SERVER MIDDLEWARE] Category mismatch detected: ${path} -> ${redirectUrl}`)
 
         // Preserve query string if present

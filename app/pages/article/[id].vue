@@ -134,44 +134,20 @@ useHead(() => {
 });
 import ArticlePage from "@/views/ArticlePage.vue";
 
-// If article is available and contains a canonical URL like /category/slug,
-// redirect to the pretty URL on client and server.
-onMounted(() => {
-  const a = article?.value
-  const raw = a && typeof a.url === 'string' ? a.url : null
-  if (!raw || typeof window === 'undefined') return
-  const current = window.location.pathname
-
-  function normalizeToInternal(pathlike) {
-    try {
-      const u = new URL(pathlike, window.location.origin)
-      const p = u.pathname || '/'
-      // Don't return /article/ URLs, return the pretty URLs instead
-      return p.startsWith('/') ? p : `/${p}`
-    } catch {
-      const p = pathlike.startsWith('/') ? pathlike : `/${pathlike}`
-      return p
-    }
-  }
-
-  // Always redirect from /article/:id to the pretty URL if available
-  if (current.startsWith('/article/')) {
-    const prettyUrl = normalizeToInternal(raw)
-    // Only redirect if we have a pretty URL that's different from current
-    if (prettyUrl && prettyUrl !== current && !prettyUrl.startsWith('/article/')) {
-      console.log(`Redirecting from ${current} to ${prettyUrl}`)
-      navigateTo(prettyUrl, { replace: true })
-    }
-  }
-})
-
-// Server-side redirect as well  
+// Server-side redirect only - handles /article/:id -> /category/slug/ redirects
+// This runs during SSR and ensures proper 301 redirects for SEO
 if (process.server && article.value?.url) {
   const prettyUrl = article.value.url
+  // Only redirect if we have a pretty URL that's not an /article/ URL
   if (prettyUrl && !prettyUrl.startsWith('/article/') && route.path.startsWith('/article/')) {
+    console.log(`[SERVER] Redirecting from ${route.path} to ${prettyUrl}`)
     await navigateTo(prettyUrl, { redirectCode: 301 })
   }
 }
+
+// Note: Client-side redirect removed to prevent double redirects
+// Server-side redirect above handles all cases during initial load
+// For client-side navigation, users should navigate directly to pretty URLs
 </script>
 
 <template>

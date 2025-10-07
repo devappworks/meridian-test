@@ -1,14 +1,21 @@
 export default defineNuxtRouteMiddleware(async (to) => {
-  // Handle canonical redirects for client-side navigation
-  // Server middleware handles direct URL access and page refreshes
+  // Client-side middleware: Only handles client-side navigation between pages
+  // Server middleware handles all initial URL access and page refreshes
+  // This middleware now only validates that we're on the correct URL during client navigation
 
   const path = to.path
 
   console.log(`[CLIENT MW] Processing route: ${path}`)
 
-  // Skip API routes to avoid infinite loops
+  // Skip API routes
   if (path.startsWith('/api/')) {
     console.log(`[CLIENT MW] Skipping API route: ${path}`)
+    return
+  }
+
+  // Only run on client-side - server middleware handles SSR
+  if (process.server) {
+    console.log(`[CLIENT MW] Skipping on server - server middleware handles this`)
     return
   }
 
@@ -21,112 +28,18 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const [, category, slug] = pathMatch
 
-  // We'll validate all categories against article data, including main categories
-
-  // Only run on client-side to avoid conflicts with server middleware
-  if (process.server) return
-
-  // Check if this is a subcategory that should be redirected immediately
+  // Quick subcategory check only - server middleware already handled the redirect
+  // This is just for client-side navigation validation
   const { getCanonicalCategoryFromSlug } = await import('~/utils/canonicalCategory')
   const canonicalCategory = getCanonicalCategoryFromSlug(category)
-  
-  // If the category maps to a different canonical category, redirect immediately
+
+  // If category doesn't match canonical, the server middleware will handle redirect on page load
+  // For client-side navigation, we just log but don't redirect to avoid double redirects
   if (canonicalCategory !== category) {
-    // Preserve trailing slash
-    const redirectUrl = `/${canonicalCategory}/${slug}/`
-    console.log(`[CLIENT MW] Subcategory redirect: ${path} -> ${redirectUrl}`)
-    
-    // Preserve query string if present
-    const queryString = to.fullPath.includes('?') ? to.fullPath.substring(to.fullPath.indexOf('?')) : ''
-    const finalRedirectUrl = redirectUrl + queryString
-    
-    return navigateTo(finalRedirectUrl, { redirectCode: 301 })
+    console.log(`[CLIENT MW] Note: ${category} maps to ${canonicalCategory} - server will handle redirect if needed`)
   }
 
-  // For main categories, we still need to validate against article data
-  const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka', 'ostali-sportovi']
-  const isMainCategory = mainCategories.includes(category.toLowerCase())
-  
-  if (isMainCategory) {
-    console.log(`[CLIENT MW] Main category detected: ${category}, will validate against article data`)
-  }
-
-  try {
-    console.log(`[CLIENT MIDDLEWARE] Fetching article data for: ${path}`)
-    
-    // Fetch article data to determine canonical category
-    const response = await $fetch(`/api/articles/resolve`, {
-      query: { category, slug }
-    })
-
-    console.log(`[CLIENT MIDDLEWARE] API response type:`, typeof response)
-
-    // If response is HTML (redirect response), parse the redirect URL
-    if (typeof response === 'string' && response.includes('<!DOCTYPE html>')) {
-      const redirectMatch = response.match(/url=([^"]+)/)
-      if (redirectMatch) {
-        const redirectUrl = redirectMatch[1]
-        console.log(`[CLIENT MIDDLEWARE] HTML redirect detected: ${path} -> ${redirectUrl}`)
-        return navigateTo(redirectUrl, { redirectCode: 301 })
-      }
-    }
-
-    // If response is JSON with article data
-    if (response && response.article && response.article.categories) {
-      const article = response.article
-
-      if (!Array.isArray(article.categories)) {
-        console.log(`[CLIENT MIDDLEWARE] Article has no valid categories array`)
-        return
-      }
-
-      // Extract category slugs from the article (consistent with API resolve logic)
-      const articleCategories = article.categories
-        .map(cat => cat.slug || cat.name || cat)
-        .filter(Boolean)
-        .map(name => name.toLowerCase())
-
-      console.log(`[CLIENT MIDDLEWARE] Article categories:`, articleCategories)
-
-      // Find if any main category exists in the article categories
-      const foundMainCategory = mainCategories.find(mainCat =>
-        articleCategories.includes(mainCat)
-      )
-
-      let canonicalCategory
-      if (foundMainCategory) {
-        // Use the main category as canonical
-        canonicalCategory = foundMainCategory
-        console.log(`[CLIENT MIDDLEWARE] Found main category: ${canonicalCategory}`)
-      } else {
-        // Use the first category as canonical if no main category found
-        canonicalCategory = articleCategories[0]
-        console.log(`[CLIENT MIDDLEWARE] Using first category: ${canonicalCategory}`)
-      }
-
-      // If the current URL doesn't use the canonical category, redirect
-      if (canonicalCategory && category.toLowerCase() !== canonicalCategory.toLowerCase()) {
-        // Preserve trailing slash
-        const redirectUrl = `/${canonicalCategory}/${slug}/`
-        console.log(`[CLIENT MIDDLEWARE] Category mismatch detected: ${path} -> ${redirectUrl}`)
-        
-        // Preserve query string if present
-        const queryString = to.fullPath.includes('?') ? to.fullPath.substring(to.fullPath.indexOf('?')) : ''
-        const finalRedirectUrl = redirectUrl + queryString
-        
-        return navigateTo(finalRedirectUrl, { redirectCode: 301 })
-      } else {
-        console.log(`[CLIENT MIDDLEWARE] Category is correct, no redirect needed`)
-      }
-    } else {
-      console.log(`[CLIENT MIDDLEWARE] No valid article data found in response`)
-    }
-
-  } catch (error) {
-    // If API call fails, let the request proceed normally
-    console.warn('[CLIENT MIDDLEWARE] API call failed:', error.message)
-    return
-  }
-
-  // No redirect needed, let the request continue
+  // No client-side redirects - let server middleware handle all redirects
+  // This prevents double redirects and keeps redirect logic in one place
+  console.log(`[CLIENT MW] Allowing navigation to proceed - server middleware handles redirects`)
 })

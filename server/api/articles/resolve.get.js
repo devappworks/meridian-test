@@ -75,19 +75,18 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 500, statusMessage: 'Could not determine article category' })
     }
 
-    if (correctCategory !== category) {
-      // If the requested category doesn't match the correct category, send a redirect response
-      const correctUrl = `/${correctCategory}/${slug}`
-      console.log('🔴 Articles resolve API: Redirecting', {
-        from: `/${category}/${slug}`,
-        to: correctUrl,
-        reason: 'Category mismatch',
-        articleId: article.id,
-        articleCategories: article.categories.map(cat => ({ slug: cat?.slug, name: cat?.name }))
-      })
+    // Note: Removed redirect logic from API endpoint to prevent double redirects
+    // Server middleware (canonical-redirect.js) now handles all category redirects
+    // This API endpoint now only returns article data
 
-      // Send proper HTTP redirect using sendRedirect
-      return sendRedirect(event, correctUrl, 301)
+    if (correctCategory !== category) {
+      // Log the mismatch but don't redirect - let the middleware handle it
+      console.log('🔴 Articles resolve API: Category mismatch detected (will be handled by middleware)', {
+        requestedCategory: category,
+        correctCategory: correctCategory,
+        articleId: article.id
+      })
+      // Still return the article data - middleware will handle the redirect
     }
 
     console.log('🔴 Articles resolve API: Returning article', {
