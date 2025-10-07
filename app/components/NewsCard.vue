@@ -2,7 +2,9 @@
   <div class="news-card" @click.stop="navigateToArticle">
     <div class="news-image">
       <img
-        :src="image"
+        :src="responsiveImage.src"
+        :srcset="responsiveImage.srcset"
+        :sizes="responsiveImage.sizes"
         :alt="title"
         loading="lazy"
         decoding="async"
@@ -21,6 +23,7 @@
 
 <script>
 import { getCanonicalCategoryFromSlug } from '~/utils/canonicalCategory';
+import { generateNewsCardImageAttrs } from '~/utils/responsiveImage';
 
 export default {
   name: "NewsCard",
@@ -30,8 +33,12 @@ export default {
       required: true,
     },
     image: {
-      type: String,
+      type: [String, Object],
       required: true,
+    },
+    featImages: {
+      type: Object,
+      default: null,
     },
     sport: {
       type: String,
@@ -108,6 +115,33 @@ export default {
     },
   },
   computed: {
+    responsiveImage() {
+      // If featImages object is provided, use it for responsive images
+      if (this.featImages && typeof this.featImages === 'object') {
+        return generateNewsCardImageAttrs(this.featImages);
+      }
+
+      // Fallback to legacy string image
+      if (typeof this.image === 'string') {
+        return {
+          src: this.image,
+          srcset: '',
+          sizes: ''
+        };
+      }
+
+      // If image is an object (feat_images), use it
+      if (typeof this.image === 'object' && this.image !== null) {
+        return generateNewsCardImageAttrs(this.image);
+      }
+
+      // Final fallback
+      return {
+        src: '',
+        srcset: '',
+        sizes: ''
+      };
+    },
     sportClass() {
       const sportMap = {
         // Main sports

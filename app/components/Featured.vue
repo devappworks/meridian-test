@@ -4,7 +4,9 @@
       <div class="featured-content" @click.stop="navigateToArticle">
         <div class="featured-image">
           <img
-            :src="article.image"
+            :src="responsiveImage.src"
+            :srcset="responsiveImage.srcset"
+            :sizes="responsiveImage.sizes"
             :alt="article.title"
             fetchpriority="high"
             decoding="async"
@@ -26,6 +28,8 @@
 </template>
 
 <script>
+import { generateFeaturedImageAttrs } from '~/utils/responsiveImage';
+
 export default {
   name: "FeaturedArticle",
   props: {
@@ -34,9 +38,42 @@ export default {
       default: null,
       validator: function (obj) {
         return (
-          obj === null || ("title" in obj && "sport" in obj && "image" in obj)
+          obj === null || ("title" in obj && "sport" in obj && ("image" in obj || "featImages" in obj))
         );
       },
+    },
+  },
+  computed: {
+    responsiveImage() {
+      if (!this.article) {
+        return { src: '', srcset: '', sizes: '' };
+      }
+
+      // If featImages object is provided, use it for responsive images
+      if (this.article.featImages && typeof this.article.featImages === 'object') {
+        return generateFeaturedImageAttrs(this.article.featImages);
+      }
+
+      // Fallback to legacy string image
+      if (typeof this.article.image === 'string') {
+        return {
+          src: this.article.image,
+          srcset: '',
+          sizes: ''
+        };
+      }
+
+      // If image is an object (feat_images), use it
+      if (typeof this.article.image === 'object' && this.article.image !== null) {
+        return generateFeaturedImageAttrs(this.article.image);
+      }
+
+      // Final fallback
+      return {
+        src: '',
+        srcset: '',
+        sizes: ''
+      };
     },
   },
   methods: {
