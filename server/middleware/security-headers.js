@@ -11,7 +11,7 @@ export default defineEventHandler((event) => {
   const cspDirectives = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://ajax.googleapis.com https://ssl.google-analytics.com https://tagmanager.google.com",
-    "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com https://*.analytics.google.com https://meridian.mpanel.app wss://meridian.mpanel.app",
+    "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com https://*.analytics.google.com https://meridian.mpanel.app wss://meridian.mpanel.app https://cdn.jsdelivr.net https://ajax.googleapis.com https://cdnjs.cloudflare.com",
     "img-src 'self' data: https: http:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
     "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
