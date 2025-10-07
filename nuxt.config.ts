@@ -30,16 +30,16 @@ export default defineNuxtConfig({
     // Enable compression
     compressPublicAssets: true,
     routeRules: {
-      // Sitemap XML routes - redirect from root to /api/
-      '/sitemap.xml': { proxy: '/api/sitemap.xml' },
-      '/page-sitemap.xml': { proxy: '/api/page-sitemap.xml' },
-      '/category-sitemap.xml': { proxy: '/api/category-sitemap.xml' },
-      '/post-sitemap-2025.xml': { proxy: '/api/post-sitemap-2025.xml' },
-      '/post-sitemap-2024.xml': { proxy: '/api/post-sitemap-2024.xml' },
-      '/post-sitemap-2023.xml': { proxy: '/api/post-sitemap-2023.xml' },
-      '/post-sitemap-2022.xml': { proxy: '/api/post-sitemap-2022.xml' },
-      '/post-sitemap-2021.xml': { proxy: '/api/post-sitemap-2021.xml' },
-      '/post-sitemap-2020.xml': { proxy: '/api/post-sitemap-2020.xml' },
+      // Proxy sitemap requests to backend server
+      '/sitemap.xml': { proxy: 'https://meridian.mpanel.app/sitemap.xml' },
+      '/page-sitemap.xml': { proxy: 'https://meridian.mpanel.app/page-sitemap.xml' },
+      '/category-sitemap.xml': { proxy: 'https://meridian.mpanel.app/category-sitemap.xml' },
+      '/post-sitemap-2025.xml': { proxy: 'https://meridian.mpanel.app/post-sitemap-2025.xml' },
+      '/post-sitemap-2024.xml': { proxy: 'https://meridian.mpanel.app/post-sitemap-2024.xml' },
+      '/post-sitemap-2023.xml': { proxy: 'https://meridian.mpanel.app/post-sitemap-2023.xml' },
+      '/post-sitemap-2022.xml': { proxy: 'https://meridian.mpanel.app/post-sitemap-2022.xml' },
+      '/post-sitemap-2021.xml': { proxy: 'https://meridian.mpanel.app/post-sitemap-2021.xml' },
+      '/post-sitemap-2020.xml': { proxy: 'https://meridian.mpanel.app/post-sitemap-2020.xml' },
       // Enable SSR for all main routes with caching
       '/': { ssr: true, swr: 60 }, // Cache for 60 seconds
       '/fudbal': { ssr: true, swr: 60 },
