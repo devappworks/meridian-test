@@ -1,33 +1,11 @@
 <script setup>
 import TennisPage from "@/views/TennisPage.vue";
 
-useHead({
-  title: "Tenis | Meridian Sport",
-  script: [
-    {
-      key: 'ldjson-breadcrumb-tenis',
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          {
-            '@type': 'ListItem',
-            position: 1,
-            name: 'Home',
-            item: 'https://meridiansport.rs/',
-          },
-          {
-            '@type': 'ListItem',
-            position: 2,
-            name: 'Tenis',
-            item: 'https://meridiansport.rs/tenis/',
-          },
-        ],
-      }),
-    },
-  ],
-});
+// Use category SEO composable for consistent metadata
+const seoData = useCategorySEO('tenis')
+if (seoData) {
+  useHead(seoData)
+}
 </script>
 
 <template>
