@@ -3,7 +3,14 @@ export default defineEventHandler(async (event) => {
   const category = String(query.category || '').trim()
   const slug = String(query.slug || '').trim()
 
-  console.log('🔴 Articles resolve API called:', { category, slug, method: getMethod(event) })
+  console.log('\n🔵 ============ RESOLVE API START ============')
+  console.log('🔵 Articles resolve API called:', { 
+    category, 
+    slug, 
+    method: getMethod(event),
+    timestamp: new Date().toISOString(),
+    fullUrl: event.node.req.url
+  })
 
   if (!category || !slug) {
     console.error('🔴 Articles resolve API: Missing parameters', { category, slug })
@@ -14,6 +21,11 @@ export default defineEventHandler(async (event) => {
   const headers = {}
   if (config.API_KEY) headers.Authorization = config.API_KEY
   else if (config.public.API_KEY) headers.Authorization = config.public.API_KEY
+  
+  console.log('🔵 Config loaded:', {
+    backendUrl: config.public.BACKEND_URL,
+    hasApiKey: !!(config.API_KEY || config.public.API_KEY)
+  })
 
   // Helper function to get related categories
   const getRelatedCategories = (cat) => {
@@ -33,27 +45,64 @@ export default defineEventHandler(async (event) => {
     let article
     const categoriesToTry = getRelatedCategories(category)
 
-    console.log('🔴 Articles resolve API: Trying categories:', categoriesToTry)
+    console.log('🔵 Articles resolve API: Will try categories:', categoriesToTry)
 
     // Try each related category until we find the article
-    for (const tryCategory of categoriesToTry) {
+    for (let i = 0; i < categoriesToTry.length; i++) {
+      const tryCategory = categoriesToTry[i]
+      const apiUrl = `${config.public.BACKEND_URL}/getArticlesBySlug/${tryCategory}/${slug}`
+      
+      console.log(`\n🔵 [Attempt ${i + 1}/${categoriesToTry.length}] Trying category: ${tryCategory}`)
+      console.log(`🔵 API URL: ${apiUrl}`)
+      
       try {
-        response = await $fetch(`${config.public.BACKEND_URL}/getArticlesBySlug/${tryCategory}/${slug}`, {
+        const fetchStart = Date.now()
+        response = await $fetch(apiUrl, {
           headers,
         })
+        const fetchDuration = Date.now() - fetchStart
+        
+        console.log(`🔵 [Attempt ${i + 1}] Response received in ${fetchDuration}ms`)
+        console.log(`🔵 [Attempt ${i + 1}] Response structure:`, {
+          hasResponse: !!response,
+          hasArticle: !!response?.article,
+          articleId: response?.article?.id,
+          articleTitle: response?.article?.title?.substring(0, 50)
+        })
+        
         article = response?.article
         if (article && typeof article === 'object' && article.id) {
-          console.log(`🔴 Articles resolve API: Article found under category: ${tryCategory}`)
+          console.log(`✅ [Attempt ${i + 1}] SUCCESS! Article found under category: ${tryCategory}`)
+          console.log(`✅ Article details:`, {
+            id: article.id,
+            title: article.title,
+            hasCategories: !!article.categories,
+            categoryCount: article.categories?.length
+          })
           break
+        } else {
+          console.log(`⚠️ [Attempt ${i + 1}] Response received but no valid article object`)
         }
       } catch (err) {
-        console.log(`🔴 Articles resolve API: Not found under ${tryCategory}, trying next...`)
+        console.log(`❌ [Attempt ${i + 1}] Error fetching from ${tryCategory}:`, {
+          message: err.message,
+          statusCode: err.statusCode,
+          statusMessage: err.statusMessage,
+          data: err.data
+        })
         continue
       }
     }
 
     if (!article || typeof article !== 'object') {
-      console.log('🔴 Articles resolve API: Article not found in any category', { category, slug, tried: categoriesToTry })
+      console.log('\n❌ Articles resolve API: Article not found in any category')
+      console.log('❌ Search summary:', { 
+        requestedCategory: category, 
+        slug: slug, 
+        categoriesTried: categoriesToTry,
+        triedCount: categoriesToTry.length
+      })
+      console.log('🔵 ============ RESOLVE API END (NOT FOUND) ============\n')
       throw createError({ statusCode: 404, statusMessage: 'Article not found' })
     }
 
@@ -119,20 +168,28 @@ export default defineEventHandler(async (event) => {
       // Still return the article data - middleware will handle the redirect
     }
 
-    console.log('🔴 Articles resolve API: Returning article', {
+    console.log('\n✅ Articles resolve API: Returning article')
+    console.log('✅ Final article data:', {
       articleId: article.id,
       title: article.title?.substring(0, 50) + '...',
-      category: correctCategory
+      correctCategory: correctCategory,
+      requestedCategory: category,
+      categoryMatch: correctCategory === category,
+      hasCategories: !!article.categories,
+      categoryCount: article.categories?.length
     })
+    console.log('🔵 ============ RESOLVE API END (SUCCESS) ============\n')
     return article
   } catch (err) {
-    console.error('🔴 Articles resolve API error:', {
+    console.error('\n❌ Articles resolve API - FATAL ERROR:', {
       statusCode: err.statusCode,
       statusMessage: err.statusMessage,
       message: err.message,
       category,
-      slug
+      slug,
+      stack: err.stack
     })
+    console.log('🔵 ============ RESOLVE API END (ERROR) ============\n')
 
     // Re-throw known errors (like 301 redirects)
     if (err && err.statusCode) throw err

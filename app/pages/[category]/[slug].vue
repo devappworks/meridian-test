@@ -22,16 +22,57 @@ function truncate(input, max = 160) {
   return input.slice(0, max - 1).trimEnd() + "…";
 }
 
-const { data: article } = await useAsyncData(
+console.log('\n🟢 ============ PAGE COMPONENT START ============')
+console.log('🟢 [category]/[slug].vue loading:', { 
+  category, 
+  slug,
+  fullPath: route.fullPath,
+  timestamp: new Date().toISOString()
+})
+
+const { data: article, error: fetchError } = await useAsyncData(
   `article-slug-${category}-${slug}`,
   async () => {
-    const result = await $fetch(`/api/articles/resolve`, {
-      query: { category, slug }
-    })
+    console.log('🟢 useAsyncData executing for:', { category, slug })
     
-    return result
+    try {
+      const result = await $fetch(`/api/articles/resolve`, {
+        query: { category, slug }
+      })
+      
+      console.log('🟢 useAsyncData received result:', {
+        hasResult: !!result,
+        resultType: typeof result,
+        hasId: !!result?.id,
+        hasTitle: !!result?.title,
+        title: result?.title?.substring(0, 50)
+      })
+      
+      return result
+    } catch (err) {
+      console.error('🟢 useAsyncData ERROR:', {
+        message: err.message,
+        statusCode: err.statusCode,
+        statusMessage: err.statusMessage,
+        data: err.data
+      })
+      throw err
+    }
   }
 )
+
+console.log('🟢 useAsyncData completed:', {
+  hasArticle: !!article.value,
+  hasError: !!fetchError.value,
+  articleId: article.value?.id,
+  errorMessage: fetchError.value?.message
+})
+
+if (fetchError.value) {
+  console.error('🟢 Fetch error details:', fetchError.value)
+}
+
+console.log('🟢 ============ PAGE COMPONENT END ============\n')
 
 useHead(() => {
   const a = article.value || {};

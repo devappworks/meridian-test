@@ -377,12 +377,27 @@ const props = defineProps({
 });
 
 // Early validation of article data structure
+console.log("\n🟡 ============ ARTICLE PAGE COMPONENT START ============");
+console.log("🟡 ArticlePage props received:", {
+  category: props.category,
+  slug: props.slug,
+  hasArticle: !!props.article,
+  articleType: typeof props.article,
+  articleId: props.article?.id,
+  articleTitle: props.article?.title?.substring(0, 50),
+  timestamp: new Date().toISOString()
+});
+
 if (props.article && typeof props.article !== 'object') {
-  console.error("🔴 ArticlePage: Invalid article data type:", typeof props.article);
+  console.error("🟡 ArticlePage: Invalid article data type:", typeof props.article);
 }
 
 if (!props.article) {
-  console.log("🔴 ArticlePage: No article data provided, will fetch from API");
+  console.log("🟡 ArticlePage: No article data provided, will fetch from API");
+} else if (!props.article.id) {
+  console.warn("🟡 ArticlePage: Article provided but missing ID:", props.article);
+} else {
+  console.log("🟡 ArticlePage: Valid article data received from props");
 }
 
 // Reactive data
@@ -509,17 +524,19 @@ const fetchArticle = async () => {
   loading.value.article = true;
   error.value = null;
 
+  console.log("\n🟡 ============ FETCHING ARTICLE (CLIENT-SIDE FALLBACK) ============");
+  console.log("🟡 ArticlePage fetchArticle called with:", {
+    category: props.category,
+    slug: props.slug,
+    route: useRoute().path,
+    params: useRoute().params,
+    timestamp: new Date().toISOString()
+  });
+
   try {
-    console.log("🔴 ArticlePage fetchArticle called with:", {
-      category: props.category,
-      slug: props.slug,
-      route: useRoute().path,
-      params: useRoute().params
-    });
-    
     // Check if category and slug are valid before making API call
     if (!props.category || !props.slug) {
-      console.error("🔴 ArticlePage: category or slug is missing!", {
+      console.error("🟡 ArticlePage: category or slug is missing!", {
         category: props.category,
         slug: props.slug
       });
@@ -528,17 +545,44 @@ const fetchArticle = async () => {
       return;
     }
     
-    const response = await fetchFromApi(`/getArticlesBySlug/${props.category}/${props.slug}`);
-    console.log("🔴 ArticlePage API response:", response);
+    const apiUrl = `/getArticlesBySlug/${props.category}/${props.slug}`;
+    console.log("🟡 Calling backend API directly:", apiUrl);
+    
+    const fetchStart = Date.now();
+    const response = await fetchFromApi(apiUrl);
+    const fetchDuration = Date.now() - fetchStart;
+    
+    console.log(`🟡 Backend API response received in ${fetchDuration}ms:`, {
+      hasResponse: !!response,
+      hasArticle: !!response?.article,
+      articleId: response?.article?.id,
+      articleTitle: response?.article?.title?.substring(0, 50)
+    });
+    
     article.value = response.article;
-    console.log(article.value, "FETCHED ARTICLE VALUE");
-    console.log(article.value.relatedArticle, "FETCHED ARTICLE RELATED ARTICLE");
     loading.value.article = false;
+
+    console.log("🟡 Article successfully loaded:", {
+      id: article.value?.id,
+      title: article.value?.title?.substring(0, 50),
+      hasRelatedArticles: !!article.value?.relatedArticle
+    });
 
     await fetchRelatedNews();
     await fetchOtherNews();
+    
+    console.log("🟡 ============ FETCH COMPLETE ============\n");
   } catch (error) {
-    console.error("🔴 ArticlePage Error fetching article:", error);
+    console.error("\n🟡 ============ FETCH ERROR ============");
+    console.error("🟡 ArticlePage Error fetching article:", {
+      message: error.message,
+      statusCode: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      stack: error.stack
+    });
+    console.log("🟡 ============ FETCH ERROR END ============\n");
+    
     error.value = "Failed to load article";
     loading.value.article = false;
   }
@@ -590,7 +634,7 @@ const fetchRelatedNews = async () => {
 
     // Fetch newest articles globally for sidebar related news
     const response = await fetchFromApi(`/getArticles`, {
-      articleLimit: 50,
+      articleLimit: 9,
     });
 
     const articles = (response.result.articles || []).filter(
@@ -966,7 +1010,8 @@ const copyToClipboard = (value) => {
 
 // Lifecycle hooks
 onMounted(async () => {
-  console.log("🔴 ArticlePage mounted with props:", {
+  console.log("\n🟡 ============ ARTICLE PAGE MOUNTED ============");
+  console.log("🟡 ArticlePage mounted with props:", {
     category: props.category,
     slug: props.slug,
     route: useRoute(),
@@ -975,11 +1020,12 @@ onMounted(async () => {
     isSSR: process.server,
     isClient: process.client,
     hasArticle: !!props.article,
-    articleValid: !!(props.article?.id)
+    articleValid: !!(props.article?.id),
+    timestamp: new Date().toISOString()
   });
 
   // SSR Debug - this should show true on server, false on client
-  console.log("🔴 SSR Status:", {
+  console.log("🟡 SSR Status:", {
     server: process.server,
     client: process.client,
     isHydrating: nuxtApp.isHydrating
@@ -992,7 +1038,7 @@ onMounted(async () => {
 
   // Validate category and slug parameters
   if (!props.category || !props.slug) {
-    console.error("🔴 ArticlePage: Invalid route parameters", {
+    console.error("🟡 ArticlePage: Invalid route parameters", {
       category: props.category,
       slug: props.slug
     });
@@ -1002,35 +1048,40 @@ onMounted(async () => {
 
   // Only fetch article if we don't already have it from SSR or if the article is invalid
   if (!props.article || !props.article.id) {
-    console.log("🔴 ArticlePage: Fetching article from API");
+    console.log("🟡 ArticlePage: Need to fetch article from API");
+    console.log("🟡 Reason:", !props.article ? "No article prop" : "Article missing ID");
     await fetchArticle();
   } else {
-    console.log("🔴 ArticlePage: Using article from SSR props");
+    console.log("🟡 ArticlePage: Using article from SSR props - skipping fetch");
     // If we have article data from props, validate it and fetch related content
     if (props.article.id) {
       loading.value.article = false;
       // Only fetch related content if we have valid article data
       if (props.article.categories && Array.isArray(props.article.categories)) {
+        console.log("🟡 Fetching related content...");
         await fetchRelatedNews();
         await fetchOtherNews();
       } else {
-        console.warn("🔴 ArticlePage: Article has no valid categories, skipping related content");
+        console.warn("🟡 ArticlePage: Article has no valid categories, skipping related content");
         loading.value.relatedNews = false;
         loading.value.otherNews = false;
       }
     } else {
-      console.warn("🔴 ArticlePage: Invalid article from props, fetching from API");
+      console.warn("🟡 ArticlePage: Invalid article from props, fetching from API");
       await fetchArticle();
     }
   }
 
   // Only fetch comments if we have a valid article
   if (article.value?.id || props.article?.id) {
+    console.log("🟡 Fetching comments...");
     await fetchComments();
   } else {
-    console.log("🔴 ArticlePage: No article ID for comments, skipping comment fetch");
+    console.log("🟡 ArticlePage: No article ID for comments, skipping comment fetch");
     loading.value.comments = false;
   }
+  
+  console.log("🟡 ============ ARTICLE PAGE MOUNTED END ============\n");
 });
 
 // Watchers
