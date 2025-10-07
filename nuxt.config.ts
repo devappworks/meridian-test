@@ -100,12 +100,44 @@ export default defineNuxtConfig({
         // DNS prefetch for less critical origins
         { rel: 'dns-prefetch', href: 'https://cdnjs.cloudflare.com' },
         { rel: 'dns-prefetch', href: 'https://cdn.jsdelivr.net' },
-        // Load stylesheets - removed preload to prevent unused preload warnings
+        // Load stylesheets - Defer non-critical CSS
         {
           rel: 'stylesheet',
           integrity: 'sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65',
           crossorigin: 'anonymous',
-          href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css'
+          href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css',
+          media: 'print',
+          onload: "this.media='all'"
+        },
+        // Preload critical fonts with display=swap to prevent render blocking
+        {
+          rel: 'preload',
+          as: 'style',
+          href: 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Condensed:wght@300;400;500;700&display=swap'
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Condensed:wght@300;400;500;700&display=swap',
+          media: 'print',
+          onload: "this.media='all'"
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap',
+          media: 'print',
+          onload: "this.media='all'"
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap',
+          media: 'print',
+          onload: "this.media='all'"
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap',
+          media: 'print',
+          onload: "this.media='all'"
         },
         {
           rel: 'stylesheet',
@@ -148,7 +180,21 @@ export default defineNuxtConfig({
       // Enable CSS code splitting
       cssCodeSplit: true,
       // Reduce chunk size warnings threshold
-      chunkSizeWarningLimit: 1000
+      chunkSizeWarningLimit: 1000,
+      // Optimize chunk splitting for better caching
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Vendor chunks - separate libraries for better caching
+            'vue-vendor': ['vue', 'vue-router'],
+            'swiper-vendor': ['swiper'],
+          }
+        }
+      }
+    },
+    // Optimize dependencies
+    optimizeDeps: {
+      include: ['vue', 'vue-router']
     }
   },
   runtimeConfig: {
