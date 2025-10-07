@@ -31,7 +31,7 @@ const twitterHandle = config.public?.TWITTER_HANDLE || "";
 const canonicalUrl = siteUrl ? `${siteUrl}/` : undefined;
 
 // SEO-optimized title and description with keywords
-const title = "Meridian Sport - Najnovije Sportske Vesti, Fudbal, Košarka, Tenis | Srbija";
+const title = "Meridian Sport - Najnovije Sportske Vesti | Srbija";
 const description = stripHtml(siteDescription) || "Najnovije sportske vesti iz Srbije i sveta: fudbal, košarka, tenis, odbojka. Rezultati uživo, transfer vesti, analize mečeva i ekskluzivni intervjui. Pratite sport na Meridian Sport!";
 const imageUrl = siteUrl ? `${siteUrl}/images/homepage-og.jpg` : undefined;
 
