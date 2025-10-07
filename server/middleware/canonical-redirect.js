@@ -16,7 +16,8 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  // Check if the path has exactly 2 segments (like /something/slug)
+  // Check if the path has exactly 2 segments (like /something/slug/)
+  // After url-normalization, all URLs should have trailing slash
   const pathMatch = path.match(/^\/([^\/]+)\/([^\/]+)\/?$/i)
   if (!pathMatch) {
     console.log(`[SERVER MW] Path doesn't match pattern: ${path}`)
@@ -38,9 +39,15 @@ export default defineEventHandler(async (event) => {
   
   // If the category maps to a different canonical category, redirect immediately
   if (canonicalCategory !== category) {
-    const redirectUrl = `/${canonicalCategory}/${slug}`
+    // Preserve trailing slash (url-normalization ensures it exists)
+    const redirectUrl = `/${canonicalCategory}/${slug}/`
     console.log(`[SERVER MW] Subcategory redirect: ${path} -> ${redirectUrl}`)
-    await sendRedirect(event, redirectUrl, 301)
+    
+    // Preserve query string if present
+    const queryString = url.search || ''
+    const finalRedirectUrl = redirectUrl + queryString
+    
+    await sendRedirect(event, finalRedirectUrl, 301)
     return
   }
 
@@ -113,11 +120,16 @@ export default defineEventHandler(async (event) => {
 
       // If the current URL doesn't use the canonical category, redirect
       if (canonicalCategory && category.toLowerCase() !== canonicalCategory.toLowerCase()) {
-        const redirectUrl = `/${canonicalCategory}/${slug}`
+        // Preserve trailing slash (url-normalization ensures it exists)
+        const redirectUrl = `/${canonicalCategory}/${slug}/`
         console.log(`[SERVER MIDDLEWARE] Category mismatch detected: ${path} -> ${redirectUrl}`)
 
+        // Preserve query string if present
+        const queryString = url.search || ''
+        const finalRedirectUrl = redirectUrl + queryString
+
         // Send 301 redirect
-        await sendRedirect(event, redirectUrl, 301)
+        await sendRedirect(event, finalRedirectUrl, 301)
         return
       } else {
         console.log(`[SERVER MIDDLEWARE] Category is correct, no redirect needed`)

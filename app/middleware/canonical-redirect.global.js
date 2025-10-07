@@ -32,9 +32,15 @@ export default defineNuxtRouteMiddleware(async (to) => {
   
   // If the category maps to a different canonical category, redirect immediately
   if (canonicalCategory !== category) {
-    const redirectUrl = `/${canonicalCategory}/${slug}`
+    // Preserve trailing slash
+    const redirectUrl = `/${canonicalCategory}/${slug}/`
     console.log(`[CLIENT MW] Subcategory redirect: ${path} -> ${redirectUrl}`)
-    return navigateTo(redirectUrl, { redirectCode: 301 })
+    
+    // Preserve query string if present
+    const queryString = to.fullPath.includes('?') ? to.fullPath.substring(to.fullPath.indexOf('?')) : ''
+    const finalRedirectUrl = redirectUrl + queryString
+    
+    return navigateTo(finalRedirectUrl, { redirectCode: 301 })
   }
 
   // For main categories, we still need to validate against article data
@@ -100,9 +106,15 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
       // If the current URL doesn't use the canonical category, redirect
       if (canonicalCategory && category.toLowerCase() !== canonicalCategory.toLowerCase()) {
-        const redirectUrl = `/${canonicalCategory}/${slug}`
+        // Preserve trailing slash
+        const redirectUrl = `/${canonicalCategory}/${slug}/`
         console.log(`[CLIENT MIDDLEWARE] Category mismatch detected: ${path} -> ${redirectUrl}`)
-        return navigateTo(redirectUrl, { redirectCode: 301 })
+        
+        // Preserve query string if present
+        const queryString = to.fullPath.includes('?') ? to.fullPath.substring(to.fullPath.indexOf('?')) : ''
+        const finalRedirectUrl = redirectUrl + queryString
+        
+        return navigateTo(finalRedirectUrl, { redirectCode: 301 })
       } else {
         console.log(`[CLIENT MIDDLEWARE] Category is correct, no redirect needed`)
       }
