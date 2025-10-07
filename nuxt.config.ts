@@ -67,8 +67,9 @@ export default defineNuxtConfig({
           gtag('js', new Date());
           gtag('config', '${gaMeasurementId}', {
             send_page_view: true,
-            cookie_flags: 'SameSite=None;Secure',
-            anonymize_ip: true
+            cookie_flags: 'SameSite=None;Secure;max-age=63072000',
+            anonymize_ip: true,
+            cookie_expires: 63072000
           });`,
           type: 'text/javascript'
         },
@@ -100,10 +101,7 @@ export default defineNuxtConfig({
         // DNS prefetch for less critical origins
         { rel: 'dns-prefetch', href: 'https://cdnjs.cloudflare.com' },
         { rel: 'dns-prefetch', href: 'https://cdn.jsdelivr.net' },
-        // Preload critical CSS with high priority
-        { rel: 'preload', as: 'style', href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css' },
-        { rel: 'preload', as: 'style', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css' },
-        // Load stylesheets with media="print" onload trick for non-critical CSS
+        // Load stylesheets - removed preload to prevent unused preload warnings
         {
           rel: 'stylesheet',
           integrity: 'sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65',
