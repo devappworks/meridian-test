@@ -204,10 +204,10 @@ const [
   { data: footballData },
   { data: tipoviData }
 ] = await Promise.all([
-  useAsyncData('homepage-tennis', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 41 })),
-  useAsyncData('homepage-volleyball', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 37 })),
-  useAsyncData('homepage-basketball', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 25 })),
-  useAsyncData('homepage-football', () => fetchFromApi('/getArticles', { articleLimit: 50, 'category[]': 28 })),
+  useAsyncData('homepage-tennis', () => fetchFromApi('/getArticles', { articleLimit: 20, 'category[]': 41 })),
+  useAsyncData('homepage-volleyball', () => fetchFromApi('/getArticles', { articleLimit: 20, 'category[]': 37 })),
+  useAsyncData('homepage-basketball', () => fetchFromApi('/getArticles', { articleLimit: 20, 'category[]': 25 })),
+  useAsyncData('homepage-football', () => fetchFromApi('/getArticles', { articleLimit: 20, 'category[]': 28 })),
   useAsyncData('homepage-tipovi', () => fetchMeridianTipovi(3))
 ]);
 

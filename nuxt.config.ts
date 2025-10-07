@@ -12,6 +12,12 @@ export default defineNuxtConfig({
   // Enable SSR for all routes
   ssr: true,
 
+  // Performance optimizations
+  experimental: {
+    payloadExtraction: true,
+    viewTransition: true
+  },
+
   nitro: {
     preset: 'node-server',
     // Remove static output configuration for SSR
@@ -21,14 +27,20 @@ export default defineNuxtConfig({
     },
     // Disable build manifest to avoid 500 errors
     buildDir: '.output',
+    // Enable compression
+    compressPublicAssets: true,
     routeRules: {
-      // Enable SSR for all main routes
-      '/': { ssr: true },
-      '/fudbal': { ssr: true },
-      '/kosarka': { ssr: true },
-      '/tenis': { ssr: true },
-      '/najnovije-vesti': { ssr: true },
-      '/odbojka': { ssr: true },
+      // Enable SSR for all main routes with caching
+      '/': { ssr: true, swr: 60 }, // Cache for 60 seconds
+      '/fudbal': { ssr: true, swr: 60 },
+      '/kosarka': { ssr: true, swr: 60 },
+      '/tenis': { ssr: true, swr: 60 },
+      '/najnovije-vesti': { ssr: true, swr: 60 },
+      '/odbojka': { ssr: true, swr: 60 },
+      '/ostali-sportovi': { ssr: true, swr: 60 },
+      // Cache static assets for 1 year
+      '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+      '/images/**': { headers: { 'cache-control': 'public, max-age=2592000' } }, // 30 days
       // Enable SSR for all routes by default
       '/**': { ssr: true }
     }
@@ -40,10 +52,11 @@ export default defineNuxtConfig({
   app: {
     head: {
       script: [
-        // Google Analytics 4 (GA4)
+        // Google Analytics 4 (GA4) - async to prevent render blocking
         {
           src: `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`,
-          async: true
+          async: true,
+          defer: true
         },
         {
           innerHTML: `window.dataLayer = window.dataLayer || [];
@@ -53,20 +66,56 @@ export default defineNuxtConfig({
             send_page_view: true,
             cookie_flags: 'SameSite=None;Secure'
           });`,
-          type: 'text/javascript'
+          type: 'text/javascript',
+          defer: true
         },
-        { src: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js', integrity: 'sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4', crossorigin: 'anonymous', tagPosition: 'bodyClose' },
-        { src: 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js', tagPosition: 'bodyClose' }
+        // Bootstrap and jQuery - deferred to prevent render blocking
+        {
+          src: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js',
+          integrity: 'sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4',
+          crossorigin: 'anonymous',
+          tagPosition: 'bodyClose',
+          defer: true
+        },
+        {
+          src: 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js',
+          tagPosition: 'bodyClose',
+          defer: true
+        }
       ],
       link: [
+        // Favicon
+        { rel: 'icon', type: 'image/png', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
+        { rel: 'apple-touch-icon', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
+
+        // Preconnect to external domains for faster loading
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://cdnjs.cloudflare.com' },
+        { rel: 'preconnect', href: 'https://cdn.jsdelivr.net' },
+        { rel: 'dns-prefetch', href: 'https://www.googletagmanager.com' },
+
         // Preload critical CSS with high priority
         { rel: 'preload', as: 'style', href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css' },
         { rel: 'preload', as: 'style', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css' },
-        // Load stylesheets
-        { rel: 'stylesheet', integrity: 'sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65', crossorigin: 'anonymous', href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200' },
-        { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css', crossorigin: 'anonymous' },
-        { rel: 'icon', type: 'image/x-icon', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
+
+        // Load stylesheets with media="print" onload trick for non-critical CSS
+        {
+          rel: 'stylesheet',
+          integrity: 'sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65',
+          crossorigin: 'anonymous',
+          href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css'
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200',
+          media: 'print',
+          onload: "this.media='all'"
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css',
+          crossorigin: 'anonymous'
+        },
       ],
     }
   },

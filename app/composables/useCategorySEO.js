@@ -11,32 +11,32 @@ export function useCategorySEO(categorySlug) {
   const categoryData = {
     'najnovije-vesti': {
       name: 'Najnovije vesti',
-      title: 'Najnovije vesti - Meridian Sport',
+      title: 'Najnovije vesti Meridian Sport',
       description: 'Najnovije sportske vesti sa Meridian Sport portala! Fudbal, košarka, odbojka i svi aktuelni događaji iz Srbije i sveta, na jednom mestu.'
     },
     'fudbal': {
       name: 'Fudbal',
-      title: 'Fudbal - Meridian Sport',
+      title: 'Fudbal Meridian Sport',
       description: 'Najnovije fudbalske vesti sa Meridian Sport portala! Rezultati, transferi, analize i priče iz domaćeg i svetskog fudbala.'
     },
     'kosarka': {
       name: 'Košarka',
-      title: 'Košarka - Meridian Sport',
+      title: 'Košarka Meridian Sport',
       description: 'Meridian Sport prati sve iz sveta košarke! Utakmice, transferi, izveštaji i ekskluzive iz domaćih i stranih liga.'
     },
     'tenis': {
       name: 'Tenis',
-      title: 'Tenis - Meridian Sport',
+      title: 'Tenis Meridian Sport',
       description: 'Meridian Sport donosi najnovije vesti iz tenisa! ATP, WTA, Grand Slam turniri, rezultati i analize.'
     },
     'odbojka': {
       name: 'Odbojka',
-      title: 'Odbojka - Meridian Sport',
+      title: 'Odbojka Meridian Sport',
       description: 'Pratite Meridian Sport za najnovije vesti iz odbojke - rezultati, transferi, izveštaji i sve što zanima ljubitelje odbojke.'
     },
     'ostali-sportovi': {
       name: 'Ostali sportovi',
-      title: 'Ostali sportovi - Meridian Sport',
+      title: 'Ostali sportovi Meridian Sport',
       description: 'Meridian Sport donosi aktuelne vesti iz ostalih sportova - atletika, borilački sportovi, rukomet, plivanje i više.'
     }
   }
