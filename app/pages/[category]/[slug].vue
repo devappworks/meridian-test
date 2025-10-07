@@ -70,6 +70,26 @@ console.log('🟢 useAsyncData completed:', {
 
 if (fetchError.value) {
   console.error('🟢 Fetch error details:', fetchError.value)
+  
+  // If the article fetch failed with a 404, show the error page
+  const statusCode = fetchError.value.statusCode || fetchError.value.response?.status || 500
+  
+  if (statusCode === 404) {
+    console.log('🟢 Article not found (404), showing error page')
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Page Not Found',
+      fatal: true
+    })
+  } else {
+    // For other errors, throw with the actual status code
+    console.log(`🟢 Error fetching article (${statusCode}), showing error page`)
+    throw createError({
+      statusCode,
+      statusMessage: fetchError.value.statusMessage || 'Error loading page',
+      fatal: true
+    })
+  }
 }
 
 console.log('🟢 ============ PAGE COMPONENT END ============\n')

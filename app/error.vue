@@ -51,19 +51,6 @@ const props = defineProps({
   }
 })
 
-// Debug log for error page
-console.error("\n🔴 ============ ERROR PAGE DISPLAYED ============");
-console.error("🔴 Error details:", {
-  statusCode: props.error.statusCode,
-  statusMessage: props.error.statusMessage,
-  message: props.error.message,
-  data: props.error.data,
-  url: props.error.url,
-  timestamp: new Date().toISOString()
-});
-console.error("🔴 Full error object:", props.error);
-console.error("🔴 ============ ERROR PAGE END ============\n");
-
 // Error titles and messages based on status code
 const errorTitle = computed(() => {
   switch (props.error.statusCode) {

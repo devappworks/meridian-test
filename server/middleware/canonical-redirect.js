@@ -74,12 +74,19 @@ export default defineEventHandler(async (event) => {
       // Add timeout to prevent hanging
       timeout: 5000,
       // Retry once on failure
-      retry: 1,
-      // Don't throw on error - handle gracefully
-      onResponseError({ response }) {
-        console.warn(`[SERVER MW] API error: ${response.status} ${response.statusText}`)
-      }
+      retry: 1
     }).catch(err => {
+      // If it's a 404, throw an error to show the error page
+      if (err.response?.status === 404 || err.statusCode === 404) {
+        console.log(`[SERVER MW] Article not found (404), will show error page`)
+        throw createError({
+          statusCode: 404,
+          statusMessage: 'Page Not Found',
+          fatal: true
+        })
+      }
+      
+      // For other errors, log and return null (let page handle it)
       console.warn(`[SERVER MW] Failed to fetch article data:`, err.message)
       return null
     })

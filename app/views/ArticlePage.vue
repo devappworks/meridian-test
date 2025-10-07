@@ -572,16 +572,26 @@ const fetchArticle = async () => {
     await fetchOtherNews();
     
     console.log("🟡 ============ FETCH COMPLETE ============\n");
-  } catch (error) {
+  } catch (fetchError) {
     console.error("\n🟡 ============ FETCH ERROR ============");
     console.error("🟡 ArticlePage Error fetching article:", {
-      message: error.message,
-      statusCode: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      stack: error.stack
+      message: fetchError.message,
+      statusCode: fetchError.response?.status,
+      statusText: fetchError.response?.statusText,
+      data: fetchError.response?.data,
+      stack: fetchError.stack
     });
     console.log("🟡 ============ FETCH ERROR END ============\n");
+    
+    // If it's a 404, show the error page instead of inline error
+    if (fetchError.response?.status === 404 || fetchError.statusCode === 404) {
+      console.log("🟡 ArticlePage: Article not found (404), showing error page");
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Page Not Found',
+        fatal: true
+      });
+    }
     
     error.value = "Failed to load article";
     loading.value.article = false;

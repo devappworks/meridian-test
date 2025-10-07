@@ -709,7 +709,9 @@ export default {
         }
       }
 
-      // If no category ID could be determined, show empty UI state
+      // If no category ID could be determined, show empty state
+      // (Page-level validation should have already caught invalid categories)
+      console.log('CategoryPage: No category ID found, showing empty state');
       this.resetNews();
       this.loading = {
         main: false,
