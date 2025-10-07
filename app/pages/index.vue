@@ -30,8 +30,9 @@ const siteDescription = config.public?.SITE_DESCRIPTION || "";
 const twitterHandle = config.public?.TWITTER_HANDLE || "";
 const canonicalUrl = siteUrl ? `${siteUrl}/` : undefined;
 
-const title = siteName;
-const description = stripHtml(siteDescription) || siteName;
+// SEO-optimized title and description with keywords
+const title = "Meridian Sport - Najnovije Sportske Vesti, Fudbal, Košarka, Tenis | Srbija";
+const description = stripHtml(siteDescription) || "Najnovije sportske vesti iz Srbije i sveta: fudbal, košarka, tenis, odbojka. Rezultati uživo, transfer vesti, analize mečeva i ekskluzivni intervjui. Pratite sport na Meridian Sport!";
 const imageUrl = siteUrl ? `${siteUrl}/images/homepage-og.jpg` : undefined;
 
 const ld = {
@@ -67,7 +68,8 @@ useHead(() => ({
   title,
   meta: [
     { key: "description", name: "description", content: description },
-    { key: "robots", name: "robots", content: "index, follow" },
+    { key: "keywords", name: "keywords", content: "sportske vesti, fudbal, košarka, tenis, odbojka, sport srbija, rezultati uživo, transfer vesti, sportski portal" },
+    { key: "robots", name: "robots", content: "index, follow, max-image-preview:large" },
     // Open Graph
     { key: "og:type", property: "og:type", content: "website" },
     { key: "og:site_name", property: "og:site_name", content: siteName },
@@ -390,6 +392,9 @@ const slideMatchOdds = (direction) => {
 
 <template>
   <div class="content-wrapper">
+    <!-- SEO: Add hidden H1 for homepage -->
+    <h1 class="visually-hidden">Meridian Sport - Najnovije Sportske Vesti iz Srbije i Sveta</h1>
+    
     <!-- Match odds section with Loading State -->
     <!-- <SkeletonMatchOdds v-if="loading.matches" />
     <MatchOddsSlider v-else :matches="matches" /> -->
@@ -450,7 +455,7 @@ const slideMatchOdds = (direction) => {
     <div class="sidebar-column">
       <div class="sidebar-news">
         <div class="sidebar-header">
-          <h3>NAJNOVIJE VESTI</h3>
+          <h2>NAJNOVIJE VESTI</h2>
           <NuxtLink to="/najnovije-vesti/" class="see-all">Sve vesti</NuxtLink>
         </div>
         <!-- Sidebar News with Loading State -->
@@ -462,7 +467,7 @@ const slideMatchOdds = (direction) => {
 
       <div class="tipovi-dana">
         <div>
-          <h3 class="tipovi-title">TIPOVI DANA</h3>
+          <h2 class="tipovi-title">TIPOVI DANA</h2>
           <div class="tipovi-content">
             <NuxtLink
               v-for="(item, index) in tipovi"
@@ -514,13 +519,26 @@ const slideMatchOdds = (direction) => {
   padding-bottom: 12px;
 }
 
-.sidebar-header h3 {
+.sidebar-header h2 {
   color: var(--text-white);
   font-size: 18px;
   text-transform: uppercase;
   margin: 0;
   padding-left: 12px;
   border-left: 4px solid var(--text-white);
+}
+
+/* Visually hidden class for SEO H1 */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .see-all {

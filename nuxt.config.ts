@@ -97,9 +97,11 @@ export default defineNuxtConfig({
         }
       ],
       link: [
-        // Favicon
-        { rel: 'icon', type: 'image/png', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
-        { rel: 'apple-touch-icon', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
+        // Favicon - Multiple sizes for better device support
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
+        { rel: 'shortcut icon', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
         // Preconnect to ONLY the most critical origins (max 4 for optimal performance)
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
@@ -143,6 +145,23 @@ export default defineNuxtConfig({
     esbuild: {
       // Remove console.log, console.warn, console.error in production
       drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : []
+    },
+    build: {
+      // Minify HTML in production
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: process.env.NODE_ENV === 'production',
+          drop_debugger: process.env.NODE_ENV === 'production'
+        },
+        format: {
+          comments: false  // Remove comments from production build
+        }
+      },
+      // Enable CSS code splitting
+      cssCodeSplit: true,
+      // Reduce chunk size warnings threshold
+      chunkSizeWarningLimit: 1000
     }
   },
   runtimeConfig: {

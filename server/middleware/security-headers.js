@@ -6,15 +6,22 @@ export default defineEventHandler((event) => {
   const headers = event.node.res
 
   // Content-Security-Policy (CSP)
-  // CRITICAL: Allow Google Analytics to function properly
-  // This was MISSING and causing GA tracking requests to fail
+  // CRITICAL: Allow Google Analytics and Tag Manager to function properly
   const cspDirectives = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://ajax.googleapis.com https://ssl.google-analytics.com https://tagmanager.google.com",
-    "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com https://*.analytics.google.com https://meridian.mpanel.app wss://meridian.mpanel.app https://cdn.jsdelivr.net https://ajax.googleapis.com https://cdnjs.cloudflare.com",
-    "img-src 'self' data: https: http:",
+    // Allow scripts from self, Google domains, and CDNs (with eval for GTM)
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://tagmanager.google.com https://cdn.jsdelivr.net https://ajax.googleapis.com https://cdnjs.cloudflare.com",
+    // Allow script elements (needed for script tags)
+    "script-src-elem 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://tagmanager.google.com https://cdn.jsdelivr.net https://ajax.googleapis.com https://cdnjs.cloudflare.com",
+    // FIXED: Added www.googletagmanager.com to connect-src (was missing!)
+    "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com https://ssl.google-analytics.com https://stats.g.doubleclick.net https://*.google-analytics.com https://*.analytics.google.com https://meridian.mpanel.app wss://meridian.mpanel.app https://cdn.jsdelivr.net https://ajax.googleapis.com https://cdnjs.cloudflare.com",
+    // Allow images from all HTTPS sources and Google Analytics
+    "img-src 'self' data: https: http: https://www.google-analytics.com https://www.googletagmanager.com https://ssl.google-analytics.com",
+    // Allow styles with inline and from CDNs
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
+    // Allow fonts from Google and CDNs
     "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
+    // Allow frames from YouTube
     "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
     "object-src 'none'",
     "base-uri 'self'",
