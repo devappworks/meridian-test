@@ -182,24 +182,22 @@ export default defineNuxtConfig({
       // Optimize chunk splitting for better caching
       rollupOptions: {
         output: {
-          // Reduce the number of JS chunks
+          // Let Vite handle automatic chunking to avoid circular dependencies
+          // Only separate large vendor libraries
           manualChunks(id) {
             // Group all node_modules into vendor chunk
             if (id.includes('node_modules')) {
-              // Separate large libraries
+              // Separate large libraries that are used across many components
               if (id.includes('swiper')) {
                 return 'swiper-vendor';
+              }
+              if (id.includes('vue') || id.includes('vue-router')) {
+                return 'vue-vendor';
               }
               // All other vendors in one chunk
               return 'vendor';
             }
-            // Group component chunks by directory
-            if (id.includes('/components/')) {
-              return 'components';
-            }
-            if (id.includes('/views/')) {
-              return 'views';
-            }
+            // Let Vite automatically chunk components to avoid circular dependencies
           },
           // Optimize asset file names for better caching
           chunkFileNames: '_nuxt/[name]-[hash].js',
