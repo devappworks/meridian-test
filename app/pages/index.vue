@@ -31,8 +31,8 @@ const twitterHandle = config.public?.TWITTER_HANDLE || "";
 const canonicalUrl = siteUrl ? `${siteUrl}/` : undefined;
 
 // SEO-optimized title and description with keywords
-const title = "Meridian Sport - Najnovije Sportske Vesti | Srbija";
-const description = stripHtml(siteDescription) || "Meridian Sport portal nudi najbrže sportske vesti, rezultate, prenose uživo i analize mečeva iz Srbije i sveta. Budite u toku sa svim dešavanjima iz fudbala, košarke, tenisa i više.";
+const title = "Meridian Sport - Najnovije Sportske Vesti: Fudbal, Košarka, Partizan, Ponovo | Srbija";
+const description = stripHtml(siteDescription) || "Meridian Sport portal nudi najbrže sportske vesti, rezultate, prenose uživo i analize mečeva iz Srbije i sveta. Budite u toku sa svim dešavanjima iz fudbala, košarke, tenisa, vesti o Partizanu i ponovo sve o sportu.";
 const imageUrl = siteUrl ? `${siteUrl}/images/homepage-og.jpg` : undefined;
 
 const ld = {
@@ -68,7 +68,7 @@ useHead(() => ({
   title,
   meta: [
     { key: "description", name: "description", content: description },
-    { key: "keywords", name: "keywords", content: "sportske vesti, fudbal, košarka, tenis, odbojka, sport srbija, rezultati uživo, transfer vesti, sportski portal" },
+    { key: "keywords", name: "keywords", content: "sportske vesti, fudbal, košarka, partizan, ponovo, vesti, tenis, odbojka, sport srbija, rezultati uživo, transfer vesti, sportski portal" },
     { key: "robots", name: "robots", content: "index, follow, max-image-preview:large" },
     // Open Graph
     { key: "og:type", property: "og:type", content: "website" },
@@ -392,8 +392,8 @@ const slideMatchOdds = (direction) => {
 
 <template>
   <div class="content-wrapper">
-    <!-- SEO: Add hidden H1 for homepage -->
-    <h1 class="visually-hidden">Meridian Sport - Najnovije Sportske Vesti iz Srbije i Sveta</h1>
+    <!-- SEO: Add hidden H1 for homepage with all important keywords -->
+    <h1 class="visually-hidden">Meridian Sport - Najnovije Sportske Vesti: Fudbal, Košarka, Partizan, Ponovo iz Srbije i Sveta</h1>
     
     <!-- Match odds section with Loading State -->
     <!-- <SkeletonMatchOdds v-if="loading.matches" />
