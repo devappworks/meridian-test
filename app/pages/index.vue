@@ -31,7 +31,7 @@ const twitterHandle = config.public?.TWITTER_HANDLE || "";
 const canonicalUrl = siteUrl ? `${siteUrl}/` : undefined;
 
 // SEO-optimized title and description with keywords
-const title = "Meridian Sport - Najnovije Sportske Vesti: Fudbal, Košarka, Partizan, Ponovo | Srbija";
+const title = "Meridian Sport - Najnovije Sportske Vesti | Srbija";
 const description = stripHtml(siteDescription) || "Meridian Sport portal nudi najbrže sportske vesti, rezultate, prenose uživo i analize mečeva iz Srbije i sveta. Budite u toku sa svim dešavanjima iz fudbala, košarke, tenisa, vesti o Partizanu i ponovo sve o sportu.";
 const imageUrl = siteUrl ? `${siteUrl}/images/homepage-og.jpg` : undefined;
 
@@ -68,7 +68,7 @@ useHead(() => ({
   title,
   meta: [
     { key: "description", name: "description", content: description },
-    { key: "keywords", name: "keywords", content: "sportske vesti, fudbal, košarka, partizan, ponovo, vesti, tenis, odbojka, sport srbija, rezultati uživo, transfer vesti, sportski portal" },
+    { key: "keywords", name: "keywords", content: "sportske vesti, fudbal, košarka, partizan, zvezda, ponovo, vesti, tenis, odbojka, sport srbija, rezultati uživo, transfer vesti, sportski portal" },
     { key: "robots", name: "robots", content: "index, follow, max-image-preview:large" },
     // Open Graph
     { key: "og:type", property: "og:type", content: "website" },
