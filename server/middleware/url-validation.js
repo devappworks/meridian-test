@@ -5,6 +5,15 @@
 export default defineEventHandler((event) => {
   const url = event.node.req.url || ''
   
+  // BLOCK ALL /page/ REQUESTS (all are malicious bot attacks)
+  if (/\/page\//i.test(url)) {
+    console.log(`[Security] Blocked /page/ path: ${url}`)
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Not Found'
+    })
+  }
+  
   // Block malformed URL patterns (based on actual attack patterns from GSC)
   const malformedPatterns = [
     /\?=\?/,                    // ?=? pattern attack
@@ -17,6 +26,9 @@ export default defineEventHandler((event) => {
     /%[0-9A-F]{2}%[0-9A-F]{2}%[0-9A-F]{2}/, // Triple URL encoding (attack)
     /\.\./,                     // Directory traversal attempts
     /<script/i,                 // Script injection attempts
+    /\?.*%2F.*%2F/i,            // URL-encoded slashes in query params (path injection)
+    /cms_records/i,             // CMS exploitation attempts
+    /sortby=.*&sortdirection=/i, // Complex sorting parameter attacks
   ]
   
   // Check if URL matches attack pattern
