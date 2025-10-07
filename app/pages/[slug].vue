@@ -41,10 +41,27 @@ const { data: categoryData, error: categoryError } = await useAsyncData(
         webMenuItems = webSettingsRes.result.languages[0].web_menu || [];
       }
 
+      // Helper function to generate slug from title (matches Header.vue logic)
+      const slugifyTitle = (title) => {
+        return title
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/š/g, "s")
+          .replace(/č/g, "c")
+          .replace(/ć/g, "c")
+          .replace(/ž/g, "z")
+          .replace(/đ/g, "d")
+          .replace(/[^a-z0-9-]/g, "")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
+      };
+
       // Search for category by slug
       const findItemBySlug = (items, targetSlug) => {
         for (const item of items) {
-          if (item.slug?.toLowerCase() === targetSlug.toLowerCase()) {
+          // Check both item.slug and generated slug from title
+          const itemSlug = item.slug?.toLowerCase() || (item.title ? slugifyTitle(item.title) : null);
+          if (itemSlug === targetSlug.toLowerCase()) {
             return item;
           }
           if (Array.isArray(item.sub_menu)) {

@@ -680,16 +680,17 @@ export default {
     generateHelperRouteFromTitle(title, item) {
       // Return clean paths without query parameters
       // The CategoryPage will resolve the category from the slug
+      const titleUpper = title.toUpperCase();
       const dedicatedSportPages = {
         FUDBAL: "/fudbal/",
         KOŠARKA: "/kosarka/",
         ODBOJKA: "/odbojka/",
-        TENIS: "/tenis/",   
+        TENIS: "/tenis/",
       };
 
       // If we have a dedicated sport page, use it
-      if (dedicatedSportPages[title]) {
-        return dedicatedSportPages[title];
+      if (dedicatedSportPages[titleUpper]) {
+        return dedicatedSportPages[titleUpper];
       }
 
       // For all other categories, return clean path with slug
