@@ -15,15 +15,45 @@ export default defineEventHandler(async (event) => {
   if (config.API_KEY) headers.Authorization = config.API_KEY
   else if (config.public.API_KEY) headers.Authorization = config.public.API_KEY
 
-  try {
-    // Use the same endpoint that the client-side uses
-    const response = await $fetch(`${config.public.BACKEND_URL}/getArticlesBySlug/${category}/${slug}`, {
-      headers,
-    })
+  // Helper function to get related categories
+  const getRelatedCategories = (cat) => {
+    const categoryMap = {
+      'fudbal': ['fudbal', 'domaci-fudbal', 'reprezentacije', 'evropska-takmicenja'],
+      'kosarka': ['kosarka', 'domaca-kosarka', 'aba-liga', 'evroliga', 'nba'],
+      'tenis': ['tenis', 'atp', 'wta', 'grand-slam'],
+      'odbojka': ['odbojka', 'domaca-odbojka'],
+      'ostali-sportovi': ['ostali-sportovi', 'rukomet', 'atletika', 'plivanje']
+    }
+    return categoryMap[cat.toLowerCase()] || [cat]
+  }
 
-    const article = response?.article
+  try {
+    // Try to fetch with the requested category first
+    let response
+    let article
+    const categoriesToTry = getRelatedCategories(category)
+
+    console.log('🔴 Articles resolve API: Trying categories:', categoriesToTry)
+
+    // Try each related category until we find the article
+    for (const tryCategory of categoriesToTry) {
+      try {
+        response = await $fetch(`${config.public.BACKEND_URL}/getArticlesBySlug/${tryCategory}/${slug}`, {
+          headers,
+        })
+        article = response?.article
+        if (article && typeof article === 'object' && article.id) {
+          console.log(`🔴 Articles resolve API: Article found under category: ${tryCategory}`)
+          break
+        }
+      } catch (err) {
+        console.log(`🔴 Articles resolve API: Not found under ${tryCategory}, trying next...`)
+        continue
+      }
+    }
+
     if (!article || typeof article !== 'object') {
-      console.log('🔴 Articles resolve API: Article not found', { category, slug })
+      console.log('🔴 Articles resolve API: Article not found in any category', { category, slug, tried: categoriesToTry })
       throw createError({ statusCode: 404, statusMessage: 'Article not found' })
     }
 

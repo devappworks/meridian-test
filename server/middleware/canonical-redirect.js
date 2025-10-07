@@ -1,4 +1,9 @@
 export default defineEventHandler(async (event) => {
+  // TEMPORARILY DISABLED to fix 500 errors
+  // This middleware was causing issues with article loading
+  // TODO: Re-implement with better error handling
+  return
+
   const url = getRequestURL(event)
   const path = url.pathname
 
@@ -40,39 +45,15 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  // Check if this is a subcategory that should be redirected immediately
-  // Import and use the canonical category utility function
-  const { getCanonicalCategoryFromSlug } = await import('~/utils/canonicalCategory')
-  const canonicalCategory = getCanonicalCategoryFromSlug(category)
-  
-  // If the category maps to a different canonical category, redirect immediately
-  if (canonicalCategory !== category) {
-    // Preserve trailing slash (url-normalization ensures it exists)
-    const redirectUrl = `/${canonicalCategory}/${slug}/`
+  // REMOVED: Don't redirect based on URL mapping alone
+  // We need to check the actual article categories first to avoid loops
+  // The subcategory URLs (like /domaci-fudbal/) are valid if the article belongs to them
 
-    // Prevent redirect loop: don't redirect if target URL is the same as current
-    if (redirectUrl === path || redirectUrl + '/' === path || redirectUrl === path + '/') {
-      console.log(`[SERVER MW] Skipping redirect - target URL same as current: ${path}`)
-      return
-    }
-
-    console.log(`[SERVER MW] Subcategory redirect: ${path} -> ${redirectUrl}`)
-
-    // Preserve query string if present
-    const queryString = url.search || ''
-    const finalRedirectUrl = redirectUrl + queryString
-
-    await sendRedirect(event, finalRedirectUrl, 301)
-    return
-  }
-
-  // For main categories, we still need to validate against article data
+  // Validate ALL categories against article data (not just main categories)
+  // This ensures we redirect to the correct canonical category based on actual article data
   const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka', 'ostali-sportovi']
-  const isMainCategory = mainCategories.includes(category.toLowerCase())
-  
-  if (isMainCategory) {
-    console.log(`[SERVER MW] Main category detected: ${category}, will validate against article data`)
-  }
+
+  console.log(`[SERVER MW] Checking category: ${category}, will validate against article data`)
 
   try {
     // Get runtime config for API URL
@@ -83,9 +64,15 @@ export default defineEventHandler(async (event) => {
     // Fetch article data to determine canonical category (use same endpoint as page component)
     const apiUrl = `${backendUrl}/getArticlesBySlug/${encodeURIComponent(category)}/${encodeURIComponent(slug)}`
 
+    console.log(`[SERVER MW] Fetching article data from: ${apiUrl}`)
+
     const response = await $fetch(apiUrl, {
-      headers: apiKey ? { 'X-API-Key': apiKey } : {}
+      headers: apiKey ? { 'X-API-Key': apiKey } : {},
+      // Don't throw on error - handle gracefully
+      ignoreResponseError: true
     })
+
+    console.log(`[SERVER MW] API response received:`, response ? 'has data' : 'no data')
 
     // API now only returns article data (no redirects)
     // Validate response structure

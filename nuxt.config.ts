@@ -1,23 +1,23 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { fileURLToPath } from 'node:url'
 import { config as loadDotenv } from 'dotenv'
-
 // Load environment variables from .env before Nuxt reads them
 loadDotenv()
-
 // Get GA measurement ID from environment or use default
 const gaMeasurementId = process.env.NUXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID || 'G-D36YF7TZJF'
-
 export default defineNuxtConfig({
   // Enable SSR for all routes
   ssr: true,
-
+  // Dev server configuration - allow external access
+  devServer: {
+    host: '0.0.0.0',
+    port: 3000
+  },
   // Performance optimizations
   experimental: {
     payloadExtraction: true,
     viewTransition: true
   },
-
   nitro: {
     preset: 'node-server',
     // Remove static output configuration for SSR
@@ -30,6 +30,16 @@ export default defineNuxtConfig({
     // Enable compression
     compressPublicAssets: true,
     routeRules: {
+      // Sitemap XML routes - redirect from root to /api/
+      '/sitemap.xml': { proxy: '/api/sitemap.xml' },
+      '/page-sitemap.xml': { proxy: '/api/page-sitemap.xml' },
+      '/category-sitemap.xml': { proxy: '/api/category-sitemap.xml' },
+      '/post-sitemap-2025.xml': { proxy: '/api/post-sitemap-2025.xml' },
+      '/post-sitemap-2024.xml': { proxy: '/api/post-sitemap-2024.xml' },
+      '/post-sitemap-2023.xml': { proxy: '/api/post-sitemap-2023.xml' },
+      '/post-sitemap-2022.xml': { proxy: '/api/post-sitemap-2022.xml' },
+      '/post-sitemap-2021.xml': { proxy: '/api/post-sitemap-2021.xml' },
+      '/post-sitemap-2020.xml': { proxy: '/api/post-sitemap-2020.xml' },
       // Enable SSR for all main routes with caching
       '/': { ssr: true, swr: 60 }, // Cache for 60 seconds
       '/fudbal': { ssr: true, swr: 60 },
@@ -87,17 +97,14 @@ export default defineNuxtConfig({
         // Favicon
         { rel: 'icon', type: 'image/png', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
         { rel: 'apple-touch-icon', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
-
         // Preconnect to external domains for faster loading
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://cdnjs.cloudflare.com' },
         { rel: 'preconnect', href: 'https://cdn.jsdelivr.net' },
         { rel: 'dns-prefetch', href: 'https://www.googletagmanager.com' },
-
         // Preload critical CSS with high priority
         { rel: 'preload', as: 'style', href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css' },
         { rel: 'preload', as: 'style', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css' },
-
         // Load stylesheets with media="print" onload trick for non-critical CSS
         {
           rel: 'stylesheet',
