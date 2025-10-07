@@ -3,7 +3,7 @@
     <div class="side-banner left-banner">
       <div v-if="leftBanners.length > 0" class="banner-container">
         <a
-          v-for="banner in leftBanners"
+          v-for="(banner, index) in leftBanners"
           :key="banner.id"
           :href="banner.url_link"
           target="_blank"
@@ -14,6 +14,9 @@
             :src="banner.creative_image"
             :alt="banner.name"
             class="banner-image"
+            :fetchpriority="index === 0 ? 'high' : 'auto'"
+            :loading="index === 0 ? 'eager' : 'lazy'"
+            decoding="async"
           />
         </a>
       </div>
@@ -33,7 +36,7 @@
     <div class="side-banner right-banner">
       <div v-if="rightBanners.length > 0" class="banner-container">
         <a
-          v-for="banner in rightBanners"
+          v-for="(banner, index) in rightBanners"
           :key="banner.id"
           :href="banner.url_link"
           target="_blank"
@@ -44,6 +47,9 @@
             :src="banner.creative_image"
             :alt="banner.name"
             class="banner-image"
+            :fetchpriority="index === 0 ? 'high' : 'auto'"
+            :loading="index === 0 ? 'eager' : 'lazy'"
+            decoding="async"
           />
         </a>
       </div>

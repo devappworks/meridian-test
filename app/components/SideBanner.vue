@@ -1,5 +1,13 @@
 <template>
-    <div class="side-banner">    <img src="../assets/images/image.jpg" alt="Meridian Sport" class="banner-image" />  </div>
+    <div class="side-banner">
+        <img 
+            src="../assets/images/image.jpg" 
+            alt="Meridian Sport" 
+            class="banner-image"
+            loading="lazy"
+            decoding="async"
+        />
+    </div>
 </template>
 
 <script>

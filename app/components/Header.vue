@@ -5,7 +5,7 @@
       <div class="container">
         <div class="top-navbar-content">
           <div class="logo" @click="$router.push('/')">
-            <img src="@/assets/images/meridian-logo.svg" alt="Meridian Sport" />
+            <img src="@/assets/images/meridian-logo.svg" alt="Meridian Sport" fetchpriority="high" decoding="async" />
           </div>
           <!-- Desktop Navigation -->
 
@@ -23,7 +23,7 @@
                 </li>
               </ul>
               <div class="search-icon desktop" @click="toggleSearch">
-                <img src="@/assets/images/search.svg" alt="Search" />
+                <img src="@/assets/images/search.svg" alt="Search" loading="lazy" decoding="async" />
               </div>
               <div class="nav-underline" :style="underlineStyle"></div>
             </div>
@@ -62,7 +62,7 @@
           </div>
 
           <div class="search-icon" @click="toggleSearch">
-            <img src="@/assets/images/search.svg" alt="Search" />
+            <img src="@/assets/images/search.svg" alt="Search" loading="lazy" decoding="async" />
           </div>
 
           <!-- Burger Menu Button -->
@@ -147,7 +147,7 @@
                     @mouseenter="showTooltip"
                     @mouseleave="hideTooltip"
                   >
-                    <img src="@/assets/images/star.svg" alt="Star" />
+                    <img src="@/assets/images/star.svg" alt="Star" loading="lazy" decoding="async" />
                     <span>MOJE VESTI</span>
                     <!-- Tooltip -->
                     <div
@@ -191,7 +191,7 @@
             @mouseenter="showTooltip"
             @mouseleave="hideTooltip"
           >
-            <img src="@/assets/images/star.svg" alt="Star" />
+            <img src="@/assets/images/star.svg" alt="Star" loading="lazy" decoding="async" />
             <span>MOJE VESTI</span>
             <!-- Tooltip -->
             <div

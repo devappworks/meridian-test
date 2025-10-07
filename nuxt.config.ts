@@ -51,6 +51,9 @@ export default defineNuxtConfig({
       // Cache static assets for 1 year
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
       '/images/**': { headers: { 'cache-control': 'public, max-age=2592000' } }, // 30 days
+      // Cache public assets (fonts, images, etc)
+      '/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+      '/assets/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
       // Enable SSR for all routes by default
       '/**': { ssr: true }
     }
@@ -97,14 +100,14 @@ export default defineNuxtConfig({
         // Favicon
         { rel: 'icon', type: 'image/png', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
         { rel: 'apple-touch-icon', href: 'https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true' },
-        // Preconnect to external domains for faster loading
+        // Preconnect to ONLY the most critical origins (max 4 for optimal performance)
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://cdnjs.cloudflare.com' },
-        { rel: 'preconnect', href: 'https://cdn.jsdelivr.net' },
-        // CRITICAL: Preconnect to Google Analytics for faster tracking
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'preconnect', href: 'https://meridian.mpanel.app' },
         { rel: 'preconnect', href: 'https://www.googletagmanager.com' },
-        { rel: 'preconnect', href: 'https://www.google-analytics.com' },
-        { rel: 'dns-prefetch', href: 'https://analytics.google.com' },
+        // DNS prefetch for less critical origins
+        { rel: 'dns-prefetch', href: 'https://cdnjs.cloudflare.com' },
+        { rel: 'dns-prefetch', href: 'https://cdn.jsdelivr.net' },
         // Preload critical CSS with high priority
         { rel: 'preload', as: 'style', href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css' },
         { rel: 'preload', as: 'style', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css' },
@@ -117,14 +120,16 @@ export default defineNuxtConfig({
         },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200',
+          href: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap',
           media: 'print',
           onload: "this.media='all'"
         },
         {
           rel: 'stylesheet',
           href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css',
-          crossorigin: 'anonymous'
+          crossorigin: 'anonymous',
+          media: 'print',
+          onload: "this.media='all'"
         },
       ],
     }

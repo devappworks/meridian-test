@@ -12,6 +12,8 @@
             :src="topBanners[0].creative_image"
             :alt="topBanners[0].name"
             class="ad-banner-image"
+            loading="lazy"
+            decoding="async"
           />
         </a>
       </div>
@@ -20,6 +22,8 @@
           src="../assets/images/image18.jpg"
           alt="Ad Banner"
           class="ad-banner-image"
+          loading="lazy"
+          decoding="async"
         />
       </div>
       <div v-if="topBanners.length > 1" class="ad-banner test2">
@@ -28,6 +32,8 @@
             :src="topBanners[1].creative_image"
             :alt="topBanners[1].name"
             class="ad-banner-image"
+            loading="lazy"
+            decoding="async"
           />
         </a>
       </div>
@@ -36,6 +42,8 @@
           src="../assets/images/image19.jpg"
           alt="Ad Banner"
           class="ad-banner-image"
+          loading="lazy"
+          decoding="async"
         />
       </div>
     </div>
