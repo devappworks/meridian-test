@@ -19,7 +19,7 @@ export function useNewsArticleSchema(article) {
   const mainImage = article.feat_images?.['extra-large']?.url;
 
   // Get author name
-  const authorName = article.authors?.[0]?.name || siteName;
+  const authorName = article.authors?.[0]?.name || 'Redakcija';
 
   // Create description from content or subtitle
   const description = article.subtitle ||
@@ -46,6 +46,14 @@ export function useNewsArticleSchema(article) {
   const datePublishedISO = safeParseDate(publishDate);
   const dateModifiedISO = safeParseDate(modifiedDate);
 
+  // Build proper ImageObject with dimensions for Google News
+  const imageObject = mainImage ? {
+    '@type': 'ImageObject',
+    url: mainImage,
+    width: 1200, // Standard OG image width
+    height: 630  // Standard OG image height (adjust if you know actual dimensions)
+  } : undefined;
+
   return {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
@@ -54,9 +62,9 @@ export function useNewsArticleSchema(article) {
       '@id': articleUrl,
     },
     headline: article.title,
-    image: mainImage ? [mainImage] : [],
+    image: imageObject,
     datePublished: datePublishedISO,
-    dateModified: dateModifiedISO,
+    dateModified: dateModifiedISO || datePublishedISO, // Use modified date or fallback to published
     author: {
       '@type': 'Organization',
       name: authorName,
