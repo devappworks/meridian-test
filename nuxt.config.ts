@@ -89,9 +89,9 @@ export default defineNuxtConfig({
       ],
       link: [
         // Favicon - Multiple sizes for better device support
-        { rel: 'icon', type: 'image/x-icon', href: './public/images/meridian-favicon-1758622126.png' },
-        { rel: 'apple-touch-icon', href: './public/images/meridian-favicon-1758622126.png' },
-        { rel: 'shortcut icon', href: './public/images/meridian-favicon-1758622126.png' },
+        { rel: 'icon', type: 'image/x-icon', href: '/images/meridian-favicon-1758622126.png' },
+        { rel: 'apple-touch-icon', href: '/images/meridian-favicon-1758622126.png' },
+        { rel: 'shortcut icon', href: '/images/meridian-favicon-1758622126.png' },
         // Preconnect to ONLY the most critical origins (max 4 for optimal performance)
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
