@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GA Tracking Test - Meridian Sport</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            background: #f8f9fa;
+        }
+        #networkLog {
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔍 Google Analytics Tracking Test</h1>
+        <p>Use this page to verify GA tracking is working after deploying the CSP fix.</p>
+    </div>
+
+    <div class="card">
+        <h2>Test 1: CSP Headers Check</h2>
+        <div class="test-section">
+            <button onclick="checkCSP()">Check CSP Headers</button>
+            <div id="cspResult"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Test 2: gtag Availability</h2>
+        <div class="test-section">
+            <button onclick="checkGtag()">Check gtag Function</button>
+            <div id="gtagResult"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Test 3: Manual Tracking Event</h2>
+        <div class="test-section">
+            <button onclick="sendTestEvent()">Send Test Event</button>
+            <div id="eventResult"></div>
+            <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                After clicking, check Network tab for POST to google-analytics.com/g/collect
+            </p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Test 4: Page View Tracking</h2>
+        <div class="test-section">
+            <button onclick="sendPageView()">Send Page View</button>
+            <div id="pageViewResult"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Network Monitor</h2>
+        <div class="test-section">
+            <p style="font-size: 14px; color: #666;">
+                Open DevTools (F12) → Network tab → Filter by "google-analytics" to see requests
+            </p>
+            <div id="networkLog"></div>
+        </div>
+    </div>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-D36YF7TZJF"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-D36YF7TZJF', {
+            send_page_view: true,
+            cookie_flags: 'SameSite=None;Secure',
+            anonymize_ip: true
+        });
+
+        // Log to network monitor
+        function logToMonitor(message, type = 'info') {
+            const log = document.getElementById('networkLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#333';
+            log.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Test 1: Check CSP Headers
+        async function checkCSP() {
+            const resultDiv = document.getElementById('cspResult');
+            resultDiv.innerHTML = '<p>Checking CSP headers...</p>';
+            
+            try {
+                const response = await fetch(window.location.origin);
+                const csp = response.headers.get('content-security-policy');
+                
+                if (!csp) {
+                    resultDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ CSP Header Missing!
+                            <p>The Content-Security-Policy header is not present. GA tracking will fail.</p>
+                            <p><strong>Action Required:</strong> Deploy the CSP fix from security-headers.js</p>
+                        </div>
+                    `;
+                    logToMonitor('CSP header missing', 'error');
+                } else {
+                    const hasGAConnect = csp.includes('google-analytics.com');
+                    const hasGTM = csp.includes('googletagmanager.com');
+                    
+                    if (hasGAConnect && hasGTM) {
+                        resultDiv.innerHTML = `
+                            <div class="status success">
+                                ✅ CSP Headers Present and Correct!
+                                <p>Google Analytics domains are whitelisted.</p>
+                            </div>
+                            <details>
+                                <summary>View CSP Header</summary>
+                                <pre>${csp}</pre>
+                            </details>
+                        `;
+                        logToMonitor('CSP headers valid', 'success');
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="status warning">
+                                ⚠️ CSP Present but Incomplete
+                                <p>Missing: ${!hasGAConnect ? 'google-analytics.com' : ''} ${!hasGTM ? 'googletagmanager.com' : ''}</p>
+                            </div>
+                            <pre>${csp}</pre>
+                        `;
+                        logToMonitor('CSP incomplete', 'error');
+                    }
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error checking headers: ${error.message}
+                    </div>
+                `;
+                logToMonitor('Error checking CSP: ' + error.message, 'error');
+            }
+        }
+
+        // Test 2: Check gtag availability
+        function checkGtag() {
+            const resultDiv = document.getElementById('gtagResult');
+            
+            if (typeof gtag === 'undefined') {
+                resultDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ gtag function not found!
+                        <p>The Google Analytics script did not load properly.</p>
+                    </div>
+                `;
+                logToMonitor('gtag function not found', 'error');
+                return;
+            }
+            
+            if (!window.dataLayer || window.dataLayer.length === 0) {
+                resultDiv.innerHTML = `
+                    <div class="status warning">
+                        ⚠️ dataLayer is empty
+                        <p>gtag exists but dataLayer has no entries.</p>
+                    </div>
+                `;
+                logToMonitor('dataLayer empty', 'error');
+                return;
+            }
+            
+            resultDiv.innerHTML = `
+                <div class="status success">
+                    ✅ gtag Function Available!
+                    <p>DataLayer entries: ${window.dataLayer.length}</p>
+                </div>
+                <details>
+                    <summary>View dataLayer</summary>
+                    <pre>${JSON.stringify(window.dataLayer, null, 2)}</pre>
+                </details>
+            `;
+            logToMonitor('gtag function available', 'success');
+        }
+
+        // Test 3: Send test event
+        function sendTestEvent() {
+            const resultDiv = document.getElementById('eventResult');
+            
+            if (typeof gtag === 'undefined') {
+                resultDiv.innerHTML = '<div class="status error">❌ gtag not available</div>';
+                return;
+            }
+            
+            try {
+                gtag('event', 'test_tracking', {
+                    'event_category': 'GA_Test',
+                    'event_label': 'Manual Test Event',
+                    'value': 1
+                });
+                
+                resultDiv.innerHTML = `
+                    <div class="status success">
+                        ✅ Test Event Sent!
+                        <p>Check Network tab for POST to /g/collect</p>
+                        <p>Should see Status: 200 OK</p>
+                    </div>
+                `;
+                logToMonitor('Test event sent', 'success');
+                
+                setTimeout(() => {
+                    resultDiv.innerHTML += `
+                        <p style="color: #666; font-size: 14px; margin-top: 10px;">
+                            <strong>Expected in Network tab:</strong><br>
+                            POST https://www.google-analytics.com/g/collect?v=2&tid=G-D36YF7TZJF...<br>
+                            Status: 200 OK
+                        </p>
+                    `;
+                }, 1000);
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error sending event: ${error.message}
+                    </div>
+                `;
+                logToMonitor('Error sending event: ' + error.message, 'error');
+            }
+        }
+
+        // Test 4: Send page view
+        function sendPageView() {
+            const resultDiv = document.getElementById('pageViewResult');
+            
+            if (typeof gtag === 'undefined') {
+                resultDiv.innerHTML = '<div class="status error">❌ gtag not available</div>';
+                return;
+            }
+            
+            try {
+                gtag('config', 'G-D36YF7TZJF', {
+                    page_path: '/ga-test.html',
+                    page_title: 'GA Test Page',
+                    page_location: window.location.href
+                });
+                
+                resultDiv.innerHTML = `
+                    <div class="status success">
+                        ✅ Page View Sent!
+                        <p>Check Network tab and Google Analytics Real-time reports</p>
+                    </div>
+                `;
+                logToMonitor('Page view sent', 'success');
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error sending page view: ${error.message}
+                    </div>
+                `;
+                logToMonitor('Error sending page view: ' + error.message, 'error');
+            }
+        }
+
+        // Initial log
+        logToMonitor('GA Test page loaded');
+        
+        // Monitor gtag script loading
+        window.addEventListener('load', () => {
+            if (typeof gtag !== 'undefined') {
+                logToMonitor('gtag.js loaded successfully', 'success');
+            } else {
+                logToMonitor('gtag.js failed to load', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
+
