@@ -4,8 +4,11 @@ const { slug } = route.params;
 
 // Get title from query if available
 const displayTitle = computed(() => {
-  return route.query.title || slug.split('-').map(word => word.toUpperCase()).join(' ');
+  return route.query.title || slug.split('-').map(word => capitalize(word)).join(' ');
 });
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 useHead(() => {
   const breadcrumbSchema = {
@@ -28,7 +31,7 @@ useHead(() => {
   };
 
   return {
-    title: `Sport – ${displayTitle.value}`,
+    title: `${displayTitle.value} | Meridian Sport`,
     script: [
       {
         key: 'ldjson-breadcrumb-category',
