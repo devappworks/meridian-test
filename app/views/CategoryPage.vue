@@ -457,8 +457,8 @@ export default {
         sport: this.getSportFromCategories(article.categories),
         date: article.date,
         url: article.url,
-        image: article.feat_images["medium"]
-          ? article.feat_images["medium"].url
+        image: article.feat_images["small"]
+          ? article.feat_images["small"].url
           : null,
         category: article.categories[0].slug,
         slug: article.slug,

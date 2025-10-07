@@ -267,7 +267,7 @@ if (footballData.value?.result.articles?.length > 0) {
     sport: "FUDBAL",
     date: article.date,
     url: article.url,
-    image: article.feat_images["medium"]?.url || null,
+    image: article.feat_images["small"]?.url || null,
     category: article.categories[0]?.slug,
     slug: article?.slug,
   }));
@@ -280,7 +280,7 @@ if (volleyballData.value?.result.articles?.length > 0) {
     sport: "ODBOJKA",
     date: article.date,
     url: article.url,
-    image: article.feat_images["medium"]?.url || null,
+    image: article.feat_images["small"]?.url || null,
     category: article.categories[0]?.slug,
     slug: article?.slug,
   }));
@@ -293,7 +293,7 @@ if (basketballData.value?.result.articles?.length > 0) {
     sport: "KOŠARKA",
     date: article.date,
     url: article.url,
-    image: article.feat_images["medium"]?.url || null,
+    image: article.feat_images["small"]?.url || null,
     category: article.categories[0]?.slug,
     slug: article?.slug,
   }));
@@ -306,7 +306,7 @@ if (tennisData.value?.result.articles?.length > 0) {
     sport: "TENIS",
     date: article.date,
     url: article.url,
-    image: article.feat_images["medium"]?.url || null,
+    image: article.feat_images["small"]?.url || null,
     category: article.categories[0]?.slug,
     slug: article?.slug,
   }));

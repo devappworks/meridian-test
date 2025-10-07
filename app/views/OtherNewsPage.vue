@@ -105,7 +105,7 @@ const mapArticle = (article) => ({
   sport: "OSTALE VESTI",
   date: article.date,
   url: article.url,
-  image: article.feat_images["medium"]?.url || null,
+  image: article.feat_images["small"]?.url || null,
   category: article.categories[0]?.slug,
   slug: article.slug,
 });

@@ -371,8 +371,8 @@ export default {
         date: article.date,
         url: article.url,
         image:
-          article.feat_images && article.feat_images["medium"]
-            ? article.feat_images["medium"].url
+          article.feat_images && article.feat_images["small"]
+            ? article.feat_images["small"].url
             : NewsImage,
         //category: sportTag, // Use the computed sport tag as category too
         categoryName: categoryName,

@@ -142,17 +142,17 @@ export default {
             const sport =
               sportFromCategories || article.sport || "OSTALE VESTI";
             const image =
+              (article.feat_images && article.feat_images["small"]
+                ? article.feat_images["small"].url
+                : null) ||
+              (article.images && article.images["small"]
+                ? article.images["small"].url
+                : null) ||
               (article.feat_images && article.feat_images["medium"]
                 ? article.feat_images["medium"].url
                 : null) ||
               (article.images && article.images["medium"]
                 ? article.images["medium"].url
-                : null) ||
-              (article.feat_images && article.feat_images["large"]
-                ? article.feat_images["large"].url
-                : null) ||
-              (article.images && article.images["large"]
-                ? article.images["large"].url
                 : null) ||
               null;
 
