@@ -25,41 +25,11 @@
   </div>
 </template>
 
-<script>
-import { ref, onMounted } from "vue";
-import { fetchOrders } from "../services/api.js";
+<script setup>
 import fallbackImage from "@/assets/images/image17.jpg";
 
-export default {
-  name: "LiveStream",
-  setup() {
-    const banners = ref([]);
-
-    const loadBanners = async () => {
-      try {
-        const response = await fetchOrders();
-        if (response.success && response.result.orders.data) {
-          const leaderboardBanners = response.result.orders.data.filter(
-            (order) =>
-              order.format === "web_large_leaderboard" && order.status === 1
-          );
-          banners.value = leaderboardBanners;
-        }
-      } catch (error) {
-        console.error("Error loading live stream banners:", error);
-      }
-    };
-
-    onMounted(() => {
-      loadBanners();
-    });
-
-    return {
-      banners,
-      fallbackImage,
-    };
-  },
-};
+// Use shared composable to prevent duplicate API calls
+const { leaderboardBanners: banners } = useOrders();
 </script>
 
 <style scoped>

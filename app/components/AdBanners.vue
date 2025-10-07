@@ -87,38 +87,9 @@
   </div>
 </template>
 
-<script>
-import { ref, onMounted } from "vue";
-import { fetchOrders } from "../services/api.js";
-
-export default {
-  name: "AdBanners",
-  setup() {
-    const topBanners = ref([]);
-
-    const loadBanners = async () => {
-      try {
-        const response = await fetchOrders();
-        if (response.success && response.result.orders.data) {
-          const squareBanners = response.result.orders.data.filter(
-            (order) => order.format === "web_square" && order.status === 1
-          );
-          topBanners.value = squareBanners;
-        }
-      } catch (error) {
-        console.error("Error loading ad banners:", error);
-      }
-    };
-
-    onMounted(() => {
-      loadBanners();
-    });
-
-    return {
-      topBanners,
-    };
-  },
-};
+<script setup>
+// Use shared composable to prevent duplicate API calls
+const { squareBanners: topBanners } = useOrders();
 </script>
 
 <style scoped>

@@ -59,32 +59,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
-import { fetchOrders } from "@/services/api";
 
-const leftBanners = ref([]);
-const rightBanners = ref([]);
+// Use shared composable to prevent duplicate API calls
+const { skyscraperBanners } = useOrders();
 
-const loadBanners = async () => {
-  try {
-    const response = await fetchOrders();
-    if (response.success && response.result?.orders?.data) {
-      const skyscraperBanners = response.result.orders.data.filter(
-        (order) => order.format === "web_skyscraper" && order.status === 1
-      );
-      const midPoint = Math.ceil(skyscraperBanners.length / 2);
-      leftBanners.value = skyscraperBanners.slice(0, midPoint);
-      rightBanners.value = skyscraperBanners.slice(midPoint);
-    }
-  } catch (error) {
-    console.error("Error loading skyscraper banners:", error);
-  }
-};
+// Split skyscraper banners for left and right sides
+const leftBanners = computed(() => {
+  const banners = skyscraperBanners.value || [];
+  const midPoint = Math.ceil(banners.length / 2);
+  return banners.slice(0, midPoint);
+});
 
-onMounted(() => {
-  loadBanners();
+const rightBanners = computed(() => {
+  const banners = skyscraperBanners.value || [];
+  const midPoint = Math.ceil(banners.length / 2);
+  return banners.slice(midPoint);
 });
 </script>
 
