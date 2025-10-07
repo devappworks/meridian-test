@@ -2,7 +2,7 @@
 import FootballPage from "@/views/FootballPage.vue";
 
 useHead({
-  title: "Fudbal",
+  title: "Fudbal | Meridian Sport",
   script: [
     {
       key: 'ldjson-breadcrumb-fudbal',

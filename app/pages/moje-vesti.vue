@@ -1,5 +1,5 @@
 <script setup>
-useHead({ title: "Moje vesti" });
+useHead({ title: "Moje vesti | Meridian Sport" });
 </script>
 
 <template>

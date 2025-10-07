@@ -2,7 +2,7 @@
 import TennisPage from "@/views/TennisPage.vue";
 
 useHead({
-  title: "Tenis",
+  title: "Tenis | Meridian Sport",
   script: [
     {
       key: 'ldjson-breadcrumb-tenis',

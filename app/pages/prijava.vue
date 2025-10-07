@@ -1,5 +1,5 @@
 <script setup>
-useHead({ title: "Prijava" });
+useHead({ title: "Prijava | Meridian Sport" });
 import LoginPage from "@/views/LoginPage.vue";
 </script>
 

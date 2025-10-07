@@ -2,7 +2,7 @@
 import VolleyballPage from "@/views/VolleyballPage.vue";
 
 useHead({
-  title: "Odbojka",
+  title: "Odbojka | Meridian Sport",
   script: [
     {
       key: 'ldjson-breadcrumb-odbojka',

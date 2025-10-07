@@ -2,7 +2,7 @@
 import BasketballPage from "@/views/BasketballPage.vue";
 
 useHead({
-  title: "Košarka",
+  title: "Košarka | Meridian Sport",
   script: [
     {
       key: 'ldjson-breadcrumb-kosarka',

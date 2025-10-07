@@ -1,5 +1,5 @@
 <script setup>
-useHead({ title: "Najnovije vesti" });
+useHead({ title: "Najnovije vesti | Meridian Sport" });
 import LatestNewsPage from "@/views/LatestNewsPage.vue";
 </script>
 

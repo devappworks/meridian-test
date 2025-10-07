@@ -1,5 +1,5 @@
 <script setup>
-useHead({ title: "Account" });
+useHead({ title: "Account | Meridian Sport" });
 import AccountPage from "@/views/AccountPage.vue";
 </script>
 
