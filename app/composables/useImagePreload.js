@@ -2,7 +2,7 @@
  * Composable for preloading critical images (hero/featured images)
  * Improves LCP (Largest Contentful Paint) score
  */
-export function useImagePreload(imageUrl) {
+export function useImagePreload(imageUrl, webpUrl = null) {
   if (!imageUrl) return
 
   const config = useRuntimeConfig()
@@ -14,18 +14,33 @@ export function useImagePreload(imageUrl) {
     absoluteUrl = siteUrl + imageUrl
   }
 
-  // Add preload link to head
-  useHead({
-    link: [
-      {
-        rel: 'preload',
-        as: 'image',
-        href: absoluteUrl,
-        // Add fetchpriority for critical images
-        fetchpriority: 'high'
-      }
-    ]
+  const links = []
+
+  // Preload WebP first if available (smaller, better for LCP)
+  if (webpUrl) {
+    let absoluteWebpUrl = webpUrl
+    if (webpUrl.startsWith('/') && siteUrl) {
+      absoluteWebpUrl = siteUrl + webpUrl
+    }
+    links.push({
+      rel: 'preload',
+      as: 'image',
+      href: absoluteWebpUrl,
+      type: 'image/webp',
+      fetchpriority: 'high'
+    })
+  }
+
+  // Preload fallback image
+  links.push({
+    rel: 'preload',
+    as: 'image',
+    href: absoluteUrl,
+    fetchpriority: 'high'
   })
+
+  // Add preload link to head
+  useHead({ link: links })
 }
 
 /**

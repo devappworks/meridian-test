@@ -1,12 +1,16 @@
 <script setup>
+// Critical above-the-fold components - loaded immediately
 import FeaturedArticle from "@/components/Featured.vue";
 import NewsGrid from "@/components/NewsGrid.vue";
-import NewsSlider from "@/components/NewsSlider.vue";
 import NewsSidebar from "@/components/Sidebar.vue";
-import LiveStream from "@/components/LiveStream.vue";
-import YouTubeSection from "@/components/YouTube.vue";
-import NewsletterForm from "@/components/Newsletter.vue";
 import AdBanners from "@/components/AdBanners.vue";
+
+// Below-the-fold components - lazy loaded to improve LCP
+const NewsSlider = defineAsyncComponent(() => import("@/components/NewsSlider.vue"));
+const LiveStream = defineAsyncComponent(() => import("@/components/LiveStream.vue"));
+const YouTubeSection = defineAsyncComponent(() => import("@/components/YouTube.vue"));
+const NewsletterForm = defineAsyncComponent(() => import("@/components/Newsletter.vue"));
+
 import { fetchFromApi, fetchMeridianTipovi } from "@/services/api";
 import { getCanonicalCategoryFromSlug } from '~/utils/canonicalCategory';
 
@@ -236,7 +240,8 @@ if (featuredData.value?.result.articles?.length > 0) {
 
     // Preload featured image for better LCP
     if (featuredArticle.value.image) {
-      useImagePreload(featuredArticle.value.image);
+      const webpUrl = featuredArticle.value.featImages?.['extra-large']?.webp || null;
+      useImagePreload(featuredArticle.value.image, webpUrl);
     }
 
     latestNewsGrid.value = featuredArticles.slice(1, featuredArticles.length).map(mapArticleData).filter(Boolean);

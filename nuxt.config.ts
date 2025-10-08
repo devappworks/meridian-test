@@ -17,6 +17,7 @@ export default defineNuxtConfig({
   experimental: {
     payloadExtraction: true,
     viewTransition: true,
+    componentIslands: true
   },
   // Inline critical CSS to prevent render blocking (Nuxt 4 way)
   features: {
@@ -61,22 +62,26 @@ export default defineNuxtConfig({
   app: {
     head: {
       script: [
-        // Google Analytics 4 (GA4) - async to prevent render blocking
-        // FIXED: Use only 'async' (not both async and defer which causes conflicts)
+        // Google Analytics 4 (GA4) - defer until after page load to improve LCP
         {
-          src: `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`,
-          async: true
-        },
-        {
-          innerHTML: `window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '${gaMeasurementId}', {
-            send_page_view: true,
-            cookie_flags: 'SameSite=None;Secure;max-age=63072000',
-            anonymize_ip: true,
-            cookie_expires: 63072000
-          });`,
+          innerHTML: `
+          window.addEventListener('load', function() {
+            var script = document.createElement('script');
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}';
+            script.async = true;
+            document.head.appendChild(script);
+
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${gaMeasurementId}', {
+              send_page_view: true,
+              cookie_flags: 'SameSite=None;Secure;max-age=63072000',
+              anonymize_ip: true,
+              cookie_expires: 63072000
+            });
+          });
+          `,
           type: 'text/javascript'
         },
         // Bootstrap and jQuery - deferred to prevent render blocking
@@ -98,14 +103,14 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/x-icon', href: '/images/meridian-favicon-1758622126.png' },
         { rel: 'apple-touch-icon', href: '/images/meridian-favicon-1758622126.png' },
         { rel: 'shortcut icon', href: '/images/meridian-favicon-1758622126.png' },
-        // Preconnect to ONLY the most critical origins (max 4 for optimal performance)
+        // Preconnect to ONLY the most critical origins (max 3 for optimal performance)
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         { rel: 'preconnect', href: 'https://meridian.mpanel.app' },
-        { rel: 'preconnect', href: 'https://www.googletagmanager.com' },
         // DNS prefetch for less critical origins
         { rel: 'dns-prefetch', href: 'https://cdnjs.cloudflare.com' },
         { rel: 'dns-prefetch', href: 'https://cdn.jsdelivr.net' },
+        { rel: 'dns-prefetch', href: 'https://www.googletagmanager.com' },
         // Load stylesheets - Defer non-critical CSS
         {
           rel: 'stylesheet',
@@ -189,15 +194,14 @@ export default defineNuxtConfig({
           comments: false  // Remove comments from production build
         }
       },
-      // Disable CSS code splitting to reduce render-blocking CSS files
-      cssCodeSplit: false,
+      // Enable CSS code splitting for better caching and reduced initial load
+      cssCodeSplit: true,
       // Reduce chunk size warnings threshold
       chunkSizeWarningLimit: 1000,
       // Optimize chunk splitting for better caching
       rollupOptions: {
         output: {
-          // Let Vite handle automatic chunking to avoid circular dependencies
-          // Only separate large vendor libraries
+          // Aggressive code splitting to reduce entry bundle size
           manualChunks(id: string) {
             // Group all node_modules into vendor chunk
             if (id.includes('node_modules')) {
@@ -211,7 +215,16 @@ export default defineNuxtConfig({
               // All other vendors in one chunk
               return 'vendor';
             }
-            // Let Vite automatically chunk components to avoid circular dependencies
+            // Split large components into separate chunks
+            if (id.includes('app/components/NewsSlider')) {
+              return 'news-slider';
+            }
+            if (id.includes('app/components/Featured')) {
+              return 'featured';
+            }
+            if (id.includes('app/views/')) {
+              return 'views';
+            }
           },
           // Optimize asset file names for better caching
           chunkFileNames: '_nuxt/[name]-[hash].js',
