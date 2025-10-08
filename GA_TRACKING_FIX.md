@@ -206,7 +206,7 @@ Consider implementing GDPR-compliant cookie consent:
 ### 2. Server-Side GA (Future)
 Consider server-side tracking for:
 - Ad-blocker bypass
-- More accurate data
+- More accBurate data
 - Better attribution
 
 ### 3. Monitoring Setup
