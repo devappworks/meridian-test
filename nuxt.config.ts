@@ -101,17 +101,7 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://meridian.mpanel.app' },
         // DNS prefetch for less critical origins
         { rel: 'dns-prefetch', href: 'https://cdnjs.cloudflare.com' },
-        { rel: 'dns-prefetch', href: 'https://cdn.jsdelivr.net' },
         { rel: 'dns-prefetch', href: 'https://www.googletagmanager.com' },
-        // Load stylesheets - Defer non-critical CSS
-        {
-          rel: 'stylesheet',
-          integrity: 'sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65',
-          crossorigin: 'anonymous',
-          href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css',
-          media: 'print',
-          onload: "this.media='all'"
-        },
         // Critical fonts - preload + async load to avoid render blocking
         {
           rel: 'preload',
@@ -172,7 +162,13 @@ export default defineNuxtConfig({
     },
     esbuild: {
       // Remove console.log, console.warn, console.error in production
-      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : []
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+      // Enable tree-shaking for better dead code elimination
+      treeShaking: true,
+      // Aggressive minification
+      minifyIdentifiers: true,
+      minifySyntax: true,
+      minifyWhitespace: true
     },
     build: {
       // Minify HTML in production
@@ -180,10 +176,20 @@ export default defineNuxtConfig({
       terserOptions: {
         compress: {
           drop_console: process.env.NODE_ENV === 'production',
-          drop_debugger: process.env.NODE_ENV === 'production'
+          drop_debugger: process.env.NODE_ENV === 'production',
+          // Aggressive optimizations
+          passes: 2,
+          pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace'],
+          unsafe: true,
+          unsafe_comps: true,
+          unsafe_math: true,
+          unsafe_proto: true
         },
         format: {
           comments: false  // Remove comments from production build
+        },
+        mangle: {
+          safari10: true // Better browser compatibility
         }
       },
       // Enable CSS code splitting for better caching and reduced initial load

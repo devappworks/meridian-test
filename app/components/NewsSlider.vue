@@ -322,6 +322,9 @@ export default {
 <style scoped>
 .news-slider {
   padding: 26px 0;
+  /* Optimize rendering for below-fold content */
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
 }
 
 .news-slider.special-gradient {
