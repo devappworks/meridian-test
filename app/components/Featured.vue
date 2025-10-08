@@ -5,10 +5,9 @@
         <div class="featured-image">
           <picture>
             <source
-              v-if="responsiveImage.srcsetWebp"
+              v-if="webpUrl"
               type="image/webp"
-              :srcset="responsiveImage.srcsetWebp"
-              :sizes="responsiveImage.sizes"
+              :srcset="webpUrl"
             />
             <img
               :src="responsiveImage.src"
@@ -84,6 +83,35 @@ export default {
         srcsetWebp: '',
         sizes: ''
       };
+    },
+    webpUrl() {
+      if (!this.article) return null;
+
+      // Try to get WebP URL from featImages
+      if (this.article.featImages?.['extra-large']?.webp) {
+        return this.article.featImages['extra-large'].webp;
+      }
+      if (this.article.featImages?.large?.webp) {
+        return this.article.featImages.large.webp;
+      }
+      if (this.article.featImages?.medium?.webp) {
+        return this.article.featImages.medium.webp;
+      }
+
+      // Try from image object
+      if (typeof this.article.image === 'object' && this.article.image !== null) {
+        if (this.article.image['extra-large']?.webp) {
+          return this.article.image['extra-large'].webp;
+        }
+        if (this.article.image.large?.webp) {
+          return this.article.image.large.webp;
+        }
+        if (this.article.image.medium?.webp) {
+          return this.article.image.medium.webp;
+        }
+      }
+
+      return null;
     },
   },
   methods: {

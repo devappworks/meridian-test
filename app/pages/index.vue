@@ -228,6 +228,7 @@ if (featuredData.value?.result.articles?.length > 0) {
       date: featuredArticles[0].date,
       url: featuredArticles[0].url,
       image: featuredArticles[0].feat_images?.["medium"]?.url || null,
+      featImages: featuredArticles[0].feat_images || null,
       content: featuredArticles[0].contents,
       category: featuredArticles[0].categories?.[0]?.slug || '',
       slug: featuredArticles[0].slug || '',
@@ -253,6 +254,7 @@ if (latestArticlesData.value?.result.articles?.length > 0) {
     date: article.date,
     url: article.url,
     image: article.feat_images["thumb"]?.url || null,
+    featImages: article.feat_images || null,
     category: article.categories[0]?.slug,
     slug: article?.slug,
   }));
@@ -269,6 +271,7 @@ if (footballData.value?.result.articles?.length > 0) {
     date: article.date,
     url: article.url,
     image: article.feat_images["small"]?.url || null,
+    featImages: article.feat_images || null,
     category: article.categories[0]?.slug,
     slug: article?.slug,
   }));
@@ -282,6 +285,7 @@ if (volleyballData.value?.result.articles?.length > 0) {
     date: article.date,
     url: article.url,
     image: article.feat_images["small"]?.url || null,
+    featImages: article.feat_images || null,
     category: article.categories[0]?.slug,
     slug: article?.slug,
   }));
@@ -295,6 +299,7 @@ if (basketballData.value?.result.articles?.length > 0) {
     date: article.date,
     url: article.url,
     image: article.feat_images["small"]?.url || null,
+    featImages: article.feat_images || null,
     category: article.categories[0]?.slug,
     slug: article?.slug,
   }));
@@ -308,6 +313,7 @@ if (tennisData.value?.result.articles?.length > 0) {
     date: article.date,
     url: article.url,
     image: article.feat_images["small"]?.url || null,
+    featImages: article.feat_images || null,
     category: article.categories[0]?.slug,
     slug: article?.slug,
   }));

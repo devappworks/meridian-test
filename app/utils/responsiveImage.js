@@ -147,24 +147,35 @@ export function generateArticleImageAttrs(featImages) {
 
   const srcsetParts = [];
   const srcsetWebpParts = [];
+  const webpUrlsAdded = new Set(); // Track unique WebP URLs
 
   // For article pages, use all available sizes for maximum quality
+  if (featImages.small?.url) {
+    srcsetParts.push(`${featImages.small.url} 640w`);
+    if (featImages.small?.webp && !webpUrlsAdded.has(featImages.small.webp)) {
+      srcsetWebpParts.push(`${featImages.small.webp} 640w`);
+      webpUrlsAdded.add(featImages.small.webp);
+    }
+  }
   if (featImages.medium?.url) {
     srcsetParts.push(`${featImages.medium.url} 960w`);
-    if (featImages.medium?.webp) {
+    if (featImages.medium?.webp && !webpUrlsAdded.has(featImages.medium.webp)) {
       srcsetWebpParts.push(`${featImages.medium.webp} 960w`);
+      webpUrlsAdded.add(featImages.medium.webp);
     }
   }
   if (featImages.large?.url) {
     srcsetParts.push(`${featImages.large.url} 1280w`);
-    if (featImages.large?.webp) {
+    if (featImages.large?.webp && !webpUrlsAdded.has(featImages.large.webp)) {
       srcsetWebpParts.push(`${featImages.large.webp} 1280w`);
+      webpUrlsAdded.add(featImages.large.webp);
     }
   }
   if (featImages['extra-large']?.url) {
     srcsetParts.push(`${featImages['extra-large'].url} 1920w`);
-    if (featImages['extra-large']?.webp) {
+    if (featImages['extra-large']?.webp && !webpUrlsAdded.has(featImages['extra-large'].webp)) {
       srcsetWebpParts.push(`${featImages['extra-large'].webp} 1920w`);
+      webpUrlsAdded.add(featImages['extra-large'].webp);
     }
   }
 

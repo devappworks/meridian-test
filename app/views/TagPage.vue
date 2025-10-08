@@ -226,6 +226,7 @@ export default {
             date: this.formatDate(articles[0].publish_date),
             url: articles[0].url,
             image: articles[0].feat_images?.large?.url || null,
+            featImages: articles[0].feat_images || null,
             content: articles[0].contents,
             featured: true,
             category: articles[0].categories[0].slug,

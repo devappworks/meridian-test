@@ -118,14 +118,11 @@
               class="featured-image"
               v-if="article?.feat_images?.['extra-large']?.url"
             >
-              <picture>
+              <picture v-if="article.feat_images['extra-large']?.webp">
                 <source
-                  v-if="articleImage.srcsetWebp"
                   type="image/webp"
-                  :srcset="articleImage.srcsetWebp"
+                  :srcset="article.feat_images['extra-large'].webp"
                   :sizes="articleImage.sizes"
-                  width="1200"
-                  height="675"
                 />
                 <img
                   :src="articleImage.src"
@@ -138,6 +135,17 @@
                   height="675"
                 />
               </picture>
+              <img
+                v-else
+                :src="articleImage.src"
+                :srcset="articleImage.srcset"
+                :sizes="articleImage.sizes"
+                :alt="article?.title || ''"
+                fetchpriority="high"
+                decoding="async"
+                width="1200"
+                height="675"
+              />
               <div class="image-caption" v-if="article?.featured_image_caption">
                 {{ article.featured_image_caption }}
               </div>
@@ -196,7 +204,14 @@
                         @click="navigateToArticle(news.id)"
                       >
                         <div class="news-image">
-                          <img :src="news.image" :alt="news.title" />
+                          <picture>
+                            <source
+                              v-if="getJosVestiWebp(news)"
+                              type="image/webp"
+                              :srcset="getJosVestiWebp(news)"
+                            />
+                            <img :src="news.image" :alt="news.title" />
+                          </picture>
                         </div>
                         <h3 class="news-title">{{ news.title }}</h3>
                       </div>
@@ -466,7 +481,7 @@ const hasMultipleCommentPages = computed(() => {
 
 // Generate responsive image attributes with WebP support for article featured image
 const articleImage = computed(() => {
-  return article.value?.feat_images 
+  return article.value?.feat_images
     ? generateArticleImageAttrs(article.value.feat_images)
     : { src: '', srcset: '', srcsetWebp: '', sizes: '' };
 });
@@ -653,6 +668,7 @@ const fetchRelatedNews = async () => {
           image:
             article.feat_images?.small?.url ||
             require("@/assets/images/image.jpg"),
+          featImages: article.feat_images,
           sport: sportCategory,
           url: article.url || null,
           category: article.categories[0]?.slug,
@@ -959,6 +975,17 @@ const navigateToTag = (tagId, tagName) => {
   useRouter().push(`/tag/${tagId}/${tagSlug}/`);
 };
 
+const getJosVestiWebp = (news) => {
+  // Check if the news item has featImages with webp support
+  if (news.featImages?.small?.webp) {
+    return news.featImages.small.webp;
+  }
+  if (news.featImages?.medium?.webp) {
+    return news.featImages.medium.webp;
+  }
+  return null;
+};
+
 const extractParagraphs = (htmlContent) => {
   // Server-side safe paragraph extraction
   if (typeof document === 'undefined') {
@@ -968,7 +995,7 @@ const extractParagraphs = (htmlContent) => {
       .filter(part => part && part.includes('<'))
       .map(part => part + (part.match(/<(?:p|h[1-6]|div)/i) ? part.match(/<\/(?:p|h[1-6]|div)>/i)?.[0] || '</p>' : '</p>'));
   }
-  
+
   // Client side with proper DOM parsing
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = htmlContent;

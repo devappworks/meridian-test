@@ -3,10 +3,9 @@
     <div class="news-image">
       <picture>
         <source
-          v-if="responsiveImage.srcsetWebp"
+          v-if="webpUrl"
           type="image/webp"
-          :srcset="responsiveImage.srcsetWebp"
-          :sizes="responsiveImage.sizes"
+          :srcset="webpUrl"
         />
         <img
           :src="responsiveImage.src"
@@ -151,6 +150,25 @@ export default {
         srcsetWebp: '',
         sizes: ''
       };
+    },
+    webpUrl() {
+      // Try to get WebP URL from featImages first
+      if (this.featImages?.small?.webp) {
+        return this.featImages.small.webp;
+      }
+      if (this.featImages?.medium?.webp) {
+        return this.featImages.medium.webp;
+      }
+      // Try from image object
+      if (typeof this.image === 'object' && this.image !== null) {
+        if (this.image.small?.webp) {
+          return this.image.small.webp;
+        }
+        if (this.image.medium?.webp) {
+          return this.image.medium.webp;
+        }
+      }
+      return null;
     },
     sportClass() {
       const sportMap = {
