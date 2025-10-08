@@ -181,9 +181,15 @@ useHead(() => {
           logo: siteUrl
             ? {
                 "@type": "ImageObject",
-                url: `${siteUrl}/favicon.ico`,
+                url: `${siteUrl}/images/meridian-favicon-512x512.png`,
               }
             : undefined,
+          sameAs: [
+            "https://www.facebook.com/sportmeridian",
+            "https://www.instagram.com/meridiansportrs",
+            "https://www.youtube.com/@meridiansport",
+            "https://twitter.com/meridiansportrs"
+          ]
         }
       : undefined,
     datePublished: publishedTimeISO,

@@ -74,8 +74,14 @@ export function useNewsArticleSchema(article) {
       name: siteName,
       logo: {
         '@type': 'ImageObject',
-        url: `https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true`,
+        url: `https://meridiansport.rs/images/meridian-favicon-512x512.png`,
       },
+      sameAs: [
+        'https://www.facebook.com/sportmeridian',
+        'https://www.instagram.com/meridiansportrs',
+        'https://www.youtube.com/@meridiansport',
+        'https://twitter.com/meridiansportrs'
+      ]
     },
     description: description,
   };
