@@ -61,6 +61,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   app: {
     head: {
+      htmlAttrs: {
+        lang: 'sr'
+      },
       script: [
         // Google Analytics 4 (GA4) - defer until after page load to improve LCP
         {
@@ -83,20 +86,9 @@ export default defineNuxtConfig({
           });
           `,
           type: 'text/javascript'
-        },
-        // Bootstrap and jQuery - deferred to prevent render blocking
-        {
-          src: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js',
-          integrity: 'sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4',
-          crossorigin: 'anonymous',
-          tagPosition: 'bodyClose',
-          defer: true
-        },
-        {
-          src: 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js',
-          tagPosition: 'bodyClose',
-          defer: true
         }
+        // Bootstrap JS and jQuery removed - not used in the application
+        // Using custom dropdowns, modals, and Vue.js instead
       ],
       link: [
         // Favicon - Multiple sizes for better device support

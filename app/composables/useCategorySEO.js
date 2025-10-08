@@ -49,7 +49,7 @@ export function useCategorySEO(categorySlug) {
 
   const canonicalUrl = `${siteUrl}/${categorySlug}/`
   const ogImageUrl = `${siteUrl}/images/default-category-og.jpg`
-  const logoUrl = `${siteUrl}/_nuxt/meridian-logo.DklqdKiS.svg`
+  const logoUrl = `${siteUrl}/images/meridian-favicon-512x512.png`
 
   // CollectionPage structured data
   const collectionSchema = {

@@ -45,6 +45,12 @@ const ld = {
   name: siteName,
   url: canonicalUrl,
   logo: "https://meridiansport.rs/_nuxt/meridian-logo.DklqdKiS.svg",
+  sameAs: [
+    "https://www.facebook.com/sportmeridian",
+    "https://www.instagram.com/meridiansportrs",
+    "https://www.youtube.com/@meridiansport",
+    "https://twitter.com/meridiansportrs"
+  ]
 };
 
 const ld2 = {
@@ -58,8 +64,14 @@ const ld2 = {
     "name": "MeridianSport",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://meridiansport.rs/_nuxt/meridian-logo.DklqdKiS.svg"
-    }
+      "url": "https://meridiansport.rs/images/meridian-favicon-512x512.png"
+    },
+    "sameAs": [
+      "https://www.facebook.com/sportmeridian",
+      "https://www.instagram.com/meridiansportrs",
+      "https://www.youtube.com/@meridiansport",
+      "https://twitter.com/meridiansportrs"
+    ]
   },
   "potentialAction": {
     "@type": "SearchAction",

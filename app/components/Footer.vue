@@ -41,7 +41,7 @@
             :key="section.label"
             class="links-column"
           >
-            <h4 class="column-title">{{ section.label.toUpperCase() }}</h4>
+            <h3 class="column-title">{{ section.label.toUpperCase() }}</h3>
             <router-link
               v-for="child in section.children"
               :key="child.label.toUpperCase()"
