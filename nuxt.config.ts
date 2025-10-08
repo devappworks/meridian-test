@@ -41,6 +41,9 @@ export default defineNuxtConfig({
       crawlLinks: false
     },
     routeRules: {
+      // Redirect old URL to new URL
+      '/nove-vesti': { redirect: { to: '/najnovije-vesti', statusCode: 301 } },
+      '/nove-vesti/**': { redirect: { to: '/najnovije-vesti', statusCode: 301 } },
       // Enable SSR for all main routes with caching
       '/': { ssr: true, swr: 60 }, // Cache for 60 seconds
       '/fudbal': { ssr: true, swr: 60 },
