@@ -60,6 +60,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   app: {
     head: {
+      htmlAttrs: {
+        lang: 'sr'
+      },
       script: [
         // Google Analytics 4 (GA4) - async to prevent render blocking
         // FIXED: Use only 'async' (not both async and defer which causes conflicts)
