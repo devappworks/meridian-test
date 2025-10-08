@@ -36,6 +36,10 @@ export default defineNuxtConfig({
     compressPublicAssets: true,
     // Enable minification
     minify: true,
+    // Add modulepreload hints for better parallel loading
+    prerender: {
+      crawlLinks: false
+    },
     routeRules: {
       // Enable SSR for all main routes with caching
       '/': { ssr: true, swr: 60 }, // Cache for 60 seconds
@@ -52,7 +56,13 @@ export default defineNuxtConfig({
       '/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
       '/assets/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
       // Enable SSR for all routes by default
-      '/**': { ssr: true }
+      '/**': {
+        ssr: true,
+        headers: {
+          // Add Link preload headers for HTTP/2 Server Push
+          'Link': '</fonts.googleapis.com>; rel=preconnect; crossorigin, </fonts.gstatic.com>; rel=preconnect; crossorigin'
+        }
+      }
     }
   },
   compatibilityDate: '2025-07-15',
@@ -192,8 +202,9 @@ export default defineNuxtConfig({
           safari10: true // Better browser compatibility
         }
       },
-      // Enable CSS code splitting for better caching and reduced initial load
-      cssCodeSplit: true,
+      // Disable CSS code splitting to reduce critical path chain
+      // Inlining is handled by inlineSSRStyles instead
+      cssCodeSplit: false,
       // Reduce chunk size warnings threshold
       chunkSizeWarningLimit: 1000,
       // Optimize chunk splitting for better caching
@@ -229,6 +240,10 @@ export default defineNuxtConfig({
           entryFileNames: '_nuxt/[name]-[hash].js',
           assetFileNames: '_nuxt/[name]-[hash][extname]'
         }
+      },
+      // Enable modulepreload polyfill for better browser support
+      modulePreload: {
+        polyfill: true
       }
     },
     // Optimize dependencies
