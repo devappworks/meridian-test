@@ -174,18 +174,23 @@ useHead(() => {
       : undefined,
     image: imageObject,
     author: { "@type": "Person", name: authorName },
-    publisher: siteName
-      ? {
-          "@type": "Organization",
-          name: siteName,
-          logo: siteUrl
-            ? {
-                "@type": "ImageObject",
-                url: `${siteUrl}/favicon.ico`,
-              }
-            : undefined,
-        }
-      : undefined,
+    publisher: {
+      "@type": "Organization",
+      name: "Meridian Sport",
+      url: "https://meridiansport.rs/",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://meridiansport.rs/images/meridian-favicon-512x512.png",
+        width: 512,
+        height: 512
+      },
+      sameAs: [
+        "https://www.facebook.com/SportMeridian/",
+        "https://www.instagram.com/meridiansportrs/",
+        "https://www.youtube.com/@meridiansport",
+        "https://x.com/meridiansportrs"
+      ]
+    },
     datePublished: publishedTimeISO,
     dateModified: modifiedTimeISO || publishedTimeISO, // Use modified date or fallback to published
   };

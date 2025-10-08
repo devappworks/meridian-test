@@ -71,11 +71,20 @@ export function useNewsArticleSchema(article) {
     },
     publisher: {
       '@type': 'Organization',
-      name: siteName,
+      name: 'Meridian Sport',
+      url: 'https://meridiansport.rs/',
       logo: {
         '@type': 'ImageObject',
-        url: `https://meridian.mpanel.app/image/cache/original/files/images/meridian-favicon-1758622126.png?crop=true`,
+        url: 'https://meridiansport.rs/images/meridian-favicon-512x512.png',
+        width: 512,
+        height: 512
       },
+      sameAs: [
+        'https://www.facebook.com/SportMeridian/',
+        'https://www.instagram.com/meridiansportrs/',
+        'https://www.youtube.com/@meridiansport',
+        'https://x.com/meridiansportrs'
+      ]
     },
     description: description,
   };

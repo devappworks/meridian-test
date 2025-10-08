@@ -60,11 +60,20 @@ export function useCategorySEO(categorySlug) {
     url: canonicalUrl,
     publisher: {
       '@type': 'Organization',
-      name: siteName,
+      name: 'Meridian Sport',
+      url: 'https://meridiansport.rs/',
       logo: {
         '@type': 'ImageObject',
-        url: logoUrl
-      }
+        url: 'https://meridiansport.rs/images/meridian-favicon-512x512.png',
+        width: 512,
+        height: 512
+      },
+      sameAs: [
+        'https://www.facebook.com/SportMeridian/',
+        'https://www.instagram.com/meridiansportrs/',
+        'https://www.youtube.com/@meridiansport',
+        'https://x.com/meridiansportrs'
+      ]
     }
   }
 
