@@ -124,6 +124,8 @@
                   type="image/webp"
                   :srcset="articleImage.srcsetWebp"
                   :sizes="articleImage.sizes"
+                  width="1200"
+                  height="675"
                 />
                 <img
                   :src="articleImage.src"
@@ -510,7 +512,7 @@ useSeoMeta({
 
     return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
   },
-  ogImage: () => article.value?.feat_images?.large?.url || '/meridian-logo.svg',
+  ogImage: () => article.value?.feat_images?.["extra-large"]?.url || '/meridian-logo.svg',
   ogType: 'article',
   twitterCard: 'summary_large_image',
   twitterTitle: () => article.value?.title || 'Article - Meridian',
@@ -531,7 +533,7 @@ useSeoMeta({
 
     return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
   },
-  twitterImage: () => article.value?.feat_images?.large?.url || '/meridian-logo.svg',
+  twitterImage: () => article.value?.feat_images?.["extra-large"]?.url || '/meridian-logo.svg',
 });
 
 // Note: NewsArticle schema is already handled at the page level ([category]/[slug].vue)

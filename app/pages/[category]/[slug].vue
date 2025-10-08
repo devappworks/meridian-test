@@ -158,11 +158,17 @@ useHead(() => {
     height: 630  // Standard OG image height (adjust if you know actual dimensions)
   } : undefined;
 
+  const articleBodyText = a?.contents ? stripHtml(a.contents) : '';
+
   const ld = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: title,
     description,
+    articleBody: articleBodyText,
+    inLanguage: "sr",
+    keywords: newsKeywords || tags.join(', '),
+    articleSection: categoryName,
     mainEntityOfPage: canonicalUrl
       ? { "@type": "WebPage", "@id": canonicalUrl }
       : undefined,
