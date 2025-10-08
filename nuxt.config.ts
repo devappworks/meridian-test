@@ -16,7 +16,7 @@ export default defineNuxtConfig({
   // Performance optimizations
   experimental: {
     payloadExtraction: true,
-    viewTransition: true
+    viewTransition: true,
   },
   // Inline critical CSS to prevent render blocking (Nuxt 4 way)
   features: {
@@ -115,14 +115,28 @@ export default defineNuxtConfig({
           media: 'print',
           onload: "this.media='all'"
         },
-        // Critical fonts - load immediately with display=swap for better performance
+        // Critical fonts - preload + async load to avoid render blocking
         {
-          rel: 'stylesheet',
+          rel: 'preload',
+          as: 'style',
           href: 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Condensed:wght@300;400;500;700&display=swap'
         },
         {
           rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Condensed:wght@300;400;500;700&display=swap',
+          media: 'print',
+          onload: "this.media='all'"
+        },
+        {
+          rel: 'preload',
+          as: 'style',
           href: 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap'
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap',
+          media: 'print',
+          onload: "this.media='all'"
         },
         // Less critical fonts - defer loading
         {
