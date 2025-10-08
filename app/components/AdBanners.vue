@@ -15,6 +15,8 @@
             class="ad-banner-image"
             loading="lazy"
             decoding="async"
+            width="970"
+            height="250"
           />
         </a>
       </div>
@@ -25,6 +27,8 @@
           class="ad-banner-image"
           loading="lazy"
           decoding="async"
+          width="970"
+          height="250"
         />
       </div>
       <div v-if="topBanners.length > 1" class="ad-banner test2">
@@ -35,6 +39,8 @@
             class="ad-banner-image"
             loading="lazy"
             decoding="async"
+            width="970"
+            height="250"
           />
         </a>
       </div>
@@ -45,6 +51,8 @@
           class="ad-banner-image"
           loading="lazy"
           decoding="async"
+          width="970"
+          height="250"
         />
       </div>
     </div>

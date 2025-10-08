@@ -3,31 +3,31 @@
     <div class="container">
       <div class="footer-content">
         <div class="footer-logo">
-          <img src="@/assets/images/meridian-logo.svg" alt="Meridian Sport" />
+          <img src="@/assets/images/meridian-logo.svg" alt="Meridian Sport" width="171" height="24" />
           <div class="social-icons">
             <a
               href="https://www.instagram.com/meridiansportrs/"
               class="social-icon"
               aria-label="Instagram"
             >
-              <img src="@/assets/images/article/instagram.png" alt="Instagram" />
+              <img src="@/assets/images/article/instagram.png" alt="Instagram" width="32" height="32" />
             </a>
             <a href="https://x.com/meridiansportrs" class="social-icon" aria-label="X">
-              <img src="@/assets/images/newsletter/twitter.svg" alt="X" />
+              <img src="@/assets/images/newsletter/twitter.svg" alt="X" width="32" height="32" />
             </a>
             <a
               href="https://www.facebook.com/SportMeridian/"
               class="social-icon"
               aria-label="Facebook"
             >
-              <img src="@/assets/images/article/facebook.png" alt="Facebook" />
+              <img src="@/assets/images/article/facebook.png" alt="Facebook" width="32" height="32" />
             </a>
             <a
               href="https://www.youtube.com/@meridiansport"
               class="social-icon"
               aria-label="YouTube"
             >
-              <img src="@/assets/images/newsletter/youtube.svg" alt="YouTube" />
+              <img src="@/assets/images/newsletter/youtube.svg" alt="YouTube" width="32" height="32" />
             </a>
           </div>
           <p class="contact-info">

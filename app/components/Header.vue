@@ -5,7 +5,7 @@
       <div class="container">
         <div class="top-navbar-content">
           <div class="logo" @click="$router.push('/')">
-            <img src="@/assets/images/meridian-logo.svg" alt="Meridian Sport" fetchpriority="high" decoding="async" />
+            <img src="@/assets/images/meridian-logo.svg" alt="Meridian Sport" fetchpriority="high" decoding="async" width="171" height="24" />
           </div>
           <!-- Desktop Navigation -->
 
@@ -23,7 +23,7 @@
                 </li>
               </ul>
               <div class="search-icon desktop" @click="toggleSearch">
-                <img src="@/assets/images/search.svg" alt="Search" loading="lazy" decoding="async" />
+                <img src="@/assets/images/search.svg" alt="Search" loading="lazy" decoding="async" width="20" height="20" />
               </div>
               <div class="nav-underline" :style="underlineStyle"></div>
             </div>
@@ -62,7 +62,7 @@
           </div>
 
           <div class="search-icon" @click="toggleSearch">
-            <img src="@/assets/images/search.svg" alt="Search" loading="lazy" decoding="async" />
+            <img src="@/assets/images/search.svg" alt="Search" loading="lazy" decoding="async" width="24" height="24" />
           </div>
 
           <!-- Burger Menu Button -->
@@ -147,7 +147,7 @@
                     @mouseenter="showTooltip"
                     @mouseleave="hideTooltip"
                   >
-                    <img src="@/assets/images/star.svg" alt="Star" loading="lazy" decoding="async" />
+                    <img src="@/assets/images/star.svg" alt="Star" loading="lazy" decoding="async" width="14" height="14" />
                     <span>MOJE VESTI</span>
                     <!-- Tooltip -->
                     <div
@@ -191,7 +191,7 @@
             @mouseenter="showTooltip"
             @mouseleave="hideTooltip"
           >
-            <img src="@/assets/images/star.svg" alt="Star" loading="lazy" decoding="async" />
+            <img src="@/assets/images/star.svg" alt="Star" loading="lazy" decoding="async" width="21" height="21" />
             <span>MOJE VESTI</span>
             <!-- Tooltip -->
             <div
