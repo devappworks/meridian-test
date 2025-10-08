@@ -51,6 +51,14 @@ const props = defineProps({
   }
 })
 
+// Set the HTTP response status code on the server
+if (import.meta.server) {
+  const event = useRequestEvent()
+  if (event) {
+    setResponseStatus(event, props.error.statusCode || 500)
+  }
+}
+
 // Error titles and messages based on status code
 const errorTitle = computed(() => {
   switch (props.error.statusCode) {
@@ -79,7 +87,7 @@ const errorMessage = computed(() => {
 })
 
 const handleRetry = () => {
-  if (process.client) {
+  if (import.meta.client) {
     window.location.reload()
   }
 }
