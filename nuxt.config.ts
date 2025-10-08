@@ -184,7 +184,7 @@ export default defineNuxtConfig({
         output: {
           // Let Vite handle automatic chunking to avoid circular dependencies
           // Only separate large vendor libraries
-          manualChunks(id) {
+          manualChunks(id: string) {
             // Group all node_modules into vendor chunk
             if (id.includes('node_modules')) {
               // Separate large libraries that are used across many components
