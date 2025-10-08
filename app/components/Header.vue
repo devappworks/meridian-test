@@ -23,7 +23,7 @@
                 </li>
               </ul>
               <div class="search-icon desktop" @click="toggleSearch">
-                <img src="@/assets/images/search.svg" alt="Search" loading="lazy" decoding="async" width="20" height="20" />
+                <img src="@/assets/images/search.svg" alt="Search" loading="lazy" decoding="async" width="24" height="24" />
               </div>
               <div class="nav-underline" :style="underlineStyle"></div>
             </div>
