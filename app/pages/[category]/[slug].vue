@@ -147,8 +147,8 @@ useHead(() => {
     }
   }
 
-  // Generate news keywords from tags (comma-separated, max 10 keywords for Google News)
-  const newsKeywords = tags.slice(0, 10).join(', ');
+  // Generate news keywords from tags (max 10 keywords for Google News)
+  const newsKeywords = tags.slice(0, 10);
 
   // Build proper ImageObject with dimensions for Google News
   const imageObject = imageUrl ? {
@@ -167,7 +167,7 @@ useHead(() => {
     description,
     articleBody: articleBodyText,
     inLanguage: "sr",
-    keywords: newsKeywords || tags.join(', '),
+    keywords: newsKeywords.length > 0 ? newsKeywords : tags,
     articleSection: categoryName,
     mainEntityOfPage: canonicalUrl
       ? { "@type": "WebPage", "@id": canonicalUrl }
@@ -194,7 +194,7 @@ useHead(() => {
     { key: "description", name: "description", content: filledDescription },
     { key: "robots", name: "robots", content: "index, follow, max-image-preview:large" },
     // Google News specific meta tags
-    newsKeywords ? { key: "news_keywords", name: "news_keywords", content: newsKeywords } : null,
+    newsKeywords.length > 0 ? { key: "news_keywords", name: "news_keywords", content: newsKeywords.join(', ') } : null,
     // Open Graph meta tags
     { key: "og:type", property: "og:type", content: "article" },
     siteName ? { key: "og:site_name", property: "og:site_name", content: siteName } : null,
