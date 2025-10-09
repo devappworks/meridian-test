@@ -4,22 +4,47 @@ import { fetchFromApi } from '~/services/api';
 const route = useRoute();
 const { tagName } = route.params;
 
+console.log(`\n🔵 ============ TAG PAGE ROUTE HIT ============`);
+console.log(`🔵 Tag name from params: "${tagName}"`);
+console.log(`🔵 Full route path: "${route.path}"`);
+console.log(`🔵 Is server-side: ${process.server}`);
+console.log(`🔵 Environment: ${process.env.NODE_ENV}`);
+console.log(`🔵 ============================================\n`);
+
 // Validate that the tag exists - only on actual request, not during build
 const { data: tagValidation } = await useAsyncData(
   `tag-validation-${tagName}`,
   async () => {
+    console.log(`🟡 [TAG VALIDATION] Starting validation for: "${tagName}"`);
+
     try {
+      console.log(`🟡 [TAG VALIDATION] Calling fetchFromApi("/getHelperNav")...`);
       const response = await fetchFromApi("/getHelperNav");
+
+      console.log(`🟡 [TAG VALIDATION] API Response:`, {
+        success: response?.success,
+        hasResult: !!response?.result,
+        hasLanguages: !!response?.result?.languages,
+        languagesLength: response?.result?.languages?.length
+      });
 
       if (response?.success && response?.result?.languages?.length > 0) {
         const webMenu = response.result.languages[0].web_menu;
+        console.log(`🟡 [TAG VALIDATION] webMenu length:`, webMenu?.length);
+
         const helpNavItem = webMenu?.find(item => item.title === "help-nav");
+        console.log(`🟡 [TAG VALIDATION] Found help-nav item:`, !!helpNavItem);
+        console.log(`🟡 [TAG VALIDATION] help-nav sub_menu length:`, helpNavItem?.sub_menu?.length);
 
         if (helpNavItem && helpNavItem.sub_menu) {
+          let tagCount = 0;
+          let matchFound = false;
+
           for (const item of helpNavItem.sub_menu) {
             const isTag = item.content && Array.isArray(item.content) && item.content.length > 0;
 
             if (isTag) {
+              tagCount++;
               const itemSlug = item.title
                 .toLowerCase()
                 .replace(/\s+/g, '-')
@@ -32,17 +57,30 @@ const { data: tagValidation } = await useAsyncData(
                 .replace(/-+/g, '-')
                 .replace(/^-|-$/g, '');
 
+              console.log(`🟡 [TAG VALIDATION] Tag #${tagCount}: "${item.title}" → slug: "${itemSlug}" (looking for: "${tagName}")`);
+
               if (itemSlug === tagName) {
+                matchFound = true;
+                console.log(`✅ [TAG VALIDATION] MATCH FOUND! Tag "${tagName}" exists!`);
                 return { exists: true };
               }
             }
           }
+
+          console.log(`🟡 [TAG VALIDATION] Checked ${tagCount} tags, no match found for "${tagName}"`);
+          console.log(`❌ [TAG VALIDATION] Tag "${tagName}" does NOT exist`);
+          return { exists: false };
         }
       }
+
+      console.log(`❌ [TAG VALIDATION] API response structure invalid`);
       return { exists: false };
     } catch (err) {
-      console.error('Error validating tag:', err);
+      console.error(`❌ [TAG VALIDATION] ERROR validating tag "${tagName}":`, err);
+      console.error(`❌ [TAG VALIDATION] Error message:`, err?.message);
+      console.error(`❌ [TAG VALIDATION] Error stack:`, err?.stack);
       // On error, assume tag exists to avoid false 404s
+      console.log(`⚠️ [TAG VALIDATION] Assuming tag exists due to error`);
       return { exists: true };
     }
   },
@@ -52,14 +90,19 @@ const { data: tagValidation } = await useAsyncData(
   }
 );
 
+console.log(`🔵 [TAG PAGE] Validation result:`, tagValidation.value);
+
 // Show 404 if tag doesn't exist
 if (tagValidation.value && !tagValidation.value.exists) {
+  console.log(`❌ [TAG PAGE] Tag "${tagName}" doesn't exist, throwing 404 error`);
   throw createError({
     statusCode: 404,
     statusMessage: 'Tag Not Found',
     fatal: true
   });
 }
+
+console.log(`✅ [TAG PAGE] Tag "${tagName}" validated successfully, rendering page\n`);
 
 useHead(() => ({ title: `#${tagName}` }));
 import TagPage from "@/views/TagPage.vue";

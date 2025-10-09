@@ -66,7 +66,13 @@ export default defineEventHandler(async (event) => {
   const pathMatch = normalizedPath.replace(/\/$/, '').match(/^\/([^\/]+)\/([^\/]+)$/i)
   if (pathMatch) {
     const [, category, slug] = pathMatch
-    const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka', 'ostali-sportovi']
+
+    // SKIP canonical category check for /tag/ and /article/ routes
+    // These are handled by their own route handlers
+    if (category === 'tag' || category === 'article') {
+      console.log(`[URL NORMALIZE] Skipping canonical check for /${category}/ route: ${normalizedPath}`)
+    } else {
+      const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka', 'ostali-sportovi']
 
     try {
       const config = useRuntimeConfig()
@@ -106,9 +112,10 @@ export default defineEventHandler(async (event) => {
           }
         }
       }
-    } catch (error) {
-      // If API fails, continue with normal processing
-      console.warn('[URL NORMALIZE] Error checking canonical category:', error.message)
+      } catch (error) {
+        // If API fails, continue with normal processing
+        console.warn('[URL NORMALIZE] Error checking canonical category:', error.message)
+      }
     }
   }
 

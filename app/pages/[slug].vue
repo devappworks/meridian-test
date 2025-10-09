@@ -2,9 +2,16 @@
 const route = useRoute();
 const { slug } = route.params;
 
+console.log(`\n🟣 ============ [SLUG] ROUTE HIT ============`);
+console.log(`🟣 Slug from params: "${slug}"`);
+console.log(`🟣 Full route path: "${route.path}"`);
+console.log(`🟣 Is server-side: ${process.server}`);
+console.log(`🟣 ============================================\n`);
+
 // Skip this route if it's actually a tag page (handled by /tag/[tagName])
 // This prevents conflicts when navigating to /tag/something
 if (slug === 'tag') {
+  console.log(`⛔ [SLUG] Slug is "tag", throwing 404 to let /tag/[tagName] handle it`);
   throw createError({
     statusCode: 404,
     statusMessage: 'Page Not Found',
