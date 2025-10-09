@@ -14,8 +14,8 @@
             :src="banner.creative_image"
             :alt="banner.name"
             class="banner-image"
-            :fetchpriority="index === 0 ? 'high' : 'auto'"
-            :loading="index === 0 ? 'eager' : 'lazy'"
+            fetchpriority="low"
+            loading="lazy"
             decoding="async"
           />
         </a>
@@ -47,8 +47,8 @@
             :src="banner.creative_image"
             :alt="banner.name"
             class="banner-image"
-            :fetchpriority="index === 0 ? 'high' : 'auto'"
-            :loading="index === 0 ? 'eager' : 'lazy'"
+            fetchpriority="low"
+            loading="lazy"
             decoding="async"
           />
         </a>

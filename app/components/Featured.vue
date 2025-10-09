@@ -206,6 +206,7 @@ export default {
   position: relative;
   width: 604px;
   height: 100%;
+  min-height: 340px;
   border-radius: 8px;
   overflow: hidden;
   aspect-ratio: 16 / 9;

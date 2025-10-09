@@ -1228,8 +1228,15 @@ watch(() => props.slug, () => {
 .article-text img {
   max-width: 100%;
   height: auto;
+  aspect-ratio: attr(width) / attr(height);
   border-radius: 8px;
   margin: 24px 0;
+}
+
+/* Fallback for images without width/height attributes */
+.article-text img:not([width]):not([height]) {
+  aspect-ratio: 16/9;
+  min-height: 300px;
 }
 
 .article-text a {
@@ -1658,6 +1665,7 @@ h2.section-title {
 
 .news-image {
   max-height: 75px;
+  aspect-ratio: 16/9;
 }
 
 .related-news-list {

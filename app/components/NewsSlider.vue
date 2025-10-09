@@ -97,10 +97,6 @@
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
 
-// Import Swiper styles
-import "swiper/css";
-import "swiper/css/navigation";
-
 export default {
   name: "NewsSlider",
   components: {

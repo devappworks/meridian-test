@@ -23,7 +23,7 @@
                 </li>
               </ul>
               <div class="search-icon desktop" @click="toggleSearch">
-                <img src="@/assets/images/search.svg" alt="Search" loading="lazy" decoding="async" width="24" height="24" />
+                <img src="@/assets/images/search.svg" alt="Search" loading="eager" decoding="async" width="24" height="24" />
               </div>
               <div class="nav-underline" :style="underlineStyle"></div>
             </div>
@@ -62,7 +62,7 @@
           </div>
 
           <div class="search-icon" @click="toggleSearch">
-            <img src="@/assets/images/search.svg" alt="Search" loading="lazy" decoding="async" width="24" height="24" />
+            <img src="@/assets/images/search.svg" alt="Search" loading="eager" decoding="async" width="24" height="24" />
           </div>
 
           <!-- Burger Menu Button -->
@@ -147,7 +147,7 @@
                     @mouseenter="showTooltip"
                     @mouseleave="hideTooltip"
                   >
-                    <img src="@/assets/images/star.svg" alt="Star" loading="lazy" decoding="async" width="14" height="14" />
+                    <img src="@/assets/images/star.svg" alt="Star" loading="eager" decoding="async" width="14" height="14" />
                     <span>MOJE VESTI</span>
                     <!-- Tooltip -->
                     <div
@@ -191,7 +191,7 @@
             @mouseenter="showTooltip"
             @mouseleave="hideTooltip"
           >
-            <img src="@/assets/images/star.svg" alt="Star" loading="lazy" decoding="async" width="21" height="21" />
+            <img src="@/assets/images/star.svg" alt="Star" loading="eager" decoding="async" width="21" height="21" />
             <span>MOJE VESTI</span>
             <!-- Tooltip -->
             <div
@@ -220,8 +220,6 @@ import SearchModal from "./SearchModal.vue";
 import CategoryPageNav from "./CategoryPageNav.vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Mousewheel } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
 import { useSlidingUnderline } from "@/composables/useSlidingUnderline.js";
 import { fetchFromApi } from "@/services/api.js";
 
