@@ -966,13 +966,13 @@ const generateSlugFromTagName = (tagName) => {
 };
 
 const navigateToTag = (tagId, tagName) => {
-  if (!tagId || !tagName) {
+  if (!tagName) {
     console.error("🔴 NavigateToTag: Invalid tag data", { tagId, tagName });
     return;
   }
   const tagSlug = generateSlugFromTagName(tagName);
   console.log("🔴 ArticlePage navigating to tag:", tagName, "→ slug:", tagSlug);
-  useRouter().push(`/tag/${tagId}/${tagSlug}/`);
+  useRouter().push(`/tag/${tagSlug}/`);
 };
 
 const getJosVestiWebp = (news) => {

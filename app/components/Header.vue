@@ -693,8 +693,17 @@ export default {
         return dedicatedSportPages[titleUpper];
       }
 
-      // For all other categories, return clean path with slug
+      // Check if this is a tag by checking if it has a non-empty content array
+      // Tags have content, categories have empty content array
+      const isTag = item && item.content && Array.isArray(item.content) && item.content.length > 0;
       const slug = this.generateSlugFromTitle(title);
+
+      if (isTag) {
+        // Generate clean tag URL: /tag/tagslug/
+        return `/tag/${slug}/`;
+      }
+
+      // For all other categories, return clean path with slug
       return `/${slug}/`;
     },
 

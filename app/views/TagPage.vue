@@ -116,7 +116,8 @@ export default {
   props: {
     tagId: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
     },
     tagName: {
       type: String,
@@ -125,6 +126,7 @@ export default {
   },
   data() {
     return {
+      resolvedTagId: null, // Store the resolved tag ID
       featuredArticle: null,
       tagNews: [],
       loadMoreTagNews: [],
@@ -146,26 +148,100 @@ export default {
     tagTitle() {
       return this.tagName ? this.tagName.replace(/-/g, ' ').toUpperCase() : "TAG";
     },
+    effectiveTagId() {
+      // Use provided tagId if available, otherwise use resolved tagId
+      return this.tagId || this.resolvedTagId;
+    },
   },
-  mounted() {
+  async mounted() {
+    // If we don't have a tagId, we need to resolve it from the tagName
+    if (!this.tagId && this.tagName) {
+      await this.resolveTagIdFromName();
+    }
     // Update the URL to show just the tag slug
     this.updateUrl();
   },
   watch: {
-    tagId: {
-      handler(newTagId, oldTagId) {
-        this.resetNews();
-        this.fetchTagArticles();
-        this.updateUrl();
+    tagName: {
+      async handler(newTagName, oldTagName) {
+        if (newTagName !== oldTagName) {
+          // Reset tag ID when tag name changes
+          this.resolvedTagId = null;
+
+          // Resolve new tag ID if we don't have one
+          if (!this.tagId) {
+            await this.resolveTagIdFromName();
+          }
+
+          this.resetNews();
+          this.fetchTagArticles();
+          this.updateUrl();
+        }
       },
       immediate: true,
     },
   },
   methods: {
-    // Update the browser URL to show just the tag slug
+    // Resolve tag ID from tag name by fetching from getHelperNav
+    async resolveTagIdFromName() {
+      try {
+        // Fetch helper navigation which contains tags
+        const response = await fetchFromApi("/getHelperNav");
+
+        if (response?.success && response?.result?.languages?.length > 0) {
+          const webMenu = response.result.languages[0].web_menu;
+
+          // Find the help-nav menu item which contains the sub_menu items
+          const helpNavItem = webMenu?.find(item => item.title === "help-nav");
+
+          if (helpNavItem && helpNavItem.sub_menu) {
+            // Search through sub_menu items for tags (items with non-empty content array)
+            for (const item of helpNavItem.sub_menu) {
+              // Check if this is a tag (has content)
+              const isTag = item.content && Array.isArray(item.content) && item.content.length > 0;
+
+              if (isTag) {
+                // Generate slug from the item title
+                const itemSlug = item.title
+                  .toLowerCase()
+                  .replace(/\s+/g, '-')
+                  .replace(/š/g, 's')
+                  .replace(/č/g, 'c')
+                  .replace(/ć/g, 'c')
+                  .replace(/ž/g, 'z')
+                  .replace(/đ/g, 'd')
+                  .replace(/[^a-z0-9-]/g, '')
+                  .replace(/-+/g, '-')
+                  .replace(/^-|-$/g, '');
+
+                // Check if this matches our tag name
+                if (itemSlug === this.tagName) {
+                  // Try to get tag ID from the content array
+                  if (item.content[0]?.options?.tags?.[0]) {
+                    this.resolvedTagId = item.content[0].options.tags[0].toString();
+                    return;
+                  } else if (item.id) {
+                    // Fallback to item.id if no tag ID in content
+                    this.resolvedTagId = item.id.toString();
+                    return;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // If we couldn't find the tag ID, log an error
+        console.error("❌ Could not resolve tag ID for tag name:", this.tagName);
+      } catch (error) {
+        console.error("❌ Error resolving tag ID from name:", error);
+      }
+    },
+
+    // Update the browser URL to show the tag with /tag/ prefix
     updateUrl() {
       if (this.tagName && this.$router) {
-        const newUrl = `/${this.tagName}/`;
+        const newUrl = `/tag/${this.tagName}/`;
         // Use replaceState to update URL without triggering navigation
         window.history.replaceState(null, '', newUrl);
       }
@@ -198,7 +274,13 @@ export default {
       };
     },
 
-    async fetchTagArticles() {      
+    async fetchTagArticles() {
+      // Don't fetch if we don't have a tag ID yet
+      if (!this.effectiveTagId) {
+        console.warn("Cannot fetch tag articles without tag ID");
+        return;
+      }
+
       this.loading = {
         featured: true,
         main: true,
@@ -210,13 +292,15 @@ export default {
       try {
         const apiParams = {
           articleLimit: 56,
-          "tag[]": this.tagId,
+          "tag[]": this.effectiveTagId,
           page: 1,
         };
-        
+
         const tagData = await fetchFromApi("/getArticles", apiParams);
 
         const articles = tagData.result.articles;
+
+        console.log("articles", articles);
 
         if (articles.length > 0) {
           this.featuredArticle = {
@@ -269,7 +353,7 @@ export default {
     async fetchOtherNews() {
       try {
         const otherData = await fetchFromApi("/getArticles", {
-          articleLimit: 24,
+          articleLimit: 8,
           page: 1,
         });
 
@@ -320,7 +404,7 @@ export default {
         while (!foundNewArticles && this.hasMorePages) {
           const response = await fetchFromApi("/getArticles", {
             articleLimit: 12,
-            "tag[]": this.tagId,
+            "tag[]": this.effectiveTagId,
             page: currentPage,
           });
 
