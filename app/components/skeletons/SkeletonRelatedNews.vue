@@ -34,7 +34,7 @@ export default {
   props: {
     itemCount: {
       type: Number,
-      default: 3,
+      default: 8,
     },
   },
 };

@@ -132,7 +132,7 @@ useHead({
   title: `${formattedTagName} | Meridian Sport`,
   meta: [
     { name: "description", content: `Najnovije vesti o ${formattedTagName.toLowerCase()} na Meridian Sport portalu. Pratite sve aktuelne događaje, rezultate i analize.` },
-    { name: "robots", content: "index, follow" },
+    { name: "robots", content: "index, follow, max-image-preview:large" },
     { property: "og:type", content: "website" },
     { property: "og:site_name", content: siteName },
     { property: "og:title", content: `${formattedTagName} | Meridian Sport` },

@@ -8,7 +8,7 @@ useHead({
   title: "Live Blog | Meridian Sport",
   meta: [
     { name: "description", content: "Pratite najnovije sportske događaje uživo na Meridian Sport Live Blog. Rezultati, komentari i analize u realnom vremenu." },
-    { name: "robots", content: "index, follow" },
+    { name: "robots", content: "index, follow, max-image-preview:large" },
     { property: "og:type", content: "website" },
     { property: "og:site_name", content: siteName },
     { property: "og:title", content: "Live Blog | Meridian Sport" },

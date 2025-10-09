@@ -177,7 +177,7 @@ useHead({
   title,
   meta: [
     { name: "description", content: description },
-    { name: "robots", content: "index, follow" },
+    { name: "robots", content: "index, follow, max-image-preview:large" },
     { property: "og:type", content: "website" },
     { property: "og:site_name", content: siteName },
     { property: "og:title", content: title },
