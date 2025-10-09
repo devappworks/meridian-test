@@ -104,7 +104,7 @@ if (tagValidation.value && !tagValidation.value.exists) {
 
 console.log(`✅ [TAG PAGE] Tag "${tagName}" validated successfully, rendering page\n`);
 
-useHead(() => ({ title: `#${tagName}` }));
+useHead(() => ({ title: `${tagName} | Meridian Sport` }));
 import TagPage from "@/views/TagPage.vue";
 </script>
 
