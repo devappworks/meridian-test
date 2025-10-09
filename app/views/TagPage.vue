@@ -62,25 +62,25 @@
             <h3 class="tag-header">NAJNOVIJE VESTI</h3>
           </div>
 
-          <!-- Related news skeleton -->
-          <SkeletonRelatedNews v-if="loading.sidebar" />
-          <div v-else-if="relatedNews.length > 0" class="related-news-list">
-            <div
-              v-for="(news, index) in relatedNews"
-              :key="index"
+          <!-- Latest news skeleton -->
+          <SkeletonRelatedNews v-if="loading.latest" />
+          <div v-else-if="latestNews.length > 0" class="related-news-list">
+            <NuxtLink
+              v-for="(news, index) in latestNews"
+              :key="news.id"
+              :to="`/${news.category}/${news.slug}`"
               class="related-news-item"
-              @click="navigateToArticle(news.id)"
             >
               <div class="number">{{ index + 1 }}</div>
               <div class="content">
-                <div class="category tag-category">{{ tagTitle }}</div>
+                <div class="category" :class="getCategoryClass(news.sport)">{{ news.sport }}</div>
                 <h3>{{ news.title }}</h3>
                 <div class="timestamp">
                   <span>{{ news.date }}</span>
                   <div class="divider"></div>
                 </div>
               </div>
-            </div>
+            </NuxtLink>
           </div>
         </div>
         <NewsletterForm />
@@ -132,6 +132,7 @@ export default {
       loadMoreTagNews: [],
       otherNews: [],
       relatedNews: [],
+      latestNews: [], // Latest news from all categories
       currentPage: 1,
       isLoading: false,
       hasMorePages: true,
@@ -141,6 +142,7 @@ export default {
         loadMore: false,
         other: true,
         sidebar: true,
+        latest: true, // Loading state for latest news
       },
     };
   },
@@ -274,6 +276,34 @@ export default {
       };
     },
 
+    // Helper function to get sport from categories (similar to basketball page)
+    getSportFromCategories(categories) {
+      const sportMap = {
+        Fudbal: "FUDBAL",
+        Košarka: "KOŠARKA", 
+        Tenis: "TENIS",
+        Odbojka: "ODBOJKA",
+      };
+      const sportCategory = categories.find((cat) => sportMap[cat.name]);
+      return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
+    },
+
+    // Helper function to get category class for styling
+    getCategoryClass(sport) {
+      switch (sport) {
+        case "FUDBAL":
+          return "football";
+        case "KOŠARKA":
+          return "basketball";
+        case "TENIS":
+          return "tennis";
+        case "ODBOJKA":
+          return "volleyball";
+        default:
+          return "other";
+      }
+    },
+
     async fetchTagArticles() {
       // Don't fetch if we don't have a tag ID yet
       if (!this.effectiveTagId) {
@@ -299,8 +329,6 @@ export default {
         const tagData = await fetchFromApi("/getArticles", apiParams);
 
         const articles = tagData.result.articles;
-
-        console.log("articles", articles);
 
         if (articles.length > 0) {
           this.featuredArticle = {
@@ -328,6 +356,9 @@ export default {
         // Fetch other news (articles not related to this tag)
         await this.fetchOtherNews();
 
+        // Fetch latest news for sidebar
+        await this.fetchLatestNews();
+
         // Hide all loading states
         this.loading = {
           featured: false,
@@ -335,6 +366,7 @@ export default {
           loadMore: false,
           other: false,
           sidebar: false,
+          latest: false,
         };
       } catch (error) {
         console.error("Error fetching tag articles:", error);
@@ -346,6 +378,7 @@ export default {
           loadMore: false,
           other: false,
           sidebar: false,
+          latest: false,
         };
       }
     },
@@ -384,6 +417,29 @@ export default {
       } catch (error) {
         console.error("Error fetching other news:", error);
         this.otherNews = [];
+      }
+    },
+
+    async fetchLatestNews() {
+      try {
+        const latestData = await fetchFromApi("/getArticles", {
+          articleLimit: 8,
+          page: 1,
+        });
+
+        const articles = latestData.result.articles;
+
+        this.latestNews = articles.slice(0, 8).map((article) => ({
+          id: article.id,
+          title: article.title,
+          sport: this.getSportFromCategories(article.categories),
+          date: this.formatDate(article.publish_date),
+          category: article.categories[0].slug,
+          slug: article.slug,
+        }));
+      } catch (error) {
+        console.error("Error fetching latest news:", error);
+        this.latestNews = [];
       }
     },
 
@@ -464,6 +520,7 @@ export default {
       this.loadMoreTagNews = [];
       this.otherNews = [];
       this.relatedNews = [];
+      this.latestNews = [];
       this.currentPage = 1;
       this.hasMorePages = true;
     },
@@ -698,6 +755,26 @@ export default {
 }
 
 .related-news-item .category.tag-category {
+  color: var(--yellow-primary);
+}
+
+.related-news-item .category.football {
+  color: var(--green-primary);
+}
+
+.related-news-item .category.basketball {
+  color: var(--orange-primary);
+}
+
+.related-news-item .category.tennis {
+  color: var(--blue-primary);
+}
+
+.related-news-item .category.volleyball {
+  color: var(--red-primary);
+}
+
+.related-news-item .category.other {
   color: var(--yellow-primary);
 }
 
