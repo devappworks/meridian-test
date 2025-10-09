@@ -1,5 +1,17 @@
 <script setup>
-useHead({ title: "Moje vesti | Meridian Sport" });
+useHead({
+  title: "Moje vesti | Meridian Sport",
+  meta: [
+    { name: "description", content: "Personalizovane sportske vesti prema vašim interesovanjima. Odaberite kategorije koje vas zanimaju i pristupite najnovijim vestima iz fudbala, košarke, tenisa i drugih sportova." },
+    { name: "robots", content: "noindex, follow" }, // User-specific content shouldn't be indexed
+    { property: "og:type", content: "website" },
+    { property: "og:title", content: "Moje vesti | Meridian Sport" },
+    { property: "og:description", content: "Personalizovane sportske vesti prema vašim interesovanjima. Odaberite kategorije koje vas zanimaju i pristupite najnovijim vestima." },
+    { name: "twitter:card", content: "summary" },
+    { name: "twitter:title", content: "Moje vesti | Meridian Sport" },
+    { name: "twitter:description", content: "Personalizovane sportske vesti prema vašim interesovanjima." }
+  ]
+});
 </script>
 
 <template>

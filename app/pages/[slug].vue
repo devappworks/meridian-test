@@ -151,6 +151,16 @@ useHead(() => {
 
   return {
     title: `${displayTitle.value} | Meridian Sport`,
+    meta: [
+      { name: "description", content: `Najnovije vesti iz kategorije ${displayTitle.value} na Meridian Sport portalu. Pratite sve aktuelne događaje, rezultate i analize.` },
+      { name: "robots", content: "index, follow" },
+      { property: "og:type", content: "website" },
+      { property: "og:title", content: `${displayTitle.value} | Meridian Sport` },
+      { property: "og:description", content: `Najnovije vesti iz kategorije ${displayTitle.value} na Meridian Sport portalu.` },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: `${displayTitle.value} | Meridian Sport` },
+      { name: "twitter:description", content: `Najnovije vesti iz kategorije ${displayTitle.value} na Meridian Sport portalu.` }
+    ],
     script: [
       {
         key: 'ldjson-breadcrumb-category',
