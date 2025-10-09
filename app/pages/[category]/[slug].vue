@@ -193,6 +193,7 @@ useHead(() => {
     },
     datePublished: publishedTimeISO,
     dateModified: modifiedTimeISO || publishedTimeISO, // Use modified date or fallback to published
+    isAccessibleForFree: true,
   };
 
   const meta = [

@@ -73,6 +73,7 @@ useHead(() => {
     },
     datePublished: publishedTime,
     dateModified: publishedTime,
+    isAccessibleForFree: true,
   };
 
   const meta = [

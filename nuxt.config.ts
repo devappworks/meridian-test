@@ -52,6 +52,8 @@ export default defineNuxtConfig({
       '/najnovije-vesti': { ssr: true, swr: 60 },
       '/odbojka': { ssr: true, swr: 60 },
       '/ostali-sportovi': { ssr: true, swr: 60 },
+      // Tag pages - enable SSR with short cache
+      '/tag/**': { ssr: true, swr: 60 },
       // Cache static assets for 1 year
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
       '/images/**': { headers: { 'cache-control': 'public, max-age=2592000' } }, // 30 days

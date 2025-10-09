@@ -87,5 +87,6 @@ export function useNewsArticleSchema(article) {
       ]
     },
     description: description,
+    isAccessibleForFree: true,
   };
 }
