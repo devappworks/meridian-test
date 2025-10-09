@@ -104,7 +104,14 @@ if (tagValidation.value && !tagValidation.value.exists) {
 
 console.log(`✅ [TAG PAGE] Tag "${tagName}" validated successfully, rendering page\n`);
 
-useHead(() => ({ title: `${tagName} | Meridian Sport` }));
+// Process tag name for display: replace hyphens with spaces and capitalize
+const formattedTagName = tagName
+  .replace(/-/g, ' ')
+  .split(' ')
+  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+  .join(' ');
+
+useHead(() => ({ title: `${formattedTagName} | Meridian Sport` }));
 import TagPage from "@/views/TagPage.vue";
 </script>
 
