@@ -111,7 +111,8 @@ const formattedTagName = tagName
   .map(word => word.charAt(0).toUpperCase() + word.slice(1))
   .join(' ');
 
-useHead(() => ({
+// Use static object instead of reactive function for server-side rendering
+useHead({
   title: `${formattedTagName} | Meridian Sport`,
   meta: [
     { name: "description", content: `Najnovije vesti o ${formattedTagName.toLowerCase()} na Meridian Sport portalu. Pratite sve aktuelne događaje, rezultate i analize.` },
@@ -123,7 +124,7 @@ useHead(() => ({
     { name: "twitter:title", content: `${formattedTagName} | Meridian Sport` },
     { name: "twitter:description", content: `Najnovije vesti o ${formattedTagName.toLowerCase()} na Meridian Sport portalu.` }
   ]
-}));
+});
 import TagPage from "@/views/TagPage.vue";
 </script>
 

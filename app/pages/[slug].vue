@@ -129,46 +129,49 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-useHead(() => {
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Home',
-        item: 'https://meridiansport.rs/',
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: displayTitle.value,
-        item: `https://meridiansport.rs/${slug}/`,
-      },
-    ],
-  };
+// Create static values for server-side rendering
+const title = `${displayTitle.value} | Meridian Sport`;
+const description = `Najnovije vesti iz kategorije ${displayTitle.value} na Meridian Sport portalu. Pratite sve aktuelne događaje, rezultate i analize.`;
 
-  return {
-    title: `${displayTitle.value} | Meridian Sport`,
-    meta: [
-      { name: "description", content: `Najnovije vesti iz kategorije ${displayTitle.value} na Meridian Sport portalu. Pratite sve aktuelne događaje, rezultate i analize.` },
-      { name: "robots", content: "index, follow" },
-      { property: "og:type", content: "website" },
-      { property: "og:title", content: `${displayTitle.value} | Meridian Sport` },
-      { property: "og:description", content: `Najnovije vesti iz kategorije ${displayTitle.value} na Meridian Sport portalu.` },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: `${displayTitle.value} | Meridian Sport` },
-      { name: "twitter:description", content: `Najnovije vesti iz kategorije ${displayTitle.value} na Meridian Sport portalu.` }
-    ],
-    script: [
-      {
-        key: 'ldjson-breadcrumb-category',
-        type: 'application/ld+json',
-        innerHTML: JSON.stringify(breadcrumbSchema),
-      },
-    ],
-  };
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: 'https://meridiansport.rs/',
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: displayTitle.value,
+      item: `https://meridiansport.rs/${slug}/`,
+    },
+  ],
+};
+
+// Use static object for server-side rendering
+useHead({
+  title,
+  meta: [
+    { name: "description", content: description },
+    { name: "robots", content: "index, follow" },
+    { property: "og:type", content: "website" },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { name: "twitter:card", content: "summary" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description }
+  ],
+  script: [
+    {
+      key: 'ldjson-breadcrumb-category',
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify(breadcrumbSchema),
+    },
+  ],
 });
 
 import CategoryPage from "@/views/CategoryPage.vue";
