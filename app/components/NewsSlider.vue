@@ -480,16 +480,18 @@ export default {
 .news-image {
   position: relative;
   width: 100%;
-  height: 100%;
   aspect-ratio: 16/9;
   border-radius: 8px;
   overflow: hidden;
+  max-height: 225px;
+  max-width: 250px;
 }
 
 .news-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .image-overlay {
