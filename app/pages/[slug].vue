@@ -2,6 +2,16 @@
 const route = useRoute();
 const { slug } = route.params;
 
+// Skip this route if it's actually a tag page (handled by /tag/[tagName])
+// This prevents conflicts when navigating to /tag/something
+if (slug === 'tag') {
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Page Not Found',
+    fatal: true
+  });
+}
+
 // Import API function
 import { fetchFromApi } from '~/services/api';
 
