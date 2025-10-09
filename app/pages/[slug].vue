@@ -22,15 +22,26 @@ if (slug === 'tag') {
 // Import API function
 import { fetchFromApi } from '~/services/api';
 
-// Validate category exists before rendering
+// Validate category exists before rendering - with better error handling for SSR
 const { data: categoryData, error: categoryError } = await useAsyncData(
   `category-${slug}`,
   async () => {
     try {
       // Fetch both helper nav and web settings to validate category exists
+      // Add timeout to prevent hanging during SSR
       const [helperNavRes, webSettingsRes] = await Promise.all([
-        fetchFromApi("getHelperNav"),
-        fetchFromApi("getWebSettings"),
+        Promise.race([
+          fetchFromApi("getHelperNav"),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('API timeout')), 10000)
+          )
+        ]),
+        Promise.race([
+          fetchFromApi("getWebSettings"),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('API timeout')), 10000)
+          )
+        ])
       ]);
 
       // Helper nav: locate the 'help-nav' container and search its sub_menu
@@ -106,8 +117,13 @@ const { data: categoryData, error: categoryError } = await useAsyncData(
       };
     } catch (err) {
       console.error('Error validating category:', err);
+      // On error, return null but don't block SSR - meta tags will still render
       return null;
     }
+  },
+  {
+    // Add default value to prevent SSR blocking
+    default: () => null
   }
 );
 
@@ -121,17 +137,16 @@ if (!categoryData.value || categoryError.value) {
   });
 }
 
-// Get title from query if available
-const displayTitle = computed(() => {
-  return route.query.title || categoryData.value?.title || slug.split('-').map(word => capitalize(word)).join(' ');
-});
+// Get title from query if available - create fallback title immediately
+const fallbackTitle = slug.split('-').map(word => capitalize(word)).join(' ');
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// Create static values for server-side rendering
-const title = `${displayTitle.value} | Meridian Sport`;
-const description = `Najnovije vesti iz kategorije ${displayTitle.value} na Meridian Sport portalu. Pratite sve aktuelne događaje, rezultate i analize.`;
+// ALWAYS set meta tags immediately - don't wait for API validation
+// This ensures meta tags are rendered even if API calls fail
+const title = `${fallbackTitle} | Meridian Sport`;
+const description = `Najnovije vesti iz kategorije ${fallbackTitle} na Meridian Sport portalu. Pratite sve aktuelne događaje, rezultate i analize.`;
 
 const breadcrumbSchema = {
   '@context': 'https://schema.org',
@@ -146,7 +161,7 @@ const breadcrumbSchema = {
     {
       '@type': 'ListItem',
       position: 2,
-      name: displayTitle.value,
+      name: fallbackTitle,
       item: `https://meridiansport.rs/${slug}/`,
     },
   ],
@@ -172,6 +187,11 @@ useHead({
       innerHTML: JSON.stringify(breadcrumbSchema),
     },
   ],
+});
+
+// Get title from query if available (for dynamic updates)
+const displayTitle = computed(() => {
+  return route.query.title || categoryData.value?.title || fallbackTitle;
 });
 
 import CategoryPage from "@/views/CategoryPage.vue";

@@ -11,7 +11,7 @@ console.log(`🔵 Is server-side: ${process.server}`);
 console.log(`🔵 Environment: ${process.env.NODE_ENV}`);
 console.log(`🔵 ============================================\n`);
 
-// Validate that the tag exists - only on actual request, not during build
+// Validate that the tag exists - with better error handling for SSR
 const { data: tagValidation } = await useAsyncData(
   `tag-validation-${tagName}`,
   async () => {
@@ -19,7 +19,14 @@ const { data: tagValidation } = await useAsyncData(
 
     try {
       console.log(`🟡 [TAG VALIDATION] Calling fetchFromApi("/getHelperNav")...`);
-      const response = await fetchFromApi("/getHelperNav");
+      
+      // Add timeout to prevent hanging during SSR
+      const response = await Promise.race([
+        fetchFromApi("/getHelperNav"),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('API timeout')), 10000)
+        )
+      ]);
 
       console.log(`🟡 [TAG VALIDATION] API Response:`, {
         success: response?.success,
@@ -79,14 +86,17 @@ const { data: tagValidation } = await useAsyncData(
       console.error(`❌ [TAG VALIDATION] ERROR validating tag "${tagName}":`, err);
       console.error(`❌ [TAG VALIDATION] Error message:`, err?.message);
       console.error(`❌ [TAG VALIDATION] Error stack:`, err?.stack);
-      // On error, assume tag exists to avoid false 404s
-      console.log(`⚠️ [TAG VALIDATION] Assuming tag exists due to error`);
+      
+      // On error, assume tag exists to avoid false 404s and ensure meta tags render
+      console.log(`⚠️ [TAG VALIDATION] Assuming tag exists due to error - meta tags will still render`);
       return { exists: true };
     }
   },
   {
     // Cache the validation result
     getCachedData: (key) => useNuxtApp().static.data[key],
+    // Add default value to prevent SSR blocking
+    default: () => ({ exists: true })
   }
 );
 
@@ -111,7 +121,8 @@ const formattedTagName = tagName
   .map(word => word.charAt(0).toUpperCase() + word.slice(1))
   .join(' ');
 
-// Use static object instead of reactive function for server-side rendering
+// ALWAYS set meta tags immediately - don't wait for API validation
+// This ensures meta tags are rendered even if API calls fail
 useHead({
   title: `${formattedTagName} | Meridian Sport`,
   meta: [
