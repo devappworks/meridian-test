@@ -36,7 +36,7 @@ const canonicalUrl = siteUrl ? `${siteUrl}/` : undefined;
 
 // SEO-optimized title and description with keywords
 const title = "Meridian Sport - Najnovije Sportske Vesti | Srbija";
-const description = stripHtml(siteDescription) || "Meridian Sport portal nudi najbrže sportske vesti, rezultate, prenose uživo i analize mečeva iz Srbije i sveta. Budite u toku sa svim dešavanjima iz fudbala, košarke, tenisa, vesti o Partizanu i ponovo sve o sportu.";
+const description = stripHtml(siteDescription) || "Sve sportske vesti na jednom mestu – fudbal, košarka, tenis i još mnogo toga. Meridian Sport donosi najbrže informacije i analize.";
 const imageUrl = siteUrl ? `${siteUrl}/images/homepage-og.jpg` : undefined;
 
 const ld = {
