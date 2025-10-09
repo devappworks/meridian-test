@@ -145,6 +145,11 @@ function capitalize(str) {
 
 // ALWAYS set meta tags immediately - don't wait for API validation
 // This ensures meta tags are rendered even if API calls fail
+const config = useRuntimeConfig();
+const siteUrl = (config.public?.SITE_URL || 'https://meridiansport.rs').replace(/\/$/, '');
+const siteName = config.public?.SITE_NAME || 'Meridian Sport';
+const ogImageUrl = `${siteUrl}/images/default-category-og.jpg`;
+
 const title = `${fallbackTitle} | Meridian Sport`;
 const description = `Najnovije vesti iz kategorije ${fallbackTitle} na Meridian Sport portalu. Pratite sve aktuelne događaje, rezultate i analize.`;
 
@@ -174,11 +179,18 @@ useHead({
     { name: "description", content: description },
     { name: "robots", content: "index, follow" },
     { property: "og:type", content: "website" },
+    { property: "og:site_name", content: siteName },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
-    { name: "twitter:card", content: "summary" },
+    { property: "og:image", content: ogImageUrl },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { property: "og:image:alt", content: title },
+    { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
-    { name: "twitter:description", content: description }
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: ogImageUrl },
+    { name: "twitter:image:alt", content: title }
   ],
   script: [
     {

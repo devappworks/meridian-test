@@ -1,15 +1,27 @@
 <script setup>
+const config = useRuntimeConfig();
+const siteUrl = (config.public?.SITE_URL || 'https://meridiansport.rs').replace(/\/$/, '');
+const siteName = config.public?.SITE_NAME || 'Meridian Sport';
+const ogImageUrl = `${siteUrl}/images/homepage-og.jpg`;
+
 useHead({
   title: "Moje vesti | Meridian Sport",
   meta: [
     { name: "description", content: "Personalizovane sportske vesti prema vašim interesovanjima. Odaberite kategorije koje vas zanimaju i pristupite najnovijim vestima iz fudbala, košarke, tenisa i drugih sportova." },
     { name: "robots", content: "noindex, follow" }, // User-specific content shouldn't be indexed
     { property: "og:type", content: "website" },
+    { property: "og:site_name", content: siteName },
     { property: "og:title", content: "Moje vesti | Meridian Sport" },
     { property: "og:description", content: "Personalizovane sportske vesti prema vašim interesovanjima. Odaberite kategorije koje vas zanimaju i pristupite najnovijim vestima." },
-    { name: "twitter:card", content: "summary" },
+    { property: "og:image", content: ogImageUrl },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { property: "og:image:alt", content: "Moje vesti | Meridian Sport" },
+    { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: "Moje vesti | Meridian Sport" },
-    { name: "twitter:description", content: "Personalizovane sportske vesti prema vašim interesovanjima." }
+    { name: "twitter:description", content: "Personalizovane sportske vesti prema vašim interesovanjima." },
+    { name: "twitter:image", content: ogImageUrl },
+    { name: "twitter:image:alt", content: "Moje vesti | Meridian Sport" }
   ]
 });
 </script>
