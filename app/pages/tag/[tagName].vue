@@ -3,9 +3,11 @@ import { fetchFromApi } from '~/services/api';
 
 const route = useRoute();
 const { tagName } = route.params;
+const tagIdFromQuery = route.query.tagId;
 
 console.log(`\n🔵 ============ TAG PAGE ROUTE HIT ============`);
 console.log(`🔵 Tag name from params: "${tagName}"`);
+console.log(`🔵 Tag ID from query: "${tagIdFromQuery}"`);
 console.log(`🔵 Full route path: "${route.path}"`);
 console.log(`🔵 Is server-side: ${process.server}`);
 console.log(`🔵 Environment: ${process.env.NODE_ENV}`);
@@ -54,5 +56,5 @@ import TagPage from "@/views/TagPage.vue";
 </script>
 
 <template>
-  <TagPage :tagName="tagName" />
+  <TagPage :tagName="tagName" :tagId="tagIdFromQuery" />
 </template>
