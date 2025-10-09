@@ -225,37 +225,112 @@ useHead(() => {
   const ld = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
+    "@id": canonicalUrl ? `${canonicalUrl}#richSnippet` : undefined,
     headline: title,
+    name: title,
     description,
     articleBody: articleBodyText,
-    inLanguage: "sr",
+    inLanguage: "sr-RS",
     keywords: newsKeywords.length > 0 ? newsKeywords : tags,
     articleSection: categoryName,
     mainEntityOfPage: canonicalUrl
-      ? { "@type": "WebPage", "@id": canonicalUrl }
+      ? {
+          "@type": "WebPage",
+          "@id": `${canonicalUrl}#webpage`,
+          url: canonicalUrl,
+          name: title,
+          datePublished: publishedTimeISO,
+          dateModified: modifiedTimeISO || publishedTimeISO,
+          isPartOf: {
+            "@type": "WebSite",
+            "@id": `${siteUrl}/#website`,
+            url: siteUrl,
+            name: siteName,
+            publisher: {
+              "@type": "Organization",
+              "@id": `${siteUrl}/#organization`,
+              name: siteName,
+              url: siteUrl,
+              logo: {
+                "@type": "ImageObject",
+                "@id": `${siteUrl}/#logo`,
+                url: "https://meridiansport.rs/images/meridian-favicon-512x512.png",
+                contentUrl: "https://meridiansport.rs/images/meridian-favicon-512x512.png",
+                caption: siteName,
+                inLanguage: "sr-RS",
+                width: 512,
+                height: 512
+              },
+              sameAs: [
+                "https://www.facebook.com/sportmeridian",
+                "https://www.instagram.com/meridiansportrs",
+                "https://www.youtube.com/@meridiansport",
+                "https://twitter.com/meridiansportrs"
+              ]
+            }
+          },
+          inLanguage: "sr-RS",
+          primaryImageOfPage: imageObject ? {
+            ...imageObject,
+            "@id": imageUrl,
+            inLanguage: "sr-RS"
+          } : undefined
+        }
       : undefined,
-    image: imageObject,
-    author: { "@type": "Person", name: authorName },
+    image: imageObject ? {
+      ...imageObject,
+      "@id": imageUrl,
+      inLanguage: "sr-RS"
+    } : undefined,
+    author: {
+      "@type": "Person",
+      "@id": canonicalUrl ? `${siteUrl}/autor/${authorName.toLowerCase().replace(/\s+/g, '-')}/` : undefined,
+      name: authorName,
+      url: canonicalUrl ? `${siteUrl}/autor/${authorName.toLowerCase().replace(/\s+/g, '-')}/` : undefined,
+      worksFor: {
+        "@type": "Organization",
+        "@id": `${siteUrl}/#organization`,
+        name: siteName,
+        url: siteUrl,
+        sameAs: [
+          "https://www.facebook.com/sportmeridian",
+          "https://www.instagram.com/meridiansportrs",
+          "https://www.youtube.com/@meridiansport",
+          "https://twitter.com/meridiansportrs"
+        ]
+      }
+    },
     publisher: {
       "@type": "Organization",
-      name: "Meridian Sport",
-      url: "https://meridiansport.rs/",
+      "@id": `${siteUrl}/#organization`,
+      name: siteName,
+      url: siteUrl,
       logo: {
         "@type": "ImageObject",
+        "@id": `${siteUrl}/#logo`,
         url: "https://meridiansport.rs/images/meridian-favicon-512x512.png",
+        contentUrl: "https://meridiansport.rs/images/meridian-favicon-512x512.png",
+        caption: siteName,
+        inLanguage: "sr-RS",
         width: 512,
         height: 512
       },
       sameAs: [
-        "https://www.facebook.com/SportMeridian/",
-        "https://www.instagram.com/meridiansportrs/",
+        "https://www.facebook.com/sportmeridian",
+        "https://www.instagram.com/meridiansportrs",
         "https://www.youtube.com/@meridiansport",
-        "https://x.com/meridiansportrs"
+        "https://twitter.com/meridiansportrs"
       ]
     },
     datePublished: publishedTimeISO,
-    dateModified: modifiedTimeISO || publishedTimeISO, // Use modified date or fallback to published
+    dateModified: modifiedTimeISO || publishedTimeISO,
     isAccessibleForFree: true,
+    isPartOf: canonicalUrl ? {
+      "@type": "WebPage",
+      "@id": `${canonicalUrl}#webpage`,
+      url: canonicalUrl,
+      name: title
+    } : undefined
   };
 
   const meta = [

@@ -42,40 +42,82 @@ const imageUrl = siteUrl ? `${siteUrl}/images/homepage-og.jpg` : undefined;
 const ld = {
   "@context": "https://schema.org",
   "@type": "Organization",
+  "@id": `${siteUrl}/#organization`,
   name: siteName,
   url: canonicalUrl,
-  logo: "https://meridiansport.rs/_nuxt/meridian-logo.DklqdKiS.svg",
+  logo: {
+    "@type": "ImageObject",
+    "@id": `${siteUrl}/#logo`,
+    url: "https://meridiansport.rs/images/meridian-favicon-512x512.png",
+    contentUrl: "https://meridiansport.rs/images/meridian-favicon-512x512.png",
+    caption: siteName,
+    inLanguage: "sr-RS",
+    width: 512,
+    height: 512
+  },
   sameAs: [
     "https://www.facebook.com/sportmeridian",
     "https://www.instagram.com/meridiansportrs",
     "https://www.youtube.com/@meridiansport",
     "https://twitter.com/meridiansportrs"
-  ]
+  ],
+  contactPoint: {
+    "@type": "ContactPoint",
+    telephone: "+381 11 344 11 86",
+    contactType: "customer support"
+  },
+  location: {
+    "@type": "Place",
+    "@id": `${siteUrl}/#place`,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Kneza Miloša 7",
+      addressLocality: "Beograd",
+      postalCode: "11000",
+      addressCountry: {
+        "@type": "Country",
+        name: "Srbija"
+      }
+    }
+  }
 };
 
 const ld2 = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "url": "https://meridiansport.rs/",
-  "name": "MeridianSport",
-  "description": "Najnovije sportske vesti, rezultati, prenosi uzivo i analize.",
-  "publisher": {
+  "@id": `${siteUrl}/#website`,
+  url: siteUrl,
+  name: siteName,
+  description: description || "Najnovije sportske vesti, rezultati, prenosi uživo i analize.",
+  inLanguage: "sr-RS",
+  publisher: {
     "@type": "Organization",
-    "name": "MeridianSport",
-    "logo": {
+    "@id": `${siteUrl}/#organization`,
+    name: siteName,
+    url: siteUrl,
+    logo: {
       "@type": "ImageObject",
-      "url": "https://meridiansport.rs/images/meridian-favicon-512x512.png"
+      "@id": `${siteUrl}/#logo`,
+      url: "https://meridiansport.rs/images/meridian-favicon-512x512.png",
+      contentUrl: "https://meridiansport.rs/images/meridian-favicon-512x512.png",
+      caption: siteName,
+      inLanguage: "sr-RS",
+      width: 512,
+      height: 512
     },
-    "sameAs": [
+    sameAs: [
       "https://www.facebook.com/sportmeridian",
       "https://www.instagram.com/meridiansportrs",
       "https://www.youtube.com/@meridiansport",
       "https://twitter.com/meridiansportrs"
     ]
   },
-  "potentialAction": {
+  potentialAction: {
     "@type": "SearchAction",
-    "target": "https://meridiansport.rs/?q={search_term_string}",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${siteUrl}/?q={search_term_string}`
+    },
     "query-input": "required name=search_term_string"
   }
 }
