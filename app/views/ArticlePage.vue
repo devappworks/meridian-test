@@ -1,5 +1,5 @@
 <template>
-  <div v-if="article" class="article-page">
+  <div class="article-page">
     <div class="content-wrapper">
       <!-- Main content column -->
       <div class="main-column article-column" ref="mainColumn">
@@ -7,18 +7,6 @@
         <div v-if="loading.article">
           <SkeletonArticleHeader />
           <SkeletonArticleContent />
-
-          <!-- Other news section skeleton -->
-          <div class="other-news-section">
-            <div class="section-header">
-              <h2 class="section-title">OSTALE VESTI</h2>
-            </div>
-            <SkeletonNewsGrid
-              sport="OSTALE VESTI"
-              :columns="3"
-              :cardCount="6"
-            />
-          </div>
         </div>
 
         <!-- Error state -->
@@ -27,7 +15,7 @@
         </div>
 
         <!-- Article content -->
-        <div v-else-if="article">
+        <div v-else>
           <!-- Article header -->
           <div class="article-header">
             <h1 class="article-title">{{ article.title }}</h1>
@@ -242,38 +230,40 @@
               </div> -->
 
               <!-- Tags section -->
-              <div class="tags-section" v-if="article?.tags && Array.isArray(article.tags)">
-                <button
-                  class="tag"
-                  v-for="tag in article.tags"
-                  :key="tag?.id"
-                  @click="navigateToTag(tag?.id, tag?.name)"
-                >
-                  {{ tag?.name?.toUpperCase() }}
-                </button>
-              </div>
+              <ClientOnly>
+                <div class="tags-section" v-if="article?.tags && Array.isArray(article.tags)">
+                  <button
+                    class="tag"
+                    v-for="tag in article.tags"
+                    :key="tag?.id"
+                    @click="navigateToTag(tag?.id, tag?.name)"
+                  >
+                    {{ tag?.name?.toUpperCase() }}
+                  </button>
+                </div>
 
-              <!-- Other news section -->
-              <div class="other-news-section">
-                <div class="section-header">
-                  <h2 class="section-title">OSTALE VESTI</h2>
+                <!-- Other news section -->
+                <div class="other-news-section">
+                  <div class="section-header">
+                    <h2 class="section-title">OSTALE VESTI</h2>
+                  </div>
+                  <div v-if="loading.otherNews">
+                    <SkeletonNewsGrid
+                      sport="OSTALE VESTI"
+                      :columns="4"
+                      :cardCount="8"
+                    />
+                  </div>
+                  <div v-else>
+                    <NewsGrid
+                      :news="otherNews"
+                      sport="OSTALE VESTI"
+                      :columns="4"
+                      :background="true"
+                    />
+                  </div>
                 </div>
-                <div v-if="loading.otherNews">
-                  <SkeletonNewsGrid
-                    sport="OSTALE VESTI"
-                    :columns="3"
-                    :cardCount="6"
-                  />
-                </div>
-                <div v-else>
-                  <NewsGrid
-                    :news="otherNews"
-                    sport="OSTALE VESTI"
-                    :columns="3"
-                    :background="true"
-                  />
-                </div>
-              </div>
+              </ClientOnly>
             </div>
           </div>
         </div>
@@ -402,6 +392,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  otherNews: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 // Early validation of article data structure
@@ -430,12 +424,16 @@ if (!props.article) {
 
 // Reactive data
 const showComments = ref(false);
+// Generate unique instance ID for debugging
+const instanceId = Math.random().toString(36).substr(2, 9);
+console.log(`🆔 [ArticlePage ${instanceId}] Instance created`);
+
 const article = ref(props.article || null);
 const loading = ref({
   article: !props.article, // Don't show loading if we already have article data
   comments: true,
   relatedNews: true,
-  otherNews: true,
+  otherNews: props.otherNews.length === 0, // Don't show loading if we already have other news data
   allComments: false, // Loading state for fetching all comments
 });
 const error = ref(null);
@@ -445,7 +443,7 @@ const totalComments = ref(0);
 const showingAllComments = ref(false); // Track if all comments are loaded
 const relatedNews = ref([]);
 const josVestiNews = ref([]);
-const otherNews = ref([]);
+const otherNews = ref(props.otherNews || []);
 
 // Template refs
 const mainColumn = ref(null);
@@ -711,19 +709,23 @@ const fetchRelatedNews = async () => {
 };
 
 const fetchOtherNews = async () => {
+  console.log(`🟠 [fetchOtherNews ${instanceId}] Starting...`);
+
   if (!article.value || !article.value.categories || !Array.isArray(article.value.categories) || article.value.categories.length === 0) {
-    console.log("🔴 fetchOtherNews: No valid article or categories data", {
+    console.log(`🔴 [fetchOtherNews ${instanceId}]: No valid article or categories data`, {
       hasArticle: !!article.value,
       hasCategories: !!(article.value?.categories),
       isArray: Array.isArray(article.value?.categories),
       length: article.value?.categories?.length
     });
     loading.value.otherNews = false;
+    console.log(`🟠 [fetchOtherNews ${instanceId}] Set loading.otherNews = false (no valid data)`);
     otherNews.value = [];
     return;
   }
 
   loading.value.otherNews = true;
+  console.log(`🟠 [fetchOtherNews ${instanceId}] Set loading.otherNews = true`);
 
   try {
     // Get the sport category from the article
@@ -765,11 +767,15 @@ const fetchOtherNews = async () => {
         slug: article.slug,
       }));
 
+    console.log(`🟠 [fetchOtherNews ${instanceId}] Fetched ${otherNews.value.length} other news articles`);
     loading.value.otherNews = false;
+    console.log(`🟠 [fetchOtherNews ${instanceId}] Set loading.otherNews = false (success)`);
+    console.log(`🟠 [fetchOtherNews ${instanceId}] Current loading state:`, loading.value.otherNews);
   } catch (error) {
-    console.error("Error fetching other news:", error);
+    console.error(`🔴 [fetchOtherNews ${instanceId}] Error fetching other news:`, error);
     otherNews.value = [];
     loading.value.otherNews = false;
+    console.log(`🟠 [fetchOtherNews ${instanceId}] Set loading.otherNews = false (error)`);
   }
 };
 
@@ -1117,7 +1123,14 @@ onMounted(async () => {
       if (props.article.categories && Array.isArray(props.article.categories)) {
         console.log("🟡 Fetching related content...");
         await fetchRelatedNews();
-        await fetchOtherNews();
+        // Only fetch other news if we don't already have it from props
+        if (props.otherNews.length === 0) {
+          console.log("🟡 No other news from props, fetching...");
+          await fetchOtherNews();
+        } else {
+          console.log("🟡 Using other news from SSR props - skipping fetch");
+          loading.value.otherNews = false;
+        }
       } else {
         console.warn("🟡 ArticlePage: Article has no valid categories, skipping related content");
         loading.value.relatedNews = false;

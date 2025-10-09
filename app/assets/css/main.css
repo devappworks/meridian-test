@@ -76,8 +76,6 @@ body {
   max-width: 1440px;
   margin: 0 auto;
   padding: 0 20px;
-  /* Optimize layout performance */
-  contain: layout;
 }
 
 .main-column {
@@ -86,6 +84,7 @@ body {
   gap: 16px;
   display: flex;
   flex-direction: column;
+  min-height: 600px;
 }
 
 .sidebar-column {

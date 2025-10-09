@@ -50,7 +50,7 @@ export default {
     responsiveColumns() {
       if (this.windowWidth <= 425) return 1;
       if (this.windowWidth <= 768) return 2;
-      if (this.windowWidth <= 1200) return 3;
+      if (this.windowWidth <= 1200) return 4;
       return 4;
     },
     sportClass() {

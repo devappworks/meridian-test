@@ -94,6 +94,68 @@ if (fetchError.value) {
 
 console.log('🟢 ============ PAGE COMPONENT END ============\n')
 
+// Fetch other news during SSR to prevent hydration mismatch
+const { data: otherNewsData } = await useAsyncData(
+  `other-news-${category}-${slug}`,
+  async () => {
+    if (!article.value?.categories || !Array.isArray(article.value.categories)) {
+      return [];
+    }
+
+    const { fetchFromApi } = await import('~/services/api');
+
+    // Find sport category
+    const categoryId = article.value.categories?.find((cat) =>
+      cat?.name && ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
+    )?.id;
+
+    let response;
+    if (categoryId) {
+      response = await fetchFromApi(`/getArticles`, {
+        "category[]": categoryId,
+        articleLimit: 10,
+      });
+    } else {
+      response = await fetchFromApi(`/getArticles`, {
+        articleLimit: 10,
+      });
+    }
+
+    const articles = (response.result.articles || []).filter(
+      (articleItem) => articleItem.id !== article.value.id
+    );
+
+    const getSportFromCategories = (categories) => {
+      if (!Array.isArray(categories) || categories.length === 0) {
+        return "OSTALE VESTI";
+      }
+      const sportMap = {
+        Fudbal: "FUDBAL",
+        Košarka: "KOŠARKA",
+        Tenis: "TENIS",
+        Odbojka: "ODBOJKA",
+      };
+      const sportCategory = categories.find((cat) => cat?.name && sportMap[cat.name]);
+      return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
+    };
+
+    const sportCategory = getSportFromCategories(article.value.categories);
+
+    return articles
+      .slice(0, 8)
+      .filter(article => article && article.categories && article.categories.length > 0)
+      .map((article) => ({
+        id: article.id,
+        title: article.title,
+        image: article.feat_images?.small?.url || null,
+        sport: sportCategory,
+        url: article.url || null,
+        category: article.categories[0]?.slug,
+        slug: article.slug,
+      }));
+  }
+);
+
 useHead(() => {
   const a = article.value || {};
   const siteUrl = (config.public?.SITE_URL || "").replace(/\/$/, "");
@@ -272,7 +334,7 @@ import ArticlePage from "@/views/ArticlePage.vue";
 
 <template>
   <div v-if="article">
-    <ArticlePage :category="category" :slug="slug" :article="article" />
+    <ArticlePage :category="category" :slug="slug" :article="article" :otherNews="otherNewsData || []" />
     <!-- Article data is now passed from server-side useAsyncData to prevent hydration mismatch -->
   </div>
   <div v-else>
