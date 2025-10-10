@@ -118,7 +118,7 @@ const mapSidebarArticle = (article) => ({
   title: article.title,
   sport: getSportFromCategories(article.categories) || "VESTI",
   date: article.date,
-  category: article.categories[0].slug,
+  category: useArticleCategory(article) || article.categories[0].slug,
   slug: article.slug,
 });
 

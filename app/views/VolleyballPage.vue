@@ -123,7 +123,7 @@ const mapArticle = (article) => ({
   url: article.url,
   image: article.feat_images["small"]?.url || null,
   featImages: article.feat_images || null, // Include full feat_images for WebP support
-  category: article.categories[0].slug,
+  category: useArticleCategory(article) || article.categories[0].slug,
   slug: article.slug,
 });
 
@@ -132,7 +132,7 @@ const mapSidebarArticle = (article) => ({
   title: article.title,
   sport: "ODBOJKA",
   date: article.date,
-  category: article.categories[0].slug,
+  category: useArticleCategory(article) || article.categories[0].slug,
   slug: article.slug,
 });
 
@@ -267,7 +267,7 @@ if (latestArticlesData.value?.result.articles?.length > 0) {
     title: article.title,
     sport: getSportFromCategories(article.categories),
     date: article.date,
-    category: article.categories[0].slug,
+    category: useArticleCategory(article) || article.categories[0].slug,
     slug: article.slug,
   }));
 }
@@ -340,7 +340,7 @@ const switchCategory = async (categoryId) => {
         title: article.title,
         sport: getSportFromCategories(article.categories),
         date: article.date,
-        category: article.categories[0].slug,
+        category: useArticleCategory(article) || article.categories[0].slug,
         slug: article.slug,
       }));
     }

@@ -163,7 +163,7 @@ export default {
               url: article.url,
               image,
               featImages, // Include full featImages object for WebP support
-              category: article.categories[0].slug,
+              category: useArticleCategory(article) || article.categories[0].slug,
               slug: article.slug,
             };
           });

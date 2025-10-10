@@ -461,7 +461,7 @@ export default {
           ? article.feat_images["small"].url
           : null,
         featImages: article.feat_images || null, // Include full feat_images for WebP support
-        category: article.categories[0].slug,
+        category: useArticleCategory(article) || article.categories[0].slug,
         slug: article.slug,
       };
     },
@@ -472,7 +472,7 @@ export default {
         title: article.title,
         sport: this.getSportFromCategories(article.categories),
         date: article.date,
-        category: article.categories[0].slug,
+        category: useArticleCategory(article) || article.categories[0].slug,
         slug: article.slug,
       };
     },
