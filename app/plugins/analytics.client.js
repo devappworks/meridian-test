@@ -39,10 +39,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   // Track page views on route change
-  router.afterEach(async (to, from) => {
-    // Skip tracking on initial load (gtag already tracks this)
-    if (!from.name) return
-
+  router.afterEach(async (to) => {
     // Wait for gtag to be available
     await waitForGtag()
 
@@ -53,20 +50,16 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
 
     try {
-      // Get the full URL for tracking
-      const url = window.location.origin + to.fullPath
-      const title = document.title
-
-      // Track page view with GA4
-      window.gtag('config', gaId, {
+      // Track page view with GA4 using 'event' method
+      window.gtag('event', 'page_view', {
         page_path: to.fullPath,
-        page_title: title,
-        page_location: url
+        page_title: document.title,
+        page_location: window.location.href
       })
 
       console.log('[Analytics] Page view tracked:', {
         path: to.fullPath,
-        title: title
+        title: document.title
       })
     } catch (error) {
       console.error('[Analytics] Error tracking page view:', error)
