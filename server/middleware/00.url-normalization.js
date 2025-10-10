@@ -72,8 +72,6 @@ export default defineEventHandler(async (event) => {
     if (category === 'tag' || category === 'article') {
       console.log(`[URL NORMALIZE] Skipping canonical check for /${category}/ route: ${normalizedPath}`)
     } else {
-      const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka', 'ostali-sportovi']
-
     try {
       const config = useRuntimeConfig()
       const backendUrl = config.public.BACKEND_URL
@@ -97,18 +95,69 @@ export default defineEventHandler(async (event) => {
           return null
         })
 
-        if (response?.article?.categories && Array.isArray(response.article.categories) && response.article.categories.length > 0) {
-          const articleCategories = response.article.categories
-            .map(cat => cat.slug || cat.name || cat)
-            .filter(Boolean)
-            .map(name => name.toLowerCase())
+        if (response?.article) {
+          const article = response.article
+          let canonicalCategory = null
 
-          const foundMainCategory = mainCategories.find(mainCat => articleCategories.includes(mainCat))
-          const canonicalCategory = foundMainCategory || articleCategories[0]
+          // Main categories - these should never be redirected FROM
+          const mainCategories = ['fudbal', 'kosarka', 'tenis', 'odbojka', 'ostali-sportovi']
 
-          if (canonicalCategory && category.toLowerCase() !== canonicalCategory.toLowerCase()) {
-            canonicalCategoryRedirect = `/${canonicalCategory}/${slug}`
-            console.log(`[URL NORMALIZE] Canonical category redirect needed: ${normalizedPath} → ${canonicalCategoryRedirect}`)
+          // If current URL category is already a main category, don't redirect
+          if (mainCategories.includes(category.toLowerCase())) {
+            console.log(`[URL NORMALIZE] Current category is a main category (${category}), no redirect needed`)
+          } else {
+            // Check if the current category in URL is a child category
+            const currentCategory = article.categories?.find(cat =>
+              (cat.slug || cat.name)?.toLowerCase() === category.toLowerCase()
+            )
+
+            // Strategy 1: If current category has a parent, use parent as canonical
+            if (currentCategory?.parent_id && article.parent_category) {
+              canonicalCategory = article.parent_category.slug || article.parent_category.name?.toLowerCase()
+              console.log(`[URL NORMALIZE] Found parent category via parent_id: ${canonicalCategory} (parent_id: ${currentCategory.parent_id})`)
+            }
+            // Strategy 2: Check if URL category is a known child category (hardcoded fallback)
+            else {
+              const categoryMap = {
+                'domaci-fudbal': 'fudbal',
+                'domai-fudbal': 'fudbal',
+                'reprezentacije': 'fudbal',
+                'evropska-takmicenja': 'fudbal',
+                'liga-sampiona': 'fudbal',
+                'liga-europa': 'fudbal',
+                'superligasrbije': 'fudbal',
+                'super-liga-srbije': 'fudbal',
+                'domaca-kosarka': 'kosarka',
+                'aba-liga': 'kosarka',
+                'evroliga': 'kosarka',
+                'nba': 'kosarka',
+                'eurobasket': 'kosarka',
+                'atp': 'tenis',
+                'wta': 'tenis',
+                'grand-slam': 'tenis',
+                'masters': 'tenis',
+                'davis-cup': 'tenis',
+                'domaca-odbojka': 'odbojka',
+                'liga-sampiona-odbojka': 'odbojka',
+              }
+
+              const mappedCategory = categoryMap[category.toLowerCase()]
+              if (mappedCategory) {
+                canonicalCategory = mappedCategory
+                console.log(`[URL NORMALIZE] Found parent category via mapping: ${category} → ${canonicalCategory}`)
+              }
+            }
+
+            // Only redirect if we found a canonical category and it's different from current
+            // Also verify the canonical category is actually a main category to prevent loops
+            if (canonicalCategory &&
+                category.toLowerCase() !== canonicalCategory.toLowerCase() &&
+                mainCategories.includes(canonicalCategory.toLowerCase())) {
+              canonicalCategoryRedirect = `/${canonicalCategory}/${slug}`
+              console.log(`[URL NORMALIZE] Parent category redirect needed: ${normalizedPath} → ${canonicalCategoryRedirect}`)
+            } else if (canonicalCategory && !mainCategories.includes(canonicalCategory.toLowerCase())) {
+              console.warn(`[URL NORMALIZE] Canonical category ${canonicalCategory} is not a main category, skipping redirect to prevent loop`)
+            }
           }
         }
       }
