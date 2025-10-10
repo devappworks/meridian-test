@@ -84,15 +84,13 @@ export default defineNuxtConfig({
         lang: 'sr'
       },
       script: [
-        // Google Analytics 4 (GA4) - defer until after page load to improve LCP
+        // Google Analytics 4 (GA4) - Load immediately for SPA tracking
+        {
+          src: `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`,
+          async: true
+        },
         {
           innerHTML: `
-          window.addEventListener('load', function() {
-            var script = document.createElement('script');
-            script.src = 'https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}';
-            script.async = true;
-            document.head.appendChild(script);
-
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
@@ -102,7 +100,6 @@ export default defineNuxtConfig({
               anonymize_ip: true,
               cookie_expires: 63072000
             });
-          });
           `,
           type: 'text/javascript'
         }
