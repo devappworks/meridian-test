@@ -15,26 +15,74 @@ export default defineNuxtPlugin((nuxtApp) => {
   // Only run on client side
   if (process.server) return
 
-  // Track a page view
-  const trackPageView = (route) => {
-    if (typeof window === 'undefined' || !window.gtag) {
-      return
-    }
+  // Queue to store page views before gtag is ready
+  let pageViewQueue = []
+  let gtagReady = false
 
+  // Check if gtag is ready
+  const checkGtagReady = () => {
+    if (typeof window !== 'undefined' && window.gtag && window.dataLayer) {
+      gtagReady = true
+      // Process queued page views
+      while (pageViewQueue.length > 0) {
+        const queuedRoute = pageViewQueue.shift()
+        sendPageView(queuedRoute)
+      }
+      return true
+    }
+    return false
+  }
+
+  // Send page view to GA
+  const sendPageView = (route) => {
     try {
-      // Track page view with GA4 using 'event' method
       window.gtag('event', 'page_view', {
         page_path: route.fullPath,
         page_title: document.title,
         page_location: window.location.href,
         send_to: gaId
       })
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[GA] Page view tracked:', route.fullPath)
+      }
     } catch (error) {
-      // Silently fail
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[GA] Error tracking page view:', error)
+      }
     }
   }
 
-  // Track page views on route change (not initial load - gtag config handles that with send_page_view)
+  // Track a page view (queue if gtag not ready)
+  const trackPageView = (route) => {
+    if (checkGtagReady()) {
+      sendPageView(route)
+    } else {
+      // Queue for later
+      pageViewQueue.push(route)
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[GA] Queued page view (gtag not ready):', route.fullPath)
+      }
+    }
+  }
+
+  // Periodically check if gtag becomes ready
+  const gtagCheckInterval = setInterval(() => {
+    if (checkGtagReady()) {
+      clearInterval(gtagCheckInterval)
+    }
+  }, 100)
+
+  // Clear interval after 15 seconds
+  setTimeout(() => {
+    clearInterval(gtagCheckInterval)
+    if (!gtagReady && process.env.NODE_ENV === 'development') {
+      console.warn('[GA] gtag not ready after 15 seconds')
+    }
+  }, 15000)
+
+  // Track page views on route change (not initial load - gtag config handles that)
   router.afterEach((to, from) => {
     // Only track if this is an actual navigation (not initial page load)
     if (from.name !== undefined) {
@@ -51,8 +99,6 @@ export default defineNuxtPlugin((nuxtApp) => {
       gtag: (...args) => {
         if (typeof window !== 'undefined' && window.gtag) {
           window.gtag(...args)
-        } else {
-          console.warn('[Analytics] gtag not available for custom event:', args)
         }
       }
     }
