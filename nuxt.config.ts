@@ -3,8 +3,8 @@ import { fileURLToPath } from 'node:url'
 import { config as loadDotenv } from 'dotenv'
 // Load environment variables from .env before Nuxt reads them
 loadDotenv()
-// Get GA measurement ID from environment or use default
-const gaMeasurementId = process.env.NUXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID || 'G-D36YF7TZJF'
+// Get GTM Container ID from environment or use default
+const gtmId = process.env.NUXT_PUBLIC_GTM_ID || process.env.GTM_ID || 'GTM-MDNMRBXM'
 export default defineNuxtConfig({
   // Enable SSR for all routes
   ssr: true,
@@ -85,22 +85,29 @@ export default defineNuxtConfig({
         lang: 'sr'
       },
       script: [
-        // Google Analytics 4 (GA4) - Load immediately for SPA tracking
-        {
-          src: `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`,
-          async: true
-        },
+        // Google Tag Manager (GTM) - OPTIMIZED: Load on user interaction or after 3s
         {
           innerHTML: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${gaMeasurementId}', {
-              send_page_view: true,
-              cookie_flags: 'SameSite=None;Secure;max-age=63072000',
-              anonymize_ip: true,
-              cookie_expires: 63072000
-            });
+            (function(w,d,s,l,i){
+              var gtmLoaded = false;
+              function loadGTM() {
+                if (gtmLoaded) return;
+                gtmLoaded = true;
+                w[l]=w[l]||[];w[l].push({'gtm.start':
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              }
+
+              // Load GTM on first user interaction (click, scroll, or touch)
+              var events = ['mousedown', 'touchstart', 'scroll', 'keydown'];
+              events.forEach(function(event) {
+                w.addEventListener(event, loadGTM, { once: true, passive: true });
+              });
+
+              // Fallback: Load after 3 seconds if no interaction
+              setTimeout(loadGTM, 3000);
+            })(window,document,'script','dataLayer','${gtmId}');
           `,
           type: 'text/javascript'
         }
@@ -235,6 +242,8 @@ export default defineNuxtConfig({
       SITE_NAME: process.env.NUXT_PUBLIC_SITE_NAME || process.env.SITE_NAME || 'Meridian Sport',
       SITE_DESCRIPTION: process.env.NUXT_PUBLIC_SITE_DESCRIPTION || process.env.SITE_DESCRIPTION || 'Sve sportske vesti na jednom mestu – fudbal, košarka, tenis i još mnogo toga. Meridian Sport donosi najbrže informacije i analize.',
       TWITTER_HANDLE: process.env.NUXT_PUBLIC_TWITTER_HANDLE || process.env.TWITTER_HANDLE || '',
+      GTM_ID: process.env.NUXT_PUBLIC_GTM_ID || process.env.GTM_ID || 'GTM-MDNMRBXM',
+      // Deprecated: GA_MEASUREMENT_ID - now using GTM instead
       GA_MEASUREMENT_ID: process.env.NUXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID || 'G-D36YF7TZJF'
     }
   },

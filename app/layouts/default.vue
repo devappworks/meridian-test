@@ -1,5 +1,16 @@
 <template>
   <div class="page-shell">
+    <!-- Google Tag Manager (noscript) - Fallback for users with JS disabled -->
+    <noscript>
+      <iframe
+        :src="`https://www.googletagmanager.com/ns.html?id=${gtmId}`"
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"
+      ></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
     <div class="side-banner left-banner">
       <div v-if="leftBanners.length > 0" class="banner-container">
         <a
@@ -61,6 +72,10 @@
 <script setup>
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
+
+// Get GTM ID from runtime config
+const config = useRuntimeConfig();
+const gtmId = config.public?.GTM_ID || 'GTM-MDNMRBXM';
 
 // Use shared composable to prevent duplicate API calls
 const { skyscraperBanners } = useOrders();
