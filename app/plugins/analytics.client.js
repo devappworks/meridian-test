@@ -1,9 +1,9 @@
 /**
  * Google Analytics 4 (GA4) Plugin
- * Handles page view tracking for client-side navigation (SPA)
+ * Handles page view tracking for SPA navigation
  *
- * The initial page load is tracked by gtag.js automatically via nuxt.config.ts
- * This plugin tracks subsequent page changes during client-side navigation
+ * This plugin tracks ALL page views including the initial page load
+ * and subsequent page changes during client-side navigation
  */
 export default defineNuxtPlugin((nuxtApp) => {
   const router = useRouter()
@@ -15,54 +15,33 @@ export default defineNuxtPlugin((nuxtApp) => {
   // Only run on client side
   if (process.server) return
 
-  // Wait for gtag to be available
-  const waitForGtag = () => {
-    return new Promise((resolve) => {
-      if (typeof window !== 'undefined' && window.gtag) {
-        resolve()
-      } else {
-        const checkInterval = setInterval(() => {
-          if (typeof window !== 'undefined' && window.gtag) {
-            clearInterval(checkInterval)
-            resolve()
-          }
-        }, 100)
-
-        // Timeout after 5 seconds
-        setTimeout(() => {
-          clearInterval(checkInterval)
-          console.warn('[Analytics] gtag not available after 5s timeout')
-          resolve()
-        }, 5000)
-      }
-    })
-  }
-
-  // Track page views on route change
-  router.afterEach(async (to) => {
-    // Wait for gtag to be available
-    await waitForGtag()
-
-    // Check if gtag is available
+  // Track a page view
+  const trackPageView = (route) => {
     if (typeof window === 'undefined' || !window.gtag) {
-      console.warn('[Analytics] gtag is not available, skipping page view tracking')
       return
     }
 
     try {
       // Track page view with GA4 using 'event' method
       window.gtag('event', 'page_view', {
-        page_path: to.fullPath,
+        page_path: route.fullPath,
         page_title: document.title,
-        page_location: window.location.href
-      })
-
-      console.log('[Analytics] Page view tracked:', {
-        path: to.fullPath,
-        title: document.title
+        page_location: window.location.href,
+        send_to: gaId
       })
     } catch (error) {
-      console.error('[Analytics] Error tracking page view:', error)
+      // Silently fail
+    }
+  }
+
+  // Track page views on route change (not initial load - gtag config handles that with send_page_view)
+  router.afterEach((to, from) => {
+    // Only track if this is an actual navigation (not initial page load)
+    if (from.name !== undefined) {
+      // Small delay to ensure DOM and title are updated
+      setTimeout(() => {
+        trackPageView(to)
+      }, 100)
     }
   })
 
