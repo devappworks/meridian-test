@@ -74,6 +74,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   srcDir: 'app',
   css: [
+    '~/assets/css/fonts.css', // Load fonts first (SSR) to prevent FOUT
     '~/assets/css/main.css',
     'swiper/css',
     'swiper/css/navigation'
@@ -111,49 +112,17 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/x-icon', href: '/images/meridian-favicon-1758622126.png' },
         { rel: 'apple-touch-icon', href: '/images/meridian-favicon-1758622126.png' },
         { rel: 'shortcut icon', href: '/images/meridian-favicon-1758622126.png' },
-        // Preconnect to ONLY the most critical origins (max 3 for optimal performance)
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        // Preconnect to ONLY the most critical origins
         { rel: 'preconnect', href: 'https://meridian.mpanel.app' },
+        // Critical: Preconnect to S3 image CDN for LCP optimization
+        { rel: 'preconnect', href: 'https://mer-static.s3.eu-central-1.amazonaws.com' },
         // DNS prefetch for less critical origins
         { rel: 'dns-prefetch', href: 'https://cdnjs.cloudflare.com' },
         { rel: 'dns-prefetch', href: 'https://www.googletagmanager.com' },
-        // Critical fonts - preload + async load to avoid render blocking
-        {
-          rel: 'preload',
-          as: 'style',
-          href: 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Condensed:wght@300;400;500;700&display=swap'
-        },
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Condensed:wght@300;400;500;700&display=swap',
-          media: 'print',
-          onload: "this.media='all'"
-        },
-        {
-          rel: 'preload',
-          as: 'style',
-          href: 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap'
-        },
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap',
-          media: 'print',
-          onload: "this.media='all'"
-        },
-        // Less critical fonts - defer loading
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap',
-          media: 'print',
-          onload: "this.media='all'"
-        },
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap',
-          media: 'print',
-          onload: "this.media='all'"
-        },
+        { rel: 'dns-prefetch', href: 'https://fonts.googleapis.com' },
+        // NOTE: Main fonts (Roboto, Roboto Condensed, Barlow Condensed, Urbanist, Source Sans Pro)
+        // are now loaded locally via @fontsource in plugins/fonts.client.js for better performance
+        // Non-critical icon fonts - defer loading to improve LCP
         {
           rel: 'stylesheet',
           href: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap',
