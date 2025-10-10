@@ -119,30 +119,50 @@ export default defineEventHandler(async (event) => {
             // Strategy 2: Check if URL category is a known child category (hardcoded fallback)
             else {
               const categoryMap = {
+                // Football subcategories
                 'domaci-fudbal': 'fudbal',
                 'domai-fudbal': 'fudbal',
                 'reprezentacije': 'fudbal',
                 'evropska-takmicenja': 'fudbal',
                 'liga-sampiona': 'fudbal',
+                'liga-sampi ona': 'fudbal',
+                'liga-evrope': 'fudbal',
                 'liga-europa': 'fudbal',
+                'liga-konferencija': 'fudbal',
+                'liga-konferencije': 'fudbal',
                 'superligasrbije': 'fudbal',
                 'super-liga-srbije': 'fudbal',
+                // Basketball subcategories
                 'domaca-kosarka': 'kosarka',
                 'aba-liga': 'kosarka',
                 'evroliga': 'kosarka',
                 'nba': 'kosarka',
                 'eurobasket': 'kosarka',
+                // Tennis subcategories
                 'atp': 'tenis',
                 'wta': 'tenis',
                 'grand-slam': 'tenis',
                 'masters': 'tenis',
                 'davis-cup': 'tenis',
+                // Volleyball subcategories
                 'domaca-odbojka': 'odbojka',
                 'liga-sampiona-odbojka': 'odbojka',
+                // Invalid/old categories that should 404
+                'meridian-tipovi': null,
+                'specijali': null,
+                'kladionica': null,
               }
 
               const mappedCategory = categoryMap[category.toLowerCase()]
-              if (mappedCategory) {
+              if (mappedCategory === null) {
+                // This category is invalid and should return 404
+                console.log(`[URL NORMALIZE] Invalid category detected: ${category}, returning 404`)
+                throw createError({
+                  statusCode: 404,
+                  statusMessage: 'Page Not Found',
+                  fatal: true
+                })
+              } else if (mappedCategory) {
                 canonicalCategory = mappedCategory
                 console.log(`[URL NORMALIZE] Found parent category via mapping: ${category} → ${canonicalCategory}`)
               }
