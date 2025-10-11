@@ -281,7 +281,7 @@
               <h3 class="football">NAJNOVIJE VESTI</h3>
             </div>
             <div v-if="loading.relatedNews" class="related-news-list">
-              <div v-for="n in 3" :key="n" class="related-news-item">
+              <div v-for="n in 8" :key="n" class="related-news-item">
                 <div class="number skeleton">{{ n }}</div>
                 <div class="content">
                   <div class="category skeleton-text"></div>
