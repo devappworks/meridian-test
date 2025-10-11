@@ -11,7 +11,15 @@
 
           <nav class="main-nav desktop-nav">
             <div class="nav-container" ref="navContainer">
-              <ul>
+              <!-- Skeleton loader for main navigation -->
+              <ul v-if="isNavigationLoading" class="nav-skeleton">
+                <li v-for="i in navSkeletonCount" :key="`skeleton-${i}`" class="skeleton-item">
+                  <div class="skeleton-text"></div>
+                </li>
+              </ul>
+
+              <!-- Actual navigation -->
+              <ul v-else>
                 <li v-for="item in navigationItems" :key="item.id">
                   <router-link
                     :to="generateRouteFromHref(item.href)"
@@ -121,8 +129,14 @@
               class="sport-categories-container"
               ref="sportCategoriesContainer"
             >
+              <!-- Skeleton loader for sport categories -->
+              <div v-if="!helperNavigationItems || helperNavigationItems.length === 0" class="categories-skeleton">
+                <div v-for="i in helperNavSkeletonCount" :key="`cat-skeleton-${i}`" class="skeleton-category"></div>
+              </div>
+
+              <!-- Actual swiper -->
               <swiper
-                v-if="helperNavigationItems && helperNavigationItems.length"
+                v-else
                 :key="helperNavigationItems.length"
                 :slidesPerView="'auto'"
                 :spaceBetween="8"
@@ -470,6 +484,15 @@ export default {
       
       // Final fallback: use main category
       return menuData.web_categories?.[0] || null;
+    },
+    navSkeletonCount() {
+      return this.navigationItems.length > 0 ? this.navigationItems.length : 6;
+    },
+    helperNavSkeletonCount() {
+      // Use the actual count if available, otherwise use a reasonable default
+      
+      console.log("Helper navigation items:", this.helperNavigationItems.length);
+      return this.helperNavigationItems.length > 0 ? this.helperNavigationItems.length : 6;
     },
   },
   mounted() {
@@ -1285,6 +1308,7 @@ a:hover {
 .nav-container {
   position: relative;
   display: flex;
+  align-items: center;
   gap: 24px;
 }
 
@@ -1937,6 +1961,74 @@ a:hover {
   .category.router-link-active,
   .category.router-link-exact-active {
     border-color: var(--bg-20);
+  }
+}
+
+/* Skeleton Loading Styles */
+.nav-skeleton {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+  order: 2;
+  margin-bottom: 0;
+  padding-left: 0;
+}
+
+.skeleton-item {
+  padding: 8px 0;
+}
+
+.skeleton-text {
+  width: 80px;
+  height: 16px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.1) 25%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.1) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.categories-skeleton {
+  display: flex;
+  gap: 8px;
+  padding: 4px 32px;
+  background-color: var(--bg-70);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.skeleton-category {
+  min-width: 128px;
+  height: 30px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .categories-skeleton {
+    padding: 0;
+    background-color: transparent;
   }
 }
 </style>
