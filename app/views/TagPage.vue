@@ -10,6 +10,7 @@
         <FeaturedArticle
           v-else-if="featuredArticle"
           :article="featuredArticle"
+          :showTag="false"
         />
 
         <!-- Main Tag Articles Grid -->

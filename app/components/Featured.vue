@@ -20,7 +20,7 @@
               height="675"
             />
           </picture>
-          <div class="category-tag">
+          <div class="category-tag" v-if="showTag">
             <span class="sport-tag" :class="sportClass(article.sport)">{{
               article.sport
             }}</span>
@@ -49,6 +49,10 @@ export default {
         );
       },
     },
+  },
+  showTag: {
+    type: Boolean,
+    default: true,
   },
   computed: {
     responsiveImage() {

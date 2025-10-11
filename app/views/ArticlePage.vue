@@ -511,7 +511,7 @@ const articleImage = computed(() => {
 console.log(article.value, "THIS ONE ARTICLE")
 // Dynamic meta tags that update based on article data
 useSeoMeta({
-  title: () => article.value?.title || 'Article - Meridian',
+  title: () => `${article.value?.title} | Meridian Sport` || 'Article - Meridian',
   description: () => {
     if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
 
@@ -530,7 +530,7 @@ useSeoMeta({
     // Return first 160 characters for SEO description
     return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
   },
-  ogTitle: () => article.value?.title || 'Article - Meridian',
+  ogTitle: () => `${article.value?.title} | Meridian Sport` || 'Article - Meridian',
   ogDescription: () => {
     if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
 
@@ -551,7 +551,7 @@ useSeoMeta({
   ogImage: () => article.value?.feat_images?.["extra-large"]?.url || '/meridian-logo.svg',
   ogType: 'article',
   twitterCard: 'summary_large_image',
-  twitterTitle: () => article.value?.title || 'Article - Meridian',
+  twitterTitle: () => `${article.value?.title} | Meridian Sport` || 'Article - Meridian',
   twitterDescription: () => {
     if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
 
