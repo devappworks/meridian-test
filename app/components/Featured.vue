@@ -184,6 +184,8 @@ export default {
 }
 
 .featured-content {
+  container-type: inline-size;
+  container-name: featured-content;
   display: flex;
   align-items: center;
   gap: 24px;
@@ -286,6 +288,12 @@ export default {
 
   .featured-text {
     padding: 12px 0;
+  }
+}
+
+@container featured-content (max-width: 862px) {
+  .featured-image {
+    width: 100%;
   }
 }
 </style>
