@@ -448,26 +448,49 @@ const otherNews = ref(props.otherNews || []);
 // Template refs
 const mainColumn = ref(null);
 
+// Helper function to remove broken images from HTML content
+const cleanBrokenImages = (htmlContent) => {
+  if (!htmlContent) return "";
+
+  // Remove figure elements with images that have invalid src (not starting with http/https)
+  // This regex matches figure elements containing img tags with src="files/images/..."
+  let cleaned = htmlContent.replace(
+    /<figure[^>]*>[\s\S]*?<img[^>]*src=["'](?!https?:\/\/)files\/images\/[^"']*["'][^>]*>[\s\S]*?<\/figure>/gi,
+    ''
+  );
+
+  // Also remove standalone img tags with invalid src
+  cleaned = cleaned.replace(
+    /<img[^>]*src=["'](?!https?:\/\/)files\/images\/[^"']*["'][^>]*>/gi,
+    ''
+  );
+
+  return cleaned;
+};
+
 // Computed properties
 const beforeFifthParagraph = computed(() => {
   if (!article.value || !article.value.contents) return "";
 
   const paragraphs = extractParagraphs(article.value.contents);
-  return paragraphs.slice(0, 4).join("");
+  const content = paragraphs.slice(0, 4).join("");
+  return cleanBrokenImages(content);
 });
 
 const fifthParagraph = computed(() => {
   if (!article.value || !article.value.contents) return "";
 
   const paragraphs = extractParagraphs(article.value.contents);
-  return paragraphs[4] || "";
+  const content = paragraphs[4] || "";
+  return cleanBrokenImages(content);
 });
 
 const afterFifthParagraph = computed(() => {
   if (!article.value || !article.value.contents) return "";
 
   const paragraphs = extractParagraphs(article.value.contents);
-  return paragraphs.slice(5).join("");
+  const content = paragraphs.slice(5).join("");
+  return cleanBrokenImages(content);
 });
 
 // Check if there are multiple pages of comments
