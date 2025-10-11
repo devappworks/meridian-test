@@ -67,10 +67,26 @@ export default defineEventHandler(async (event) => {
           hasResponse: !!response,
           hasArticle: !!response?.article,
           articleId: response?.article?.id,
-          articleTitle: response?.article?.title?.substring(0, 50)
+          articleTitle: response?.article?.title?.substring(0, 50),
+          hasRedirectUrl: !!response?.redirect_url,
+          redirectUrl: response?.redirect_url
         })
-        
+
         article = response?.article
+
+        // Check if response has a redirect_url and attach it to the article
+        if (response?.redirect_url && typeof response.redirect_url === 'string' && response.redirect_url.trim() !== '') {
+          const redirectUrl = response.redirect_url.trim()
+          console.log(`🔴 [Attempt ${i + 1}] Response has redirect_url, attaching to article`, {
+            articleId: article?.id,
+            redirectUrl: redirectUrl
+          })
+          // Attach redirect_url to article object so the page can handle it
+          if (article && typeof article === 'object') {
+            article._redirect_url = redirectUrl
+          }
+        }
+
         if (article && typeof article === 'object' && article.id) {
           console.log(`✅ [Attempt ${i + 1}] SUCCESS! Article found under category: ${tryCategory}`)
           console.log(`✅ Article details:`, {

@@ -65,8 +65,18 @@ console.log('🟢 useAsyncData completed:', {
   hasArticle: !!article.value,
   hasError: !!fetchError.value,
   articleId: article.value?.id,
-  errorMessage: fetchError.value?.message
+  errorMessage: fetchError.value?.message,
+  hasRedirectUrl: !!article.value?._redirect_url
 })
+
+// Handle redirect_url if present
+if (article.value?._redirect_url) {
+  console.log('🟢 Article has redirect_url, performing navigation:', article.value._redirect_url)
+  await navigateTo(article.value._redirect_url, {
+    redirectCode: 301,
+    external: true
+  })
+}
 
 if (fetchError.value) {
   console.error('🟢 Fetch error details:', fetchError.value)
