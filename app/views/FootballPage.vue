@@ -243,7 +243,7 @@ if (footballData.value?.result.articles?.length > 0) {
     otherNews.value = filteredArticles.slice(29, 37).map(mapArticle);
 
     const articlesUsed = 40;
-    hasMorePages.value = filteredArticles.length > articlesUsed;
+    hasMorePages.value = filteredArticles.length >= articlesUsed;
   }
 }
 
@@ -317,7 +317,7 @@ const switchCategory = async (categoryId) => {
       otherNews.value = filteredArticles.slice(29, 37).map(mapArticle);
 
       const articlesUsed = 40;
-      hasMorePages.value = filteredArticles.length > articlesUsed;
+      hasMorePages.value = filteredArticles.length >= articlesUsed;
     }
 
     // Update sidebar with latest articles globally

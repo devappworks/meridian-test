@@ -244,8 +244,8 @@ if (volleyballData.value?.result.articles?.length > 0) {
     loadMoreVolleyballNews.value = filteredArticles.slice(17, 29).map(mapArticle);
     otherNews.value = filteredArticles.slice(29, 37).map(mapArticle);
 
-    const articlesUsed = 48;
-    hasMorePages.value = filteredArticles.length > articlesUsed;
+    const articlesUsed = 40;
+    hasMorePages.value = filteredArticles.length >= articlesUsed;
   }
 }
 
@@ -318,8 +318,8 @@ const switchCategory = async (categoryId) => {
       loadMoreVolleyballNews.value = filteredArticles.slice(17, 29).map(mapArticle);
       otherNews.value = filteredArticles.slice(29, 37).map(mapArticle);
 
-      const articlesUsed = 48;
-      hasMorePages.value = filteredArticles.length > articlesUsed;
+      const articlesUsed = 40;
+      hasMorePages.value = filteredArticles.length >= articlesUsed;
     }
 
     // Update sidebar with latest articles globally

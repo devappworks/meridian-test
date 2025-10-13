@@ -415,7 +415,7 @@ export default {
 
       try {
         const apiParams = {
-          articleLimit: 56,
+          articleLimit: 40,
           "tag[]": this.effectiveTagId,
           page: 1,
         };
@@ -444,8 +444,12 @@ export default {
           this.loadMoreTagNews = articles.slice(17, 29).map(this.mapArticle);
           this.relatedNews = articles.slice(29, 32).map(this.mapSidebarArticle);
 
+          // Track that we've already processed page 1 (40 articles)
+          // so the next load more starts from page 2
+          this.currentPage = 1;
+
           // Check if we have more pages
-          this.hasMorePages = articles.length >= 56;
+          this.hasMorePages = articles.length >= 40;
         } else {
           console.log(`🔵 No articles found for tagId: ${this.effectiveTagId}`);
         }
@@ -578,7 +582,7 @@ export default {
     async fetchOtherNews() {
       try {
         const otherData = await fetchFromApi("/getArticles", {
-          articleLimit: 8,
+          articleLimit: 9,
           page: 1,
         });
 
@@ -650,8 +654,9 @@ export default {
 
         // Keep trying pages until we find unique articles or run out of pages
         while (!foundNewArticles && this.hasMorePages) {
+          // Use the same articleLimit as initial fetch for consistent pagination
           const response = await fetchFromApi("/getArticles", {
-            articleLimit: 12,
+            articleLimit: 40,
             "tag[]": this.effectiveTagId,
             page: currentPage,
           });
@@ -673,18 +678,21 @@ export default {
             const mappedArticles = uniqueNewArticles.map(this.mapArticle);
 
             if (mappedArticles.length > 0) {
+              // Take only 12 articles per load more click
+              const articlesToAdd = mappedArticles.slice(0, 12);
+
               // Found unique articles, add them and exit the loop
               this.loadMoreTagNews = [
                 ...this.loadMoreTagNews,
-                ...mappedArticles,
+                ...articlesToAdd,
               ];
               this.currentPage = currentPage;
-              this.hasMorePages = newArticles.length >= 12;
+              this.hasMorePages = newArticles.length >= 40;
               foundNewArticles = true;
             } else {
               // All articles were duplicates, try the next page
               currentPage++;
-              this.hasMorePages = newArticles.length >= 12;
+              this.hasMorePages = newArticles.length >= 40;
             }
           } else {
             this.hasMorePages = false;
