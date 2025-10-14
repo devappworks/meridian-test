@@ -473,6 +473,9 @@ const beforeFifthParagraph = computed(() => {
   if (!article.value || !article.value.contents) return "";
 
   const paragraphs = extractParagraphs(article.value.contents);
+  console.log(`[ArticlePage] Total paragraphs: ${paragraphs.length}`);
+  console.log(`[ArticlePage] Paragraph 4 (index 4): ${paragraphs[4]?.substring(0, 100)}...`);
+  
   const content = paragraphs.slice(0, 4).join("");
   return cleanBrokenImages(content);
 });
@@ -482,6 +485,7 @@ const fifthParagraph = computed(() => {
 
   const paragraphs = extractParagraphs(article.value.contents);
   const content = paragraphs[4] || "";
+  console.log(`[ArticlePage] Fifth paragraph content: ${content.substring(0, 200)}...`);
   return cleanBrokenImages(content);
 });
 
@@ -1017,20 +1021,176 @@ const getJosVestiWebp = (news) => {
 };
 
 const extractParagraphs = (htmlContent) => {
+  // First, try to detect and preserve Twitter embeds using a simpler approach
+  const twitterEmbedPattern = /<blockquote class="twitter-tweet">[\s\S]*?<\/blockquote>\s*<p><script src="https:\/\/platform\.twitter\.com\/widgets\.js"><\/script><\/p>/gi;
+  
+  // Check if content contains Twitter embeds
+  if (twitterEmbedPattern.test(htmlContent)) {
+    console.log('[ArticlePage] Twitter embed detected, using special handling');
+    return extractParagraphsWithTwitterEmbeds(htmlContent);
+  }
+  
   // Server-side safe paragraph extraction
   if (typeof document === 'undefined') {
-    // On server side, use simple regex to split by paragraph tags
-    return htmlContent.split(/<\/(?:p|h[1-6]|div)>/i)
-      .map(part => part.trim())
-      .filter(part => part && part.includes('<'))
-      .map(part => part + (part.match(/<(?:p|h[1-6]|div)/i) ? part.match(/<\/(?:p|h[1-6]|div)>/i)?.[0] || '</p>' : '</p>'));
+    return extractParagraphsSSR(htmlContent);
   }
 
   // Client side with proper DOM parsing
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = htmlContent;
   const elements = Array.from(tempDiv.children);
-  return elements.map((element) => element.outerHTML);
+  
+  // Group Twitter embeds on client side
+  const grouped = [];
+  let i = 0;
+  
+  console.log(`[ArticlePage Client] Processing ${elements.length} elements`);
+  
+  while (i < elements.length) {
+    const element = elements[i];
+    
+    // Check if this is a Twitter blockquote
+    if (element.tagName === 'BLOCKQUOTE' && element.classList.contains('twitter-tweet')) {
+      console.log(`[ArticlePage Client] Found Twitter blockquote at position ${i}`);
+      
+      // Collect the blockquote and the following elements until we find the script tag
+      let twitterBlock = element.outerHTML;
+      let j = i + 1;
+      
+      // Keep adding following elements until we find the Twitter widgets script
+      while (j < elements.length) {
+        const nextElement = elements[j];
+        twitterBlock += nextElement.outerHTML;
+        
+        // Check if this element contains the Twitter widgets script
+        if (nextElement.outerHTML.includes('platform.twitter.com/widgets.js')) {
+          console.log(`[ArticlePage Client] Found Twitter script at position ${j}`);
+          j++;
+          break;
+        }
+        j++;
+      }
+      
+      console.log(`[ArticlePage Client] Grouped Twitter block: ${twitterBlock.substring(0, 100)}...`);
+      grouped.push(twitterBlock);
+      i = j;
+    } else {
+      grouped.push(element.outerHTML);
+      i++;
+    }
+  }
+  
+  return grouped;
+};
+
+// Special handling for content with Twitter embeds
+const extractParagraphsWithTwitterEmbeds = (htmlContent) => {
+  console.log('[ArticlePage] Using Twitter embed special handling');
+  
+  // Split by Twitter embed pattern first
+  const twitterEmbedPattern = /<blockquote class="twitter-tweet">[\s\S]*?<\/blockquote>\s*<p><script src="https:\/\/platform\.twitter\.com\/widgets\.js"><\/script><\/p>/gi;
+  const parts = htmlContent.split(twitterEmbedPattern);
+  const twitterEmbeds = htmlContent.match(twitterEmbedPattern) || [];
+  
+  const result = [];
+  let twitterIndex = 0;
+  
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    
+    // Process the content part (split by paragraphs)
+    if (part.trim()) {
+      const paragraphs = part.split(/<\/(?:p|h[1-6]|div)>/i)
+        .map(p => p.trim())
+        .filter(p => p.length > 0)
+        .map(p => {
+          if (p.includes('<') && !p.match(/<\/(?:p|h[1-6]|div)>$/i)) {
+            const tagMatch = p.match(/<(p|h[1-6]|div)/i);
+            if (tagMatch) {
+              return p + `</${tagMatch[1]}>`;
+            }
+          }
+          return p;
+        });
+      
+      result.push(...paragraphs);
+    }
+    
+    // Add Twitter embed if it exists
+    if (twitterIndex < twitterEmbeds.length) {
+      result.push(twitterEmbeds[twitterIndex]);
+      twitterIndex++;
+    }
+  }
+  
+  console.log(`[ArticlePage] Twitter embed handling produced ${result.length} paragraphs`);
+  return result;
+};
+
+// Server-side paragraph extraction that keeps Twitter embeds intact
+const extractParagraphsSSR = (htmlContent) => {
+  const parts = [];
+  let currentPos = 0;
+  
+  // Find all Twitter embed blocks first
+  // More flexible regex that matches the exact format from your example
+  const twitterBlockRegex = /<blockquote[^>]*class="twitter-tweet"[^>]*>[\s\S]*?<\/blockquote>[\s\S]*?<script[^>]*src="[^"]*platform\.twitter\.com\/widgets\.js[^"]*"[^>]*><\/script>/gi;
+  const twitterBlocks = [];
+  let match;
+  
+  while ((match = twitterBlockRegex.exec(htmlContent)) !== null) {
+    twitterBlocks.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      content: match[0]
+    });
+  }
+  
+  console.log(`[ArticlePage SSR] Found ${twitterBlocks.length} Twitter embed blocks`);
+  
+  // Split content, but skip Twitter embed blocks
+  let tempContent = htmlContent;
+  let offset = 0;
+  
+  // Replace Twitter blocks with placeholders temporarily
+  const placeholders = [];
+  twitterBlocks.forEach((block, index) => {
+    const placeholder = `___TWITTER_BLOCK_${index}___`;
+    placeholders.push(placeholder);
+    const before = tempContent.substring(0, block.start - offset);
+    const after = tempContent.substring(block.end - offset);
+    tempContent = before + placeholder + after;
+    offset += block.content.length - placeholder.length;
+  });
+  
+  // Now split by paragraph tags
+  const splitParts = tempContent.split(/<\/(?:p|h[1-6]|div)>/i)
+    .map(part => part.trim())
+    .filter(part => part.length > 0);
+  
+  // Restore Twitter blocks and reconstruct closing tags
+  const result = [];
+  splitParts.forEach(part => {
+    // Check if this part contains a Twitter placeholder
+    let processedPart = part;
+    placeholders.forEach((placeholder, index) => {
+      if (part.includes(placeholder)) {
+        processedPart = part.replace(placeholder, twitterBlocks[index].content);
+      }
+    });
+    
+    // Add closing tag if it was split off
+    if (processedPart.includes('<') && !processedPart.match(/<\/(?:p|h[1-6]|div)>$/i)) {
+      const tagMatch = processedPart.match(/<(p|h[1-6]|div)/i);
+      if (tagMatch) {
+        processedPart += `</${tagMatch[1]}>`;
+      }
+    }
+    
+    result.push(processedPart);
+  });
+  
+  return result;
 };
 
 const share = (platform) => {
