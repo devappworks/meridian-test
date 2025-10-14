@@ -276,15 +276,22 @@ if (latestArticlesData.value?.result.articles?.length > 0) {
 const switchCategory = async (categoryId) => {
   currentCategory.value = categoryId;
   isSwitchingCategory.value = true;
-  
+
+  // Clear old data immediately to prevent flash of wrong content
+  featuredArticle.value = null;
+  volleyballNews.value = [];
+  loadMoreVolleyballNews.value = [];
+  otherNews.value = [];
+  relatedNews.value = [];
+
   loading.value = {
     featured: true,
-    main: true, 
+    main: true,
     loadMore: false,
     other: true,
     sidebar: true,
   };
-  
+
   try {
     const [volleyballDataResponse, latestArticlesResponse] = await Promise.all([
       fetchFromApi("/getArticles", {

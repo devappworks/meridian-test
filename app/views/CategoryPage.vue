@@ -659,6 +659,7 @@ export default {
     },
 
     resetNews() {
+      this.featuredArticle = null;
       this.categoryNews = [];
       this.loadMoreCategoryNews = [];
       this.otherNews = [];
@@ -850,6 +851,18 @@ export default {
         return;
       }
 
+      // Skip if categoryId is null or undefined - prevents flash on initial load
+      if (categoryId === null || categoryId === undefined) {
+        console.log("CategoryPage: Skipping - categoryId is null/undefined");
+        return;
+      }
+
+      // Skip if we're already on this category to avoid unnecessary refetch
+      if (categoryId === this.currentCategoryId) {
+        console.log("CategoryPage: Skipping - already on this category");
+        return;
+      }
+
       console.log("CategoryPage: Updating to categoryId:", categoryId);
 
       // Update current category and sport information
@@ -865,18 +878,18 @@ export default {
         this.storedCategoryTitle = sport.toUpperCase();
       }
 
-      // Reset all data
-      this.resetNews();
-      console.log("CategoryPage: Reset news data");
-
-      // Set loading states
+      // Set loading states FIRST to show skeletons immediately
       this.loading = {
         main: true,
         loadMore: false,
         other: true,
         sidebar: true,
       };
-      console.log("CategoryPage: Set loading states, now fetching articles...");
+      console.log("CategoryPage: Set loading states");
+
+      // Reset all data to prevent flash of wrong content
+      this.resetNews();
+      console.log("CategoryPage: Reset news data");
 
       // Fetch new data for the category
       await this.fetchCategoryArticles();

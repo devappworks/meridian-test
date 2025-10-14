@@ -182,7 +182,7 @@
                   <router-link
                     :to="generateHelperRouteFromTitle(item.title, item)"
                     class="category"
-                    @click="onSportCategoryClick"
+                    @click.native="onSportCategoryClick"
                   >
                     {{ item.title }}
                   </router-link>
@@ -346,6 +346,7 @@ export default {
       helperNavigationItems: [], // Add this new property
       isNavigationLoading: true,
       hasSportCategoryClicked: false,
+      lastClickWasFromSportNav: false, // Track if last navigation was from sport navbar
       // Dynamic sport menu data - will be populated based on API response
       sportMenuData: {},
       // Dynamic current categories - will be populated based on API response
@@ -364,31 +365,36 @@ export default {
       return this.swiper && !this.isEnd;
     },
     isCategoryPage() {
+      // Don't show CategoryPageNav if last click was from sport navbar (subcategory/tag)
+      if (this.lastClickWasFromSportNav) {
+        return false;
+      }
+
       // Check if current route matches navigation items with submenus
       const categoryRoutes = this.navigationItems.filter(item => item.has_submenu).map(item => item.href);
       const currentRoute = this.$route.path.split("/").pop();
-      
+
       // First check: direct route match
       if (categoryRoutes.includes(currentRoute)) {
         return true;
       }
-      
+
       // Second check: if we have sport menu data for the current route (category page via slug)
       if (this.currentSport && this.sportMenuData[this.currentSport]) {
         return true;
       }
-      
+
       // Third check: check if the route has category-related query parameters
       if (this.$route.query.categoryId && this.$route.query.title) {
         return true;
       }
-      
+
       // Fourth check: check if current route matches any sport route mapping
       const currentPath = this.$route.path;
       if (this.sportRouteMapping[currentPath]) {
         return true;
       }
-      
+
       return false;
     },
     currentSport() {
@@ -1024,8 +1030,13 @@ export default {
         this.hideSportUnderline();
       }
     },
-    onSportCategoryClick() {
+    onSportCategoryClick(event) {
       this.hasSportCategoryClicked = true;
+
+      // Mark that this click came from sport navbar
+      // This prevents CategoryPageNav from showing for subcategory/tag pages
+      this.lastClickWasFromSportNav = true;
+
       // Update underline after click
       this.$nextTick(() => {
         this.updateSportActiveUnderline();
@@ -1207,6 +1218,24 @@ export default {
       if (to.path === "/" && from.path === "/prijava/") {
         this.checkUserLoggedIn();
       }
+
+      // Reset the sport nav flag when navigating from main nav or other sources
+      // Check if the new route is a main category page (from navigationItems)
+      const isMainCategoryRoute = this.navigationItems.some(item => {
+        if (item.href) {
+          const routePath = this.generateRouteFromHref(item.href);
+          return to.path === routePath;
+        }
+        return false;
+      });
+
+      if (isMainCategoryRoute) {
+        this.lastClickWasFromSportNav = false;
+        // Also hide the sport navbar underline when navigating to main nav
+        this.hasSportCategoryClicked = false;
+        this.hideSportUnderline();
+      }
+
       // Update underline position when route changes
       // Use nextTick first, then setTimeout to ensure router-link classes are fully updated
       this.$nextTick(() => {
