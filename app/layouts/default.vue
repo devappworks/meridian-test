@@ -1,14 +1,14 @@
 <template>
   <div class="page-shell">
     <!-- Google Tag Manager (noscript) - Fallback for users with JS disabled -->
-    <noscript>
+    <ClientOnly>
       <iframe
         :src="`https://www.googletagmanager.com/ns.html?id=${gtmId}`"
         height="0"
         width="0"
         style="display:none;visibility:hidden"
       ></iframe>
-    </noscript>
+    </ClientOnly>
     <!-- End Google Tag Manager (noscript) -->
 
     <div class="side-banner left-banner">
@@ -76,6 +76,16 @@ import Footer from "@/components/Footer.vue";
 // Get GTM ID from runtime config
 const config = useRuntimeConfig();
 const gtmId = config.public?.GTM_ID || 'GTM-MDNMRBXM';
+
+// Load GTM script on client side
+onMounted(() => {
+  if (process.client) {
+    const script = document.createElement('script')
+    script.src = `https://www.googletagmanager.com/gtm.js?id=${gtmId}`
+    script.async = true
+    document.head.appendChild(script)
+  }
+})
 
 // Use shared composable to prevent duplicate API calls
 const { skyscraperBanners } = useOrders();

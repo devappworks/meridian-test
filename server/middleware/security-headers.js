@@ -22,7 +22,7 @@ export default defineEventHandler((event) => {
     // Allow fonts from Google and CDNs
     "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
     // Allow frames from YouTube and Twitter
-    "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://platform.twitter.com https://*.twitter.com",
+    "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://platform.twitter.com https://*.twitter.com https://www.googletagmanager.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'"
