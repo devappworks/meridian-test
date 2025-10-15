@@ -101,26 +101,48 @@ const currentPage = ref(1);
 const isLoading = ref(false);
 
 // Helper functions
-const mapArticle = (article) => ({
-  id: article.id,
-  title: article.title,
-  sport: getSportFromCategories(article.categories) || "VESTI",
-  date: article.date,
-  url: article.url,
-  image: article.feat_images["small"]?.url || null,
-  featImages: article.feat_images || null, // Include full feat_images for WebP support
-  category: article.categories[0]?.slug,
-  slug: article.slug,
-});
+const mapArticle = (article) => {
+  if (!article) return null;
 
-const mapSidebarArticle = (article) => ({
-  id: article.id,
-  title: article.title,
-  sport: getSportFromCategories(article.categories) || "VESTI",
-  date: article.date,
-  category: useArticleCategory(article) || article.categories[0].slug,
-  slug: article.slug,
-});
+  const hasCategories = article.categories && Array.isArray(article.categories) && article.categories.length > 0;
+  const defaultCategory = 'ostali-sportovi';
+
+  if (!hasCategories) {
+    console.warn('Article without category in LatestNewsPage:', article.id);
+  }
+
+  return {
+    id: article.id,
+    title: article.title,
+    sport: hasCategories ? (getSportFromCategories(article.categories) || "VESTI") : "VESTI",
+    date: article.date,
+    url: article.url,
+    image: article.feat_images["small"]?.url || null,
+    featImages: article.feat_images || null, // Include full feat_images for WebP support
+    category: hasCategories ? article.categories[0]?.slug : defaultCategory,
+    slug: article.slug,
+  };
+};
+
+const mapSidebarArticle = (article) => {
+  if (!article) return null;
+
+  const hasCategories = article.categories && Array.isArray(article.categories) && article.categories.length > 0;
+  const defaultCategory = 'ostali-sportovi';
+
+  if (!hasCategories) {
+    console.warn('Sidebar article without category in LatestNewsPage:', article.id);
+  }
+
+  return {
+    id: article.id,
+    title: article.title,
+    sport: hasCategories ? (getSportFromCategories(article.categories) || "VESTI") : "VESTI",
+    date: article.date,
+    category: hasCategories ? (useArticleCategory(article) || article.categories[0].slug) : defaultCategory,
+    slug: article.slug,
+  };
+};
 
 const getSportFromCategories = (categories) => {
   const sportMap = {
@@ -162,10 +184,10 @@ if (latestNewsData.value?.result.articles?.length > 0) {
   const articles = latestNewsData.value.result.articles;
 
   // Main latest news grid (first 12 articles)
-  latestNews.value = articles.slice(0, 12).map(mapArticle);
-  loadMoreLatestNews.value = articles.slice(12, 24).map(mapArticle);
-  otherNews.value = articles.slice(24, 40).map(mapArticle);
-  relatedNews.value = articles.slice(0, 8).map(mapSidebarArticle);
+  latestNews.value = articles.slice(0, 12).map(mapArticle).filter(Boolean);
+  loadMoreLatestNews.value = articles.slice(12, 24).map(mapArticle).filter(Boolean);
+  otherNews.value = articles.slice(24, 40).map(mapArticle).filter(Boolean);
+  relatedNews.value = articles.slice(0, 8).map(mapSidebarArticle).filter(Boolean);
 
   // Check if we have more pages
   hasMorePages.value = articles.length >= 40;

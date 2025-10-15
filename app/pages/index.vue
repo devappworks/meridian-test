@@ -208,18 +208,27 @@ const matches = ref([
 
 // Helper functions
 const mapArticleData = (article) => {
-  if (!article || !article.categories || article.categories.length === 0) {
+  if (!article) {
     return null;
   }
+
+  // Handle missing categories gracefully - use default category
+  const hasCategories = article.categories && Array.isArray(article.categories) && article.categories.length > 0;
+  const defaultCategory = 'ostali-sportovi'; // Default category for articles without category
+
+  if (!hasCategories) {
+    console.warn('Article without category detected:', article.id, article.title);
+  }
+
   return {
     id: article.id,
     title: article.title,
-    sport: getSportFromCategories(article.categories),
+    sport: hasCategories ? getSportFromCategories(article.categories) : 'OSTALE VESTI',
     date: article.date,
     url: article.url,
     image: article.feat_images?.["small"]?.url || null,
     featImages: article.feat_images || null, // Include full feat_images for WebP support
-    category: article.categories?.[0]?.slug || '',
+    category: hasCategories ? (article.categories[0]?.slug || defaultCategory) : defaultCategory,
     slug: article.slug || '',
   };
 };
@@ -274,22 +283,28 @@ const [
 
 // Process featured articles from SSR
 if (featuredData.value?.result.articles?.length > 0) {
-  const featuredArticles = featuredData.value.result.articles.filter(article =>
-    article && article.categories && article.categories.length > 0
-  );
+  const featuredArticles = featuredData.value.result.articles.filter(article => article); // Only filter out null/undefined
 
   if (featuredArticles.length > 0) {
+    const firstArticle = featuredArticles[0];
+    const hasCategories = firstArticle.categories && Array.isArray(firstArticle.categories) && firstArticle.categories.length > 0;
+    const defaultCategory = 'ostali-sportovi';
+
+    if (!hasCategories) {
+      console.warn('Featured article without category detected:', firstArticle.id, firstArticle.title);
+    }
+
     featuredArticle.value = {
-      id: featuredArticles[0].id,
-      title: featuredArticles[0].title,
-      sport: getSportFromCategories(featuredArticles[0].categories),
-      date: featuredArticles[0].date,
-      url: featuredArticles[0].url,
-      image: featuredArticles[0].feat_images?.["medium"]?.url || null,
-      featImages: featuredArticles[0].feat_images || null,
-      content: featuredArticles[0].contents,
-      category: featuredArticles[0].categories?.[0]?.slug || '',
-      slug: featuredArticles[0].slug || '',
+      id: firstArticle.id,
+      title: firstArticle.title,
+      sport: hasCategories ? getSportFromCategories(firstArticle.categories) : 'OSTALE VESTI',
+      date: firstArticle.date,
+      url: firstArticle.url,
+      image: firstArticle.feat_images?.["medium"]?.url || null,
+      featImages: firstArticle.feat_images || null,
+      content: firstArticle.contents,
+      category: hasCategories ? (firstArticle.categories?.[0]?.slug || defaultCategory) : defaultCategory,
+      slug: firstArticle.slug || '',
     };
 
     // Preload featured image for better LCP

@@ -149,20 +149,28 @@ const { data: otherNewsData } = await useAsyncData(
       return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
     };
 
-    const sportCategory = getSportFromCategories(article.value.categories);
+    const hasCategories = article.value.categories && Array.isArray(article.value.categories) && article.value.categories.length > 0;
+    const sportCategory = hasCategories ? getSportFromCategories(article.value.categories) : 'OSTALE VESTI';
+    const defaultCategory = 'ostali-sportovi';
 
     return articles
       .slice(0, 8)
-      .filter(article => article && article.categories && article.categories.length > 0)
-      .map((article) => ({
-        id: article.id,
-        title: article.title,
-        image: article.feat_images?.small?.url || null,
-        sport: sportCategory,
-        url: article.url || null,
-        category: article.categories[0]?.slug,
-        slug: article.slug,
-      }));
+      .filter(article => article) // Only filter null/undefined
+      .map((article) => {
+        const articleHasCategories = article.categories && Array.isArray(article.categories) && article.categories.length > 0;
+        if (!articleHasCategories) {
+          console.warn('Other news article without category in [category]/[slug].vue:', article.id);
+        }
+        return {
+          id: article.id,
+          title: article.title,
+          image: article.feat_images?.small?.url || null,
+          sport: sportCategory,
+          url: article.url || null,
+          category: articleHasCategories ? article.categories[0]?.slug : defaultCategory,
+          slug: article.slug,
+        };
+      });
   }
 );
 

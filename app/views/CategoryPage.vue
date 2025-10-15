@@ -451,28 +451,46 @@ export default {
     },
 
     mapArticle(article) {
+      if (!article) return null;
+
+      const hasCategories = article.categories && Array.isArray(article.categories) && article.categories.length > 0;
+      const defaultCategory = 'ostali-sportovi';
+
+      if (!hasCategories) {
+        console.warn('Article without category in CategoryPage:', article.id);
+      }
+
       return {
         id: article.id,
         title: article.title,
-        sport: this.getSportFromCategories(article.categories),
+        sport: hasCategories ? this.getSportFromCategories(article.categories) : 'OSTALE VESTI',
         date: article.date,
         url: article.url,
         image: article.feat_images["small"]
           ? article.feat_images["small"].url
           : null,
         featImages: article.feat_images || null, // Include full feat_images for WebP support
-        category: useArticleCategory(article) || article.categories[0].slug,
+        category: hasCategories ? (useArticleCategory(article) || article.categories[0].slug) : defaultCategory,
         slug: article.slug,
       };
     },
 
     mapSidebarArticle(article) {
+      if (!article) return null;
+
+      const hasCategories = article.categories && Array.isArray(article.categories) && article.categories.length > 0;
+      const defaultCategory = 'ostali-sportovi';
+
+      if (!hasCategories) {
+        console.warn('Sidebar article without category in CategoryPage:', article.id);
+      }
+
       return {
         id: article.id,
         title: article.title,
-        sport: this.getSportFromCategories(article.categories),
+        sport: hasCategories ? this.getSportFromCategories(article.categories) : 'OSTALE VESTI',
         date: article.date,
-        category: useArticleCategory(article) || article.categories[0].slug,
+        category: hasCategories ? (useArticleCategory(article) || article.categories[0].slug) : defaultCategory,
         slug: article.slug,
       };
     },
@@ -538,14 +556,15 @@ export default {
 
         if (allArticles.length > 0) {
           // Main category news grid (first 12 articles)
-          this.categoryNews = allArticles.slice(0, 12).map(this.mapArticle);
+          this.categoryNews = allArticles.slice(0, 12).map(this.mapArticle).filter(Boolean);
 
           this.loadMoreCategoryNews = allArticles
             .slice(12, 24)
-            .map(this.mapArticle);
+            .map(this.mapArticle)
+            .filter(Boolean);
 
           // Other news
-          this.otherNews = allArticles.slice(24, 48).map(this.mapArticle);
+          this.otherNews = allArticles.slice(24, 48).map(this.mapArticle).filter(Boolean);
 
           // Check if we have more pages
           this.hasMorePages = allArticles.length >= 40;
@@ -558,7 +577,8 @@ export default {
         if (latestArticlesData?.result.articles?.length > 0) {
           this.relatedNews = latestArticlesData.result.articles
             .slice(0, 8)
-            .map(this.mapSidebarArticle);
+            .map(this.mapSidebarArticle)
+            .filter(Boolean);
         }
 
         this.loading = {
