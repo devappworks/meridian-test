@@ -268,16 +268,16 @@ const { data: latestArticlesData, pending: latestPending } = await useAsyncData(
 );
 
 const [
-  { data: tennisData },
+  //{ data: tennisData },
   { data: volleyballData },
   { data: basketballData },
   { data: footballData },
   { data: tipoviData }
 ] = await Promise.all([
-  useAsyncData('homepage-tennis', () => fetchFromApi('/getArticles', { articleLimit: 20, 'category[]': 41 })),
-  useAsyncData('homepage-volleyball', () => fetchFromApi('/getArticles', { articleLimit: 20, 'category[]': 37 })),
-  useAsyncData('homepage-basketball', () => fetchFromApi('/getArticles', { articleLimit: 20, 'category[]': 25 })),
-  useAsyncData('homepage-football', () => fetchFromApi('/getArticles', { articleLimit: 20, 'category[]': 28 })),
+  //useAsyncData('homepage-tennis', () => fetchFromApi('/getArticles', { articleLimit: 20, 'category[]': 41 })),
+  useAsyncData('homepage-volleyball', () => fetchFromApi('/getArticles', { articleLimit: 12, 'category[]': 37 })),
+  useAsyncData('homepage-basketball', () => fetchFromApi('/getArticles', { articleLimit: 12, 'category[]': 25 })),
+  useAsyncData('homepage-football', () => fetchFromApi('/getArticles', { articleLimit: 8, 'category[]': 28 })),
   useAsyncData('homepage-tipovi', () => fetchMeridianTipovi(3))
 ]);
 
@@ -379,7 +379,7 @@ if (basketballData.value?.result.articles?.length > 0) {
   }));
 }
 
-if (tennisData.value?.result.articles?.length > 0) {
+/* if (tennisData.value?.result.articles?.length > 0) {
   tennisNews.value = tennisData.value.result.articles.slice(0, 12).map((article) => ({
     id: article.id,
     title: article.title,
@@ -391,7 +391,7 @@ if (tennisData.value?.result.articles?.length > 0) {
     category: article.categories[0]?.slug,
     slug: article?.slug,
   }));
-}
+} */
 
 // Process Meridian tipovi articles from SSR
 if (tipoviData.value?.result.articles?.length > 0) {
@@ -424,7 +424,7 @@ onMounted(() => {
 });
 
 // Client-side functions for match odds slider
-const startDragging = (e) => {
+/* const startDragging = (e) => {
   isDragging.value = true;
   const slider = document.querySelector('.match-odds-container');
   startX.value = e.type === "mousedown" ? e.pageX : e.touches[0].pageX;
@@ -468,7 +468,7 @@ const slideMatchOdds = (direction) => {
   } else {
     slider.scrollBy({ left: -itemWidth, behavior: "smooth" });
   }
-};
+}; */
 </script>
 
 <template>
