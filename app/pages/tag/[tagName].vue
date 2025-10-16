@@ -1,6 +1,6 @@
 <script setup>
 const route = useRoute();
-const { tagName } = route.params;
+let { tagName } = route.params;
 
 console.log(`\n🔵 ============ TAG PAGE ROUTE HIT ============`);
 console.log(`🔵 Tag name from params: "${tagName}"`);
@@ -8,6 +8,30 @@ console.log(`🔵 Full route path: "${route.path}"`);
 console.log(`🔵 Is server-side: ${process.server}`);
 console.log(`🔵 Environment: ${process.env.NODE_ENV}`);
 console.log(`🔵 ============================================\n`);
+
+// Redirect map for specific old tag URLs to new ones
+const tagRedirects = {
+  'kosarkaski-klub-kk-partizan': 'kk-partizan',
+  'fudbalski-klub-partizan': 'fk-partizan',
+  'kk-crvena-zvezda-2': 'kk-crvena-zvezda',
+  'merid': 'meridian'
+};
+
+// Check if current tag needs to be redirected - DO THIS BEFORE SETTING META TAGS
+if (tagRedirects[tagName]) {
+  const newTagName = tagRedirects[tagName];
+  console.log(`🔄 Redirecting from /tag/${tagName}/ to /tag/${newTagName}/`);
+
+  // Perform redirect immediately - this stops execution here
+  // Search engines will only see the 301 redirect, not the meta tags below
+  await navigateTo(`/tag/${newTagName}/`, {
+    redirectCode: 301, // Permanent redirect for SEO
+    external: false
+  });
+
+  // This code below won't execute after redirect, but just in case:
+  throw createError({ statusCode: 301, message: 'Redirecting', fatal: false });
+}
 
 // Process tag name for display: replace hyphens with spaces and capitalize
 const formattedTagName = tagName
