@@ -115,11 +115,6 @@ export default {
     FeaturedArticle,
   },
   props: {
-    tagId: {
-      type: String,
-      required: false,
-      default: null,
-    },
     tagName: {
       type: String,
       required: true,
@@ -127,7 +122,6 @@ export default {
   },
   data() {
     return {
-      resolvedTagId: null, // Store the resolved tag ID
       featuredArticle: null,
       tagNews: [],
       loadMoreTagNews: [],
@@ -151,53 +145,20 @@ export default {
     tagTitle() {
       return this.tagName ? this.tagName.replace(/-/g, ' ').toUpperCase() : "TAG";
     },
-    effectiveTagId() {
-      // Use provided tagId if available, otherwise use resolved tagId
-      return this.tagId || this.resolvedTagId;
-    },
   },
   async mounted() {
-    console.log(`🔵 TagPage mounted - tagId: ${this.tagId}, tagName: ${this.tagName}`);
-    
-    // If we don't have a tagId, try to get it from localStorage first
-    if (!this.tagId && this.tagName) {
-      const storedTagId = this.getStoredTagId();
-      if (storedTagId) {
-        console.log(`🔵 Using stored tagId: ${storedTagId}`);
-        this.resolvedTagId = storedTagId;
-      } else {
-        console.log(`🔵 No stored tagId, attempting to resolve from tagName: ${this.tagName}`);
-        await this.resolveTagIdFromName();
-      }
-    } else if (this.tagId) {
-      console.log(`🔵 Using provided tagId: ${this.tagId}`);
-      // Store the tagId for future use
-      this.storeTagId(this.tagId);
-    }
-    
+    console.log(`🔵 TagPage mounted - tagName: ${this.tagName}`);
+
     // Update the URL to show just the tag slug
     this.updateUrl();
-    
-    // Fetch articles if we have a tag ID
-    if (this.effectiveTagId) {
-      console.log(`🔵 Fetching articles for tagId: ${this.effectiveTagId}`);
-      await this.fetchTagArticles();
-    } else {
-      console.warn(`🔴 No effective tag ID available for fetching articles`);
-    }
+
+    // Fetch articles using tag slug
+    await this.fetchTagArticles();
   },
   watch: {
     tagName: {
       async handler(newTagName, oldTagName) {
         if (newTagName !== oldTagName) {
-          // Reset tag ID when tag name changes
-          this.resolvedTagId = null;
-
-          // Resolve new tag ID if we don't have one
-          if (!this.tagId) {
-            await this.resolveTagIdFromName();
-          }
-
           this.resetNews();
           this.fetchTagArticles();
           this.updateUrl();
@@ -207,138 +168,12 @@ export default {
     },
   },
   methods: {
-    // Resolve tag ID from tag name by fetching from getHelperNav
-    async resolveTagIdFromName() {
-      try {
-        // Fetch helper navigation which contains tags
-        const response = await fetchFromApi("/getHelperNav");
-
-        if (response?.success && response?.result?.languages?.length > 0) {
-          const webMenu = response.result.languages[0].web_menu;
-
-          // Find the help-nav menu item which contains the sub_menu items
-          const helpNavItem = webMenu?.find(item => item.title === "help-nav");
-
-          if (helpNavItem && helpNavItem.sub_menu) {
-            // Search through sub_menu items for tags (items with non-empty content array)
-            for (const item of helpNavItem.sub_menu) {
-              // Check if this is a tag (has content)
-              const isTag = item.content && Array.isArray(item.content) && item.content.length > 0;
-
-              if (isTag) {
-                // Generate slug from the item title
-                const itemSlug = item.title
-                  .toLowerCase()
-                  .replace(/\s+/g, '-')
-                  .replace(/š/g, 's')
-                  .replace(/č/g, 'c')
-                  .replace(/ć/g, 'c')
-                  .replace(/ž/g, 'z')
-                  .replace(/đ/g, 'd')
-                  .replace(/[^a-z0-9-]/g, '')
-                  .replace(/-+/g, '-')
-                  .replace(/^-|-$/g, '');
-
-                // Check if this matches our tag name
-                if (itemSlug === this.tagName) {
-                  // Try to get tag ID from the content array
-                  if (item.content[0]?.options?.tags?.[0]) {
-                    this.resolvedTagId = item.content[0].options.tags[0].toString();
-                    this.storeTagId(this.resolvedTagId);
-                    return;
-                  } else if (item.id) {
-                    // Fallback to item.id if no tag ID in content
-                    this.resolvedTagId = item.id.toString();
-                    this.storeTagId(this.resolvedTagId);
-                    return;
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        // If we couldn't find the tag ID in getHelperNav, try alternative approaches
-        console.warn("⚠️ Could not resolve tag ID from getHelperNav for tag name:", this.tagName);
-        
-        // Try to find tag ID by searching through recent articles
-        await this.tryResolveTagIdFromArticles();
-      } catch (error) {
-        console.error("❌ Error resolving tag ID from name:", error);
-      }
-    },
-
-    // Store tag ID in localStorage for persistence across page refreshes
-    storeTagId(tagId) {
-      if (typeof window !== 'undefined' && this.tagName) {
-        const key = `tagId_${this.tagName}`;
-        localStorage.setItem(key, tagId);
-        console.log(`🔵 Stored tagId ${tagId} for tag: ${this.tagName}`);
-      }
-    },
-
-    // Get stored tag ID from localStorage
-    getStoredTagId() {
-      if (typeof window !== 'undefined' && this.tagName) {
-        const key = `tagId_${this.tagName}`;
-        const storedId = localStorage.getItem(key);
-        if (storedId) {
-          console.log(`🔵 Retrieved stored tagId ${storedId} for tag: ${this.tagName}`);
-          return storedId;
-        }
-      }
-      return null;
-    },
-
-    // Try to resolve tag ID by searching through recent articles
-    async tryResolveTagIdFromArticles() {
-      try {
-        console.log(`🔵 Attempting to resolve tag ID from articles for: ${this.tagName}`);
-        
-        // Fetch recent articles to search for our tag
-        const response = await fetchFromApi("/getArticles", {
-          articleLimit: 50,
-          page: 1,
-        });
-
-        const articles = response.result.articles;
-        const tagNameForMatching = this.tagName.replace(/-/g, ' ').toLowerCase();
-
-        // Search through articles for our tag
-        for (const article of articles) {
-          if (article.tags && Array.isArray(article.tags)) {
-            for (const tag of article.tags) {
-              const tagName = tag.name || tag.title || tag;
-              if (typeof tagName === 'string') {
-                const normalizedTagName = tagName.toLowerCase().replace(/\s+/g, ' ');
-                if (normalizedTagName.includes(tagNameForMatching) || 
-                    tagNameForMatching.includes(normalizedTagName)) {
-                  
-                  // Found a matching tag, try to extract the ID
-                  if (tag.id) {
-                    this.resolvedTagId = tag.id.toString();
-                    this.storeTagId(this.resolvedTagId);
-                    console.log(`✅ Resolved tag ID from articles: ${this.resolvedTagId} for tag: ${this.tagName}`);
-                    return;
-                  }
-                }
-              }
-            }
-          }
-        }
-        
-        console.log(`⚠️ Could not resolve tag ID from articles for: ${this.tagName}`);
-      } catch (error) {
-        console.error("❌ Error resolving tag ID from articles:", error);
-      }
-    },
-
     // Update the browser URL to show the tag with /tag/ prefix
     updateUrl() {
       if (this.tagName && this.$router) {
         const newUrl = `/tag/${this.tagName}/`;
         // Use replaceState to update URL without triggering navigation
-        window.history.replaceState(null, '', newUrl);
+        //window.history.replaceState(null, '', newUrl);
       }
     },
 
@@ -352,7 +187,7 @@ export default {
         url: article.url,
         image: article.feat_images?.medium?.url || null,
         featImages: article.feat_images || null, // Include full feat_images for WebP support
-        category: useArticleCategory(article) || article.categories[0].slug,
+        category: useArticleCategory(article) || article.categories?.[0]?.slug || 'ostali-sportovi',
         slug: article.slug,
       };
     },
@@ -364,7 +199,7 @@ export default {
         title: article.title,
         sport: this.tagTitle,
         date: this.formatDate(article.publish_date),
-        category: useArticleCategory(article) || article.categories[0].slug,
+        category: useArticleCategory(article) || article.categories?.[0]?.slug || 'ostali-sportovi',
         slug: article.slug,
       };
     },
@@ -398,32 +233,26 @@ export default {
     },
 
     async fetchTagArticles() {
-      // Try to fetch with tag ID first, then fallback to tag name
-      if (!this.effectiveTagId) {
-        console.warn("No tag ID available, attempting fallback fetch by tag name");
-        await this.fetchTagArticlesByFallback();
-        return;
-      }
-
       this.loading = {
         featured: true,
         main: true,
         loadMore: false,
         other: true,
         sidebar: true,
+        latest: true,
       };
 
       try {
         const apiParams = {
           articleLimit: 40,
-          "tag[]": this.effectiveTagId,
+          "tag_slug[]": this.tagName,
           page: 1,
         };
 
         const tagData = await fetchFromApi("/getArticles", apiParams);
 
         const articles = tagData.result.articles;
-        console.log(`🔵 Fetched ${articles.length} articles for tagId: ${this.effectiveTagId}`);
+        console.log(`🔵 Fetched ${articles.length} articles for tag slug: ${this.tagName}`);
 
         if (articles.length > 0) {
           this.featuredArticle = {
@@ -436,7 +265,7 @@ export default {
             featImages: articles[0].feat_images || null,
             content: articles[0].contents,
             featured: true,
-            category: articles[0].categories[0].slug,
+            category: articles[0].categories?.[0]?.slug || 'ostali-sportovi',
             slug: articles[0].slug,
           };
 
@@ -451,7 +280,7 @@ export default {
           // Check if we have more pages
           this.hasMorePages = articles.length >= 40;
         } else {
-          console.log(`🔵 No articles found for tagId: ${this.effectiveTagId}`);
+          console.log(`🔵 No articles found for tag slug: ${this.tagName}`);
         }
 
         // Fetch other news (articles not related to this tag)
@@ -471,101 +300,6 @@ export default {
         };
       } catch (error) {
         console.error("Error fetching tag articles:", error);
-        this.resetNews();
-        // Hide loading states on error
-        this.loading = {
-          featured: false,
-          main: false,
-          loadMore: false,
-          other: false,
-          sidebar: false,
-          latest: false,
-        };
-      }
-    },
-
-    // Fallback method to fetch articles when we don't have a tag ID
-    async fetchTagArticlesByFallback() {
-      console.log(`🔵 Attempting fallback fetch for tag: ${this.tagName}`);
-      
-      this.loading = {
-        featured: true,
-        main: true,
-        loadMore: false,
-        other: true,
-        sidebar: true,
-      };
-
-      try {
-        // Try to fetch all articles and filter by tag name in the content
-        const response = await fetchFromApi("/getArticles", {
-          articleLimit: 100, // Get more articles to increase chances of finding tagged ones
-          page: 1,
-        });
-
-        const allArticles = response.result.articles;
-        console.log(`🔵 Fetched ${allArticles.length} articles for fallback filtering`);
-
-        // Filter articles that contain our tag name in their tags
-        const tagNameForMatching = this.tagName.replace(/-/g, ' ').toLowerCase();
-        const taggedArticles = allArticles.filter(article => {
-          if (!article.tags || !Array.isArray(article.tags)) return false;
-          
-          return article.tags.some(tag => {
-            const tagName = tag.name || tag.title || tag;
-            if (typeof tagName === 'string') {
-              const normalizedTagName = tagName.toLowerCase().replace(/\s+/g, ' ');
-              return normalizedTagName.includes(tagNameForMatching) || 
-                     tagNameForMatching.includes(normalizedTagName);
-            }
-            return false;
-          });
-        });
-
-        console.log(`🔵 Found ${taggedArticles.length} articles matching tag: ${this.tagName}`);
-
-        if (taggedArticles.length > 0) {
-          this.featuredArticle = {
-            id: taggedArticles[0].id,
-            title: taggedArticles[0].title,
-            sport: this.tagTitle,
-            date: this.formatDate(taggedArticles[0].publish_date),
-            url: taggedArticles[0].url,
-            image: taggedArticles[0].feat_images?.large?.url || null,
-            featImages: taggedArticles[0].feat_images || null,
-            content: taggedArticles[0].contents,
-            featured: true,
-            category: taggedArticles[0].categories[0].slug,
-            slug: taggedArticles[0].slug,
-          };
-
-          this.tagNews = taggedArticles.slice(1, 17).map(this.mapArticle);
-          this.loadMoreTagNews = taggedArticles.slice(17, 29).map(this.mapArticle);
-          this.relatedNews = taggedArticles.slice(29, 32).map(this.mapSidebarArticle);
-
-          // Check if we have more pages
-          this.hasMorePages = taggedArticles.length >= 100;
-        } else {
-          console.log(`🔵 No articles found for tag: ${this.tagName}`);
-        }
-
-        // Fetch other news (articles not related to this tag)
-        await this.fetchOtherNews();
-
-        // Fetch latest news for sidebar
-        await this.fetchLatestNews();
-
-        // Hide all loading states
-        this.loading = {
-          featured: false,
-          main: false,
-          loadMore: false,
-          other: false,
-          sidebar: false,
-          latest: false,
-        };
-      } catch (error) {
-        console.error("Error in fallback fetch:", error);
         this.resetNews();
         // Hide loading states on error
         this.loading = {
@@ -607,7 +341,7 @@ export default {
           date: this.formatDate(article.publish_date),
           url: article.url,
           image: article.feat_images?.medium?.url || null,
-          category: useArticleCategory(article) || article.categories[0].slug,
+          category: useArticleCategory(article) || article.categories?.[0]?.slug || 'ostali-sportovi',
           slug: article.slug,
         }));
       } catch (error) {
@@ -630,7 +364,7 @@ export default {
           title: article.title,
           sport: this.getSportFromCategories(article.categories),
           date: this.formatDate(article.publish_date),
-          category: useArticleCategory(article) || article.categories[0].slug,
+          category: useArticleCategory(article) || article.categories?.[0]?.slug || 'ostali-sportovi',
           slug: article.slug,
         }));
       } catch (error) {
@@ -657,7 +391,7 @@ export default {
           // Use the same articleLimit as initial fetch for consistent pagination
           const response = await fetchFromApi("/getArticles", {
             articleLimit: 40,
-            "tag[]": this.effectiveTagId,
+            "tag_slug[]": this.tagName,
             page: currentPage,
           });
 

@@ -1030,7 +1030,7 @@ const navigateToTag = (tagId, tagName) => {
   const tagSlug = generateSlugFromTagName(tagName);
   console.log("🔴 ArticlePage navigating to tag:", tagName, "→ slug:", tagSlug, "with ID:", tagId);
   // Pass tag ID as query parameter so TagPage can use it
-  useRouter().push(`/tag/${tagSlug}/?tagId=${tagId}`);
+  useRouter().push(`/tag/${tagSlug}/`);
 };
 
 const getJosVestiWebp = (news) => {

@@ -1,22 +1,13 @@
 <script setup>
-import { fetchFromApi } from '~/services/api';
-
 const route = useRoute();
 const { tagName } = route.params;
-const tagIdFromQuery = route.query.tagId;
 
 console.log(`\n🔵 ============ TAG PAGE ROUTE HIT ============`);
 console.log(`🔵 Tag name from params: "${tagName}"`);
-console.log(`🔵 Tag ID from query: "${tagIdFromQuery}"`);
 console.log(`🔵 Full route path: "${route.path}"`);
 console.log(`🔵 Is server-side: ${process.server}`);
 console.log(`🔵 Environment: ${process.env.NODE_ENV}`);
 console.log(`🔵 ============================================\n`);
-
-// Skip validation - allow all tags to render
-// The TagPage component will handle showing "no articles" if the tag doesn't exist
-// This prevents 404 errors for valid tags that aren't in the helper navigation menu
-console.log(`✅ [TAG PAGE] Tag "${tagName}" - skipping validation, allowing page to render\n`);
 
 // Process tag name for display: replace hyphens with spaces and capitalize
 const formattedTagName = tagName
@@ -56,5 +47,5 @@ import TagPage from "@/views/TagPage.vue";
 </script>
 
 <template>
-  <TagPage :tagName="tagName" :tagId="tagIdFromQuery" />
+  <TagPage :tagName="tagName" />
 </template>
