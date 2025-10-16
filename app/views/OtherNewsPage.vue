@@ -82,6 +82,8 @@ import SkeletonRelatedNews from "@/components/skeletons/SkeletonRelatedNews.vue"
 import { fetchFromApi } from "@/services/api";
 import { onMounted, onBeforeUnmount } from 'vue';
 
+const cache = useGlobalCache();
+
 // Reactive state
 const loading = ref({
   main: true,
@@ -160,18 +162,32 @@ const [
   { data: otherData, pending: otherPending },
   { data: latestArticlesData }
 ] = await Promise.all([
-  useAsyncData('other-news-articles', () =>
-    fetchFromApi('/getArticles', {
-      articleLimit: 40,
-      'category[]': 38,
-      page: 1
-    })
-  ),
-  useAsyncData('other-latest-sidebar', () =>
-    fetchFromApi('/getArticles', {
-      articleLimit: 8
-    })
-  )
+  useAsyncData('other-news-articles', async () => {
+    return await cache.fetchWithCache(
+      'other-news-articles',
+      async () => {
+        console.log('🔥 FETCHING Other Sports Articles from API')
+        return await fetchFromApi('/getArticles', {
+          articleLimit: 40,
+          'category[]': 38,
+          page: 1
+        })
+      },
+      1000 * 60 // Cache for 60 seconds
+    )
+  }),
+  useAsyncData('other-latest-sidebar', async () => {
+    return await cache.fetchWithCache(
+      'other-latest-sidebar',
+      async () => {
+        console.log('🔥 FETCHING Other Sports Sidebar from API')
+        return await fetchFromApi('/getArticles', {
+          articleLimit: 8
+        })
+      },
+      1000 * 60 // Cache for 60 seconds
+    )
+  })
 ]);
 
 // Process other news articles from SSR

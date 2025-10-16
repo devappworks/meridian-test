@@ -363,6 +363,7 @@ import { generateArticleImageAttrs } from "@/utils/responsiveImage";
 
 // Nuxt composables
 const nuxtApp = useNuxtApp();
+const cache = useGlobalCache();
 
 // SSR Detection - This runs on both server and client
 console.log("🟢 ArticlePage setup() - SSR check:", {

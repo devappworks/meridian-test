@@ -17,7 +17,7 @@ export default defineNuxtConfig({
   experimental: {
     payloadExtraction: true,
     viewTransition: true,
-    componentIslands: true
+    componentIslands: true,
   },
   // Inline critical CSS to prevent render blocking (Nuxt 4 way)
   features: {
@@ -80,6 +80,8 @@ export default defineNuxtConfig({
     'swiper/css/navigation'
   ],
   app: {
+    // Disable keepalive to allow proper cache invalidation
+    keepalive: false,
     head: {
       htmlAttrs: {
         lang: 'sr'

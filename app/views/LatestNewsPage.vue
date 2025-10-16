@@ -82,6 +82,8 @@ import SkeletonRelatedNews from "@/components/skeletons/SkeletonRelatedNews.vue"
 import { fetchFromApi } from "@/services/api";
 import { getCanonicalCategoryFromSlug } from '~/utils/canonicalCategory';
 
+const cache = useGlobalCache();
+
 // Reactive state
 const loading = ref({
   featured: false,
@@ -172,12 +174,19 @@ const getCategoryClass = (sport) => {
 };
 
 // SSR Data Fetching
-const { data: latestNewsData, pending: latestNewsPending } = await useAsyncData('latest-news-articles', () =>
-  fetchFromApi('/getArticles', {
-    articleLimit: 40,
-    page: 1
-  })
-);
+const { data: latestNewsData, pending: latestNewsPending } = await useAsyncData('latest-news-articles', async () => {
+  return await cache.fetchWithCache(
+    'latest-news-articles',
+    async () => {
+      console.log('🔥 FETCHING Latest News from API')
+      return await fetchFromApi('/getArticles', {
+        articleLimit: 40,
+        page: 1
+      })
+    },
+    1000 * 60 // Cache for 60 seconds
+  )
+});
 
 // Process latest news articles from SSR
 if (latestNewsData.value?.result.articles?.length > 0) {

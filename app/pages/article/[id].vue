@@ -4,6 +4,7 @@ import { useBreadcrumbSchema } from '~/composables/useBreadcrumbSchema';
 const route = useRoute();
 const id = route.params.id;
 const config = useRuntimeConfig();
+const cache = useGlobalCache();
 
 function stripHtml(input) {
   if (!input || typeof input !== "string") return "";
@@ -19,12 +20,23 @@ function truncate(input, max = 160) {
 const { data: article, error } = await useAsyncData(
   `article-${id}`,
   async () => {
-    try {
-      return await $fetch(`/api/articles/${id}`)
-    } catch (e) {
-      // Let the view handle error state; return null so page still renders
-      return null
-    }
+    return await cache.fetchWithCache(
+      `article-${id}`,
+      async () => {
+        console.log('🔥 FETCHING Article by ID from API:', id)
+        try {
+          return await $fetch(`/api/articles/${id}`)
+        } catch (e) {
+          // Let the view handle error state; return null so page still renders
+          return null
+        }
+      },
+      1000 * 60 * 60 * 24 // Cache for 24 hours (articles are immutable)
+    )
+  },
+  {
+    // Articles are immutable - cache for 24 hours
+    staleTime: 1000 * 60 * 60 * 24
   }
 )
 

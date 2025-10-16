@@ -90,6 +90,8 @@ import SkeletonFeatured from "@/components/skeletons/SkeletonFeatured.vue";
 import FeaturedArticle from "@/components/Featured.vue";
 import { fetchFromApi } from "@/services/api";
 
+const cache = useGlobalCache();
+
 // Reactive state
 const loading = ref({
   featured: false,
@@ -165,25 +167,46 @@ const currentCategoryName = computed(() => {
 });
 
 // SSR Data Fetching
-const { data: webSettings } = await useAsyncData('tennis-web-settings', () => 
-  fetchFromApi('/getWebSettings')
-);
+const { data: webSettings } = await useAsyncData('tennis-web-settings', async () => {
+  return await cache.fetchWithCache(
+    'tennis-web-settings',
+    async () => {
+      console.log('🔥 FETCHING Tennis Web Settings from API')
+      return await fetchFromApi('/getWebSettings')
+    },
+    1000 * 60 * 60 * 24 // Cache for 24 hours (rarely changes)
+  )
+});
 
 const [
   { data: tennisData, pending: tennisPending },
   { data: latestArticlesData }
 ] = await Promise.all([
-  useAsyncData('tennis-articles', () =>
-    fetchFromApi('/getArticles', {
-      articleLimit: 40,
-      'category[]': 41 // Default tennis category
-    })
-  ),
-  useAsyncData('tennis-latest-sidebar', () =>
-    fetchFromApi('/getArticles', {
-      articleLimit: 8
-    })
-  )
+  useAsyncData('tennis-articles', async () => {
+    return await cache.fetchWithCache(
+      'tennis-articles',
+      async () => {
+        console.log('🔥 FETCHING Tennis Articles from API')
+        return await fetchFromApi('/getArticles', {
+          articleLimit: 40,
+          'category[]': 41 // Default tennis category
+        })
+      },
+      1000 * 60 // Cache for 60 seconds
+    )
+  }),
+  useAsyncData('tennis-latest-sidebar', async () => {
+    return await cache.fetchWithCache(
+      'tennis-latest-sidebar',
+      async () => {
+        console.log('🔥 FETCHING Tennis Sidebar from API')
+        return await fetchFromApi('/getArticles', {
+          articleLimit: 8
+        })
+      },
+      1000 * 60 // Cache for 60 seconds
+    )
+  })
 ]);
 
 // Process SSR data

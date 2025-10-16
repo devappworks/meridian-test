@@ -5,7 +5,7 @@ const route = useRoute();
 const config = useRuntimeConfig();
 const category = route.params.category;
 const slug = route.params.slug;
-
+const cache = useGlobalCache();
 
 // Import the canonical category utility function instead of duplicating logic
 import { getCanonicalCategory } from '~/utils/canonicalCategory';
@@ -23,8 +23,8 @@ function truncate(input, max = 160) {
 }
 
 console.log('\n🟢 ============ PAGE COMPONENT START ============')
-console.log('🟢 [category]/[slug].vue loading:', { 
-  category, 
+console.log('🟢 [category]/[slug].vue loading:', {
+  category,
   slug,
   fullPath: route.fullPath,
   timestamp: new Date().toISOString()
@@ -33,31 +33,41 @@ console.log('🟢 [category]/[slug].vue loading:', {
 const { data: article, error: fetchError } = await useAsyncData(
   `article-slug-${category}-${slug}`,
   async () => {
-    console.log('🟢 useAsyncData executing for:', { category, slug })
-    
-    try {
-      const result = await $fetch(`/api/articles/resolve`, {
-        query: { category, slug }
-      })
-      
-      console.log('🟢 useAsyncData received result:', {
-        hasResult: !!result,
-        resultType: typeof result,
-        hasId: !!result?.id,
-        hasTitle: !!result?.title,
-        title: result?.title?.substring(0, 50)
-      })
-      
-      return result
-    } catch (err) {
-      console.error('🟢 useAsyncData ERROR:', {
-        message: err.message,
-        statusCode: err.statusCode,
-        statusMessage: err.statusMessage,
-        data: err.data
-      })
-      throw err
-    }
+    return await cache.fetchWithCache(
+      `article-slug-${category}-${slug}`,
+      async () => {
+        console.log('🔥 FETCHING Article by slug from API:', { category, slug })
+
+        try {
+          const result = await $fetch(`/api/articles/resolve`, {
+            query: { category, slug }
+          })
+
+          console.log('🟢 useAsyncData received result:', {
+            hasResult: !!result,
+            resultType: typeof result,
+            hasId: !!result?.id,
+            hasTitle: !!result?.title,
+            title: result?.title?.substring(0, 50)
+          })
+
+          return result
+        } catch (err) {
+          console.error('🟢 useAsyncData ERROR:', {
+            message: err.message,
+            statusCode: err.statusCode,
+            statusMessage: err.statusMessage,
+            data: err.data
+          })
+          throw err
+        }
+      },
+      1000 * 60 * 60 * 24 // Cache for 24 hours (articles are immutable)
+    )
+  },
+  {
+    // Articles are immutable - cache for 24 hours
+    staleTime: 1000 * 60 * 60 * 24
   }
 )
 
@@ -108,69 +118,81 @@ console.log('🟢 ============ PAGE COMPONENT END ============\n')
 const { data: otherNewsData } = await useAsyncData(
   `other-news-${category}-${slug}`,
   async () => {
-    if (!article.value?.categories || !Array.isArray(article.value.categories)) {
-      return [];
-    }
+    return await cache.fetchWithCache(
+      `other-news-article-${article.value?.id || `${category}-${slug}`}`,
+      async () => {
+        console.log('🔥 FETCHING Other News for Article from API')
 
-    const { fetchFromApi } = await import('~/services/api');
-
-    // Find sport category
-    const categoryId = article.value.categories?.find((cat) =>
-      cat?.name && ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
-    )?.id;
-
-    let response;
-    if (categoryId) {
-      response = await fetchFromApi(`/getArticles`, {
-        "category[]": categoryId,
-        articleLimit: 10,
-      });
-    } else {
-      response = await fetchFromApi(`/getArticles`, {
-        articleLimit: 10,
-      });
-    }
-
-    const articles = (response.result.articles || []).filter(
-      (articleItem) => articleItem.id !== article.value.id
-    );
-
-    const getSportFromCategories = (categories) => {
-      if (!Array.isArray(categories) || categories.length === 0) {
-        return "OSTALE VESTI";
-      }
-      const sportMap = {
-        Fudbal: "FUDBAL",
-        Košarka: "KOŠARKA",
-        Tenis: "TENIS",
-        Odbojka: "ODBOJKA",
-      };
-      const sportCategory = categories.find((cat) => cat?.name && sportMap[cat.name]);
-      return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
-    };
-
-    const hasCategories = article.value.categories && Array.isArray(article.value.categories) && article.value.categories.length > 0;
-    const sportCategory = hasCategories ? getSportFromCategories(article.value.categories) : 'OSTALE VESTI';
-    const defaultCategory = 'ostali-sportovi';
-
-    return articles
-      .slice(0, 8)
-      .filter(article => article) // Only filter null/undefined
-      .map((article) => {
-        const articleHasCategories = article.categories && Array.isArray(article.categories) && article.categories.length > 0;
-        if (!articleHasCategories) {
-          console.warn('Other news article without category in [category]/[slug].vue:', article.id);
+        if (!article.value?.categories || !Array.isArray(article.value.categories)) {
+          return [];
         }
-        return {
-          id: article.id,
-          title: article.title,
-          image: article.feat_images?.small?.url || null,
-          sport: sportCategory,
-          url: article.url || null,
-          category: articleHasCategories ? article.categories[0]?.slug : defaultCategory,
-          slug: article.slug,
+
+        const { fetchFromApi } = await import('~/services/api');
+
+        // Find sport category
+        const categoryId = article.value.categories?.find((cat) =>
+          cat?.name && ["Fudbal", "Košarka", "Tenis", "Odbojka"].includes(cat.name)
+        )?.id;
+
+        let response;
+        if (categoryId) {
+          response = await fetchFromApi(`/getArticles`, {
+            "category[]": categoryId,
+            articleLimit: 10,
+          });
+        } else {
+          response = await fetchFromApi(`/getArticles`, {
+            articleLimit: 10,
+          });
+        }
+
+        const articles = (response.result.articles || []).filter(
+          (articleItem) => articleItem.id !== article.value.id
+        );
+
+        const getSportFromCategories = (categories) => {
+          if (!Array.isArray(categories) || categories.length === 0) {
+            return "OSTALE VESTI";
+          }
+          const sportMap = {
+            Fudbal: "FUDBAL",
+            Košarka: "KOŠARKA",
+            Tenis: "TENIS",
+            Odbojka: "ODBOJKA",
+          };
+          const sportCategory = categories.find((cat) => cat?.name && sportMap[cat.name]);
+          return sportCategory ? sportMap[sportCategory.name] : "OSTALE VESTI";
         };
-      });
+
+        const hasCategories = article.value.categories && Array.isArray(article.value.categories) && article.value.categories.length > 0;
+        const sportCategory = hasCategories ? getSportFromCategories(article.value.categories) : 'OSTALE VESTI';
+        const defaultCategory = 'ostali-sportovi';
+
+        return articles
+          .slice(0, 8)
+          .filter(article => article) // Only filter null/undefined
+          .map((article) => {
+            const articleHasCategories = article.categories && Array.isArray(article.categories) && article.categories.length > 0;
+            if (!articleHasCategories) {
+              console.warn('Other news article without category in [category]/[slug].vue:', article.id);
+            }
+            return {
+              id: article.id,
+              title: article.title,
+              image: article.feat_images?.small?.url || null,
+              sport: sportCategory,
+              url: article.url || null,
+              category: articleHasCategories ? article.categories[0]?.slug : defaultCategory,
+              slug: article.slug,
+            };
+          });
+      },
+      1000 * 60 * 5 // Cache for 5 minutes
+    )
+  },
+  {
+    // Other news can be cached for 5 minutes
+    staleTime: 1000 * 60 * 5
   }
 );
 

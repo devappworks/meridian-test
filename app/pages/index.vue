@@ -257,15 +257,32 @@ const sportClass = (sport) => {
   return sportMap[sport] || "";
 };
 
-// SSR Data Fetching
+// SSR Data Fetching with Global Caching (persists across page navigations)
+const cache = useGlobalCache()
+
 const { data: featuredData, pending: featuredPending } = await useAsyncData('homepage-featured', async () => {
-  const data = await fetchFromApi('/getHomepageFeaturedArticles');
-  return data;
+  return await cache.fetchWithCache(
+    'homepage-featured',
+    async () => {
+      console.log('🔥 FETCHING Homepage Featured Articles from API')
+      const data = await fetchFromApi('/getHomepageFeaturedArticles');
+      console.log('✅ Featured articles loaded:', data.result?.articles?.length)
+      return data;
+    },
+    1000 * 60 // Cache for 60 seconds
+  )
 });
 
-const { data: latestArticlesData, pending: latestPending } = await useAsyncData('homepage-latest', () => 
-  fetchFromApi('/getArticles')
-);
+const { data: latestArticlesData, pending: latestPending } = await useAsyncData('homepage-latest', async () => {
+  return await cache.fetchWithCache(
+    'homepage-latest',
+    async () => {
+      console.log('🔥 FETCHING Homepage Latest Articles from API')
+      return await fetchFromApi('/getArticles')
+    },
+    1000 * 60 // Cache for 60 seconds
+  )
+});
 
 const [
   //{ data: tennisData },
@@ -274,11 +291,11 @@ const [
   { data: footballData },
   { data: tipoviData }
 ] = await Promise.all([
-  //useAsyncData('homepage-tennis', () => fetchFromApi('/getArticles', { articleLimit: 20, 'category[]': 41 })),
-  useAsyncData('homepage-volleyball', () => fetchFromApi('/getArticles', { articleLimit: 12, 'category[]': 37 })),
-  useAsyncData('homepage-basketball', () => fetchFromApi('/getArticles', { articleLimit: 12, 'category[]': 25 })),
-  useAsyncData('homepage-football', () => fetchFromApi('/getArticles', { articleLimit: 8, 'category[]': 28 })),
-  useAsyncData('homepage-tipovi', () => fetchMeridianTipovi(3))
+  //useAsyncData('homepage-tennis', () => fetchFromApi('/getArticles', { articleLimit: 20, 'category[]': 41 }), { staleTime: 1000 * 60 }),
+  useAsyncData('homepage-volleyball', () => fetchFromApi('/getArticles', { articleLimit: 12, 'category[]': 37 }), { staleTime: 1000 * 60 }), // Cache for 60 seconds
+  useAsyncData('homepage-basketball', () => fetchFromApi('/getArticles', { articleLimit: 12, 'category[]': 25 }), { staleTime: 1000 * 60 }), // Cache for 60 seconds
+  useAsyncData('homepage-football', () => fetchFromApi('/getArticles', { articleLimit: 8, 'category[]': 28 }), { staleTime: 1000 * 60 }), // Cache for 60 seconds
+  useAsyncData('homepage-tipovi', () => fetchMeridianTipovi(3), { staleTime: 1000 * 30 }) // Cache for 30 seconds (more dynamic content)
 ]);
 
 // Process featured articles from SSR

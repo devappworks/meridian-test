@@ -90,6 +90,8 @@ import SkeletonFeatured from "@/components/skeletons/SkeletonFeatured.vue";
 import FeaturedArticle from "@/components/Featured.vue";
 import { fetchFromApi } from "@/services/api";
 
+const cache = useGlobalCache();
+
 // Reactive state
 const loading = ref({
   featured: false,
@@ -165,25 +167,46 @@ const currentCategoryName = computed(() => {
 });
 
 // SSR Data Fetching
-const { data: webSettings } = await useAsyncData('volleyball-web-settings', () => 
-  fetchFromApi('/getWebSettings')
-);
+const { data: webSettings } = await useAsyncData('volleyball-web-settings', async () => {
+  return await cache.fetchWithCache(
+    'volleyball-web-settings',
+    async () => {
+      console.log('🔥 FETCHING Volleyball Web Settings from API')
+      return await fetchFromApi('/getWebSettings')
+    },
+    1000 * 60 * 60 * 24 // Cache for 24 hours (rarely changes)
+  )
+});
 
 const [
   { data: volleyballData, pending: volleyballPending },
   { data: latestArticlesData }
 ] = await Promise.all([
-  useAsyncData('volleyball-articles', () =>
-    fetchFromApi('/getArticles', {
-      articleLimit: 40,
-      'category[]': 37 // Default volleyball category
-    })
-  ),
-  useAsyncData('volleyball-latest-sidebar', () =>
-    fetchFromApi('/getArticles', {
-      articleLimit: 8
-    })
-  )
+  useAsyncData('volleyball-articles', async () => {
+    return await cache.fetchWithCache(
+      'volleyball-articles',
+      async () => {
+        console.log('🔥 FETCHING Volleyball Articles from API')
+        return await fetchFromApi('/getArticles', {
+          articleLimit: 40,
+          'category[]': 37 // Default volleyball category
+        })
+      },
+      1000 * 60 // Cache for 60 seconds
+    )
+  }),
+  useAsyncData('volleyball-latest-sidebar', async () => {
+    return await cache.fetchWithCache(
+      'volleyball-latest-sidebar',
+      async () => {
+        console.log('🔥 FETCHING Volleyball Sidebar from API')
+        return await fetchFromApi('/getArticles', {
+          articleLimit: 8
+        })
+      },
+      1000 * 60 // Cache for 60 seconds
+    )
+  })
 ]);
 
 // Process SSR data

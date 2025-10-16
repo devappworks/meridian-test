@@ -162,26 +162,49 @@ const currentCategoryName = computed(() => {
   return categoryNameMap.value[currentCategory.value] || "FUDBAL";
 });
 
-// SSR Data Fetching
-const { data: webSettings } = await useAsyncData('football-web-settings', () => 
-  fetchFromApi('/getWebSettings')
-);
+// SSR Data Fetching with Global Caching (persists across page navigations)
+const cache = useGlobalCache()
+
+const { data: webSettings } = await useAsyncData('football-web-settings', async () => {
+  return await cache.fetchWithCache(
+    'football-web-settings',
+    async () => {
+      console.log('🔥 FETCHING Football Web Settings from API')
+      return await fetchFromApi('/getWebSettings')
+    },
+    1000 * 60 * 60 * 24 // Cache for 24 hours (rarely changes)
+  )
+});
 
 const [
   { data: footballData, pending: footballPending },
   { data: latestArticlesData }
 ] = await Promise.all([
-  useAsyncData('football-articles', () =>
-    fetchFromApi('/getArticles', {
-      articleLimit: 40,
-      'category[]': 28 // Default football category
-    })
-  ),
-  useAsyncData('football-latest-sidebar', () =>
-    fetchFromApi('/getArticles', {
-      articleLimit: 8
-    })
-  )
+  useAsyncData('football-articles', async () => {
+    return await cache.fetchWithCache(
+      'football-articles',
+      async () => {
+        console.log('🔥 FETCHING Football Articles from API')
+        return await fetchFromApi('/getArticles', {
+          articleLimit: 40,
+          'category[]': 28 // Default football category
+        })
+      },
+      1000 * 60 // Cache for 60 seconds
+    )
+  }),
+  useAsyncData('football-latest-sidebar', async () => {
+    return await cache.fetchWithCache(
+      'football-latest-sidebar',
+      async () => {
+        console.log('🔥 FETCHING Football Sidebar from API')
+        return await fetchFromApi('/getArticles', {
+          articleLimit: 8
+        })
+      },
+      1000 * 60 // Cache for 60 seconds
+    )
+  })
 ]);
 
 // Process SSR data
