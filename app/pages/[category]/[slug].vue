@@ -27,6 +27,7 @@ const cache = useGlobalCache();
 // Import the canonical category utility function instead of duplicating logic
 import { getCanonicalCategory } from '~/utils/canonicalCategory';
 import { useBreadcrumbSchema } from '~/composables/useBreadcrumbSchema';
+import { getImageDimensions, isDiscoverCompliant, getImageCredit, getCopyrightNotice } from '~/utils/imageUtils';
 
 function stripHtml(input) {
   if (!input || typeof input !== "string") return "";
@@ -269,15 +270,49 @@ useHead(() => {
   // Generate news keywords from tags (max 10 keywords for Google News)
   const newsKeywords = tags.slice(0, 10);
 
-  // Build proper ImageObject with dimensions for Google News
+  // Build proper ImageObject with actual dimensions for Google News and Discover
+  const imageDimensions = getImageDimensions(a?.feat_images, 'extra-large');
+  const imageCredit = getImageCredit(a, siteName);
+  const copyrightNotice = getCopyrightNotice(publishedTime, siteName);
+
   const imageObject = imageUrl ? {
     "@type": "ImageObject",
+    "@id": imageUrl,
     url: imageUrl,
-    width: 1200, // Standard OG image width
-    height: 630  // Standard OG image height (adjust if you know actual dimensions)
+    contentUrl: imageUrl,
+    width: imageDimensions.width,
+    height: imageDimensions.height,
+    inLanguage: "sr-RS",
+
+    // CRITICAL for Google Discover:
+    license: `${siteUrl}/image-license/`,
+    acquireLicensePage: `${siteUrl}/image-license/`,
+
+    // Image attribution:
+    creator: {
+      "@type": "Organization",
+      name: imageCredit
+    },
+    creditText: imageCredit,
+    copyrightNotice: copyrightNotice,
+
+    // Discover optimization:
+    representativeOfPage: true,
+    thumbnailUrl: a?.feat_images?.thumb?.url || imageUrl
   } : undefined;
 
+  // Log warning if image doesn't meet Google Discover requirements (server-side only)
+  if (process.server && imageUrl) {
+    const compliance = isDiscoverCompliant(imageDimensions);
+    if (!compliance.compliant) {
+      console.warn(`⚠️ Image not Discover-compliant for article "${a.title}":`, compliance.issues);
+    }
+  }
+
   const articleBodyText = a?.contents ? stripHtml(a.contents) : '';
+
+  // Calculate word count for content quality signal
+  const wordCount = articleBodyText ? articleBodyText.split(/\s+/).filter(Boolean).length : 0;
 
   const ld = {
     "@context": "https://schema.org",
@@ -290,6 +325,15 @@ useHead(() => {
     inLanguage: "sr-RS",
     keywords: newsKeywords.length > 0 ? newsKeywords : tags,
     articleSection: categoryName,
+
+    // Content quality signals for Google Discover
+    wordCount: wordCount > 0 ? wordCount : undefined,
+
+    // Speakable schema for voice search optimization
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: [".article-title", ".article-subtitle", ".article-text"]
+    },
     mainEntityOfPage: canonicalUrl
       ? {
           "@type": "WebPage",
@@ -327,18 +371,10 @@ useHead(() => {
             }
           },
           inLanguage: "sr-RS",
-          primaryImageOfPage: imageObject ? {
-            ...imageObject,
-            "@id": imageUrl,
-            inLanguage: "sr-RS"
-          } : undefined
+          primaryImageOfPage: imageObject
         }
       : undefined,
-    image: imageObject ? {
-      ...imageObject,
-      "@id": imageUrl,
-      inLanguage: "sr-RS"
-    } : undefined,
+    image: imageObject,
     author: {
       "@type": "Person",
       "@id": canonicalUrl ? `${siteUrl}/autor/${authorName.toLowerCase().replace(/\s+/g, '-')}/` : undefined,
@@ -402,8 +438,8 @@ useHead(() => {
     { key: "og:description", property: "og:description", content: filledDescription },
     canonicalUrl ? { key: "og:url", property: "og:url", content: canonicalUrl } : null,
     imageUrl ? { key: "og:image", property: "og:image", content: imageUrl } : null,
-    imageUrl ? { key: "og:image:width", property: "og:image:width", content: "1200" } : null,
-    imageUrl ? { key: "og:image:height", property: "og:image:height", content: "630" } : null,
+    imageUrl ? { key: "og:image:width", property: "og:image:width", content: String(imageDimensions.width) } : null,
+    imageUrl ? { key: "og:image:height", property: "og:image:height", content: String(imageDimensions.height) } : null,
     imageUrl ? { key: "og:image:alt", property: "og:image:alt", content: title } : null,
     // Article meta tags with ISO 8601 format
     publishedTimeISO ? { key: "article:published_time", property: "article:published_time", content: publishedTimeISO } : null,
