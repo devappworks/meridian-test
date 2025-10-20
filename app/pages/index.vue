@@ -112,6 +112,9 @@ const ld2 = {
       "https://twitter.com/meridiansportrs"
     ]
   },
+  sameAs: [
+    "https://meridiansport.rs/feed.xml"
+  ],
   potentialAction: {
     "@type": "SearchAction",
     target: {
@@ -142,7 +145,10 @@ useHead(() => ({
     { key: "twitter:description", name: "twitter:description", content: description },
     imageUrl ? { key: "twitter:image", name: "twitter:image", content: imageUrl } : null,
   ].filter(Boolean),
-  link: canonicalUrl ? [{ rel: "canonical", href: canonicalUrl }] : [],
+  link: [
+    canonicalUrl ? { rel: "canonical", href: canonicalUrl } : null,
+    { rel: "alternate", type: "application/rss+xml", title: "Meridian Sport RSS", href: "https://meridiansport.rs/feed.xml" }
+  ].filter(Boolean),
   script: [
     {
       key: "ldjson-website-1",

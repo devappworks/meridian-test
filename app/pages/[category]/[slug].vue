@@ -5,6 +5,23 @@ const route = useRoute();
 const config = useRuntimeConfig();
 const category = route.params.category;
 const slug = route.params.slug;
+
+// IMPORTANT: RSS feeds should be handled by server routes, not this page component
+// If someone navigates to /fudbal/feed.xml, skip this component entirely
+if (slug === 'feed.xml') {
+  console.log('🔴 Page component detected RSS feed request, redirecting to server route');
+  // On client, force a full page reload to trigger server route
+  if (import.meta.client) {
+    window.location.href = `/${category}/feed.xml`;
+  }
+  // On server, throw error to prevent component from loading
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Not Found - RSS feeds are served separately',
+    fatal: false
+  });
+}
+
 const cache = useGlobalCache();
 
 // Import the canonical category utility function instead of duplicating logic
@@ -404,7 +421,17 @@ useHead(() => {
     ...tags.map((t, i) => ({ key: `article:tag:${i}`, property: "article:tag", content: t })),
   ].filter(Boolean);
 
-  const link = canonicalUrl ? [{ rel: "canonical", href: canonicalUrl }] : [];
+  // Add canonical and RSS feed links
+  const link = [
+    canonicalUrl ? { rel: "canonical", href: canonicalUrl } : null,
+    // RSS feed link for the category this article belongs to
+    canonicalCategory ? {
+      rel: "alternate",
+      type: "application/rss+xml",
+      title: `${categoryName || canonicalCategory} RSS - Meridian Sport`,
+      href: `${siteUrl}/${canonicalCategory}/feed.xml`
+    } : null
+  ].filter(Boolean);
 
   // Build breadcrumb schema
   const breadcrumbs = a.categories?.[0]?.name ? [

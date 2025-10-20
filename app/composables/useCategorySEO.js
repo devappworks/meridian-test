@@ -7,37 +7,43 @@ export function useCategorySEO(categorySlug) {
   const siteUrl = (config.public?.SITE_URL || 'https://meridiansport.rs').replace(/\/$/, '')
   const siteName = config.public?.SITE_NAME || 'Meridian Sport'
 
-  // Category metadata configuration
+  // Category metadata configuration with API IDs
   const categoryData = {
     'najnovije-vesti': {
       name: 'Najnovije vesti',
       title: 'Najnovije vesti Meridian Sport',
-      description: 'Najnovije sportske vesti sa Meridian Sport portala! Fudbal, košarka, odbojka i svi aktuelni događaji iz Srbije i sveta, na jednom mestu.'
+      description: 'Najnovije sportske vesti sa Meridian Sport portala! Fudbal, košarka, odbojka i svi aktuelni događaji iz Srbije i sveta, na jednom mestu.',
+      categoryId: null // No specific category for latest news
     },
     'fudbal': {
       name: 'Fudbal',
       title: 'Fudbal Meridian Sport',
-      description: 'Najnovije fudbalske vesti sa Meridian Sport portala! Rezultati, transferi, analize i priče iz domaćeg i svetskog fudbala.'
+      description: 'Najnovije fudbalske vesti sa Meridian Sport portala! Rezultati, transferi, analize i priče iz domaćeg i svetskog fudbala.',
+      categoryId: 28
     },
     'kosarka': {
       name: 'Košarka',
       title: 'Košarka Meridian Sport',
-      description: 'Meridian Sport prati sve iz sveta košarke! Utakmice, transferi, izveštaji i ekskluzive iz domaćih i stranih liga.'
+      description: 'Meridian Sport prati sve iz sveta košarke! Utakmice, transferi, izveštaji i ekskluzive iz domaćih i stranih liga.',
+      categoryId: 25
     },
     'tenis': {
       name: 'Tenis',
       title: 'Tenis Meridian Sport',
-      description: 'Meridian Sport donosi najnovije vesti iz tenisa! ATP, WTA, Grand Slam turniri, rezultati i analize.'
+      description: 'Meridian Sport donosi najnovije vesti iz tenisa! ATP, WTA, Grand Slam turniri, rezultati i analize.',
+      categoryId: 41
     },
     'odbojka': {
       name: 'Odbojka',
       title: 'Odbojka Meridian Sport',
-      description: 'Pratite Meridian Sport za najnovije vesti iz odbojke - rezultati, transferi, izveštaji i sve što zanima ljubitelje odbojke.'
+      description: 'Pratite Meridian Sport za najnovije vesti iz odbojke - rezultati, transferi, izveštaji i sve što zanima ljubitelje odbojke.',
+      categoryId: 37
     },
     'ostali-sportovi': {
       name: 'Ostali sportovi',
       title: 'Ostali sportovi Meridian Sport',
-      description: 'Meridian Sport donosi aktuelne vesti iz ostalih sportova - atletika, borilački sportovi, rukomet, plivanje i više.'
+      description: 'Meridian Sport donosi aktuelne vesti iz ostalih sportova - atletika, borilački sportovi, rukomet, plivanje i više.',
+      categoryId: 38
     }
   }
 
@@ -50,6 +56,14 @@ export function useCategorySEO(categorySlug) {
   const canonicalUrl = `${siteUrl}/${categorySlug}/`
   const ogImageUrl = `${siteUrl}/images/default-category-og.jpg`
   const logoUrl = `${siteUrl}/images/meridian-favicon-512x512.png`
+
+  // RSS feed URL - use API endpoint with category filter
+  const rssFeedUrl = category.categoryId
+    ? `https://meridian.mpanel.app/api/webV3/rss?category=${category.categoryId}`
+    : 'https://meridiansport.rs/feed.xml'
+
+  // Canonical RSS path for the category (what users see in browser)
+  const rssCanonicalPath = `${siteUrl}/${categorySlug}/feed.xml`
 
   // CollectionPage structured data
   const collectionSchema = {
@@ -74,7 +88,10 @@ export function useCategorySEO(categorySlug) {
         'https://www.youtube.com/@meridiansport',
         'https://x.com/meridiansportrs'
       ]
-    }
+    },
+    sameAs: [
+      rssCanonicalPath
+    ]
   }
 
   // BreadcrumbList structured data
@@ -120,7 +137,9 @@ export function useCategorySEO(categorySlug) {
     ],
     link: [
       // Self-referencing canonical
-      { rel: 'canonical', href: canonicalUrl }
+      { rel: 'canonical', href: canonicalUrl },
+      // RSS feed link
+      { rel: 'alternate', type: 'application/rss+xml', title: `${category.name} RSS - Meridian Sport`, href: rssCanonicalPath }
     ],
     script: [
       // CollectionPage structured data

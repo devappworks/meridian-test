@@ -17,9 +17,16 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  // Skip files with extensions
+  // Skip files with extensions (except RSS feeds)
   const hasExtension = /\.[a-z0-9]+(\?.*)?$/i.test(url)
-  if (hasExtension) {
+  const isRssFeed = url.includes('/feed.xml')
+  if (hasExtension && !isRssFeed) {
+    return
+  }
+
+  // Skip RSS feed normalization - let RSS middleware handle it
+  if (isRssFeed) {
+    console.log('[URL NORMALIZE] Skipping normalization for RSS feed:', url)
     return
   }
 

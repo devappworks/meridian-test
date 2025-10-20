@@ -41,6 +41,14 @@ export default defineNuxtConfig({
       crawlLinks: false
     },
     routeRules: {
+      // RSS feed routes - Must be defined BEFORE other routes to take precedence
+      '/feed.xml': { ssr: false, swr: 600 }, // Cache RSS for 10 minutes
+      '/fudbal/feed.xml': { ssr: false, swr: 600 },
+      '/kosarka/feed.xml': { ssr: false, swr: 600 },
+      '/tenis/feed.xml': { ssr: false, swr: 600 },
+      '/odbojka/feed.xml': { ssr: false, swr: 600 },
+      '/ostali-sportovi/feed.xml': { ssr: false, swr: 600 },
+      '/najnovije-vesti/feed.xml': { ssr: false, swr: 600 },
       // Redirect old URL to new URL
       '/nove-vesti': { redirect: { to: '/najnovije-vesti', statusCode: 301 } },
       '/nove-vesti/**': { redirect: { to: '/najnovije-vesti', statusCode: 301 } },
