@@ -1,4 +1,4 @@
-export function useNewsArticleSchema(article) {
+/* export function useNewsArticleSchema(article) {
   const config = useRuntimeConfig();
   const siteUrl = (config.public?.SITE_URL || '').replace(/\/$/, '');
   const siteName = config.public?.SITE_NAME || 'MeridianSport';
@@ -90,3 +90,4 @@ export function useNewsArticleSchema(article) {
     isAccessibleForFree: true,
   };
 }
+ */
