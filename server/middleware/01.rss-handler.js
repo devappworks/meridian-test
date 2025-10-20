@@ -105,8 +105,8 @@ export default defineEventHandler(async (event) => {
 
       // Set proper content type for XML/RSS
       setResponseHeaders(event, {
-        'Content-Type': 'application/rss+xml; charset=UTF-8',
-        'Cache-Control': 'public, max-age=600, s-maxage=1200',
+        'Content-Type': 'application/xml; charset=UTF-8',
+        'Cache-Control': 'public, max-age=600, s-maxage=600, must-revalidate',
       });
 
       // Return the XML response
@@ -117,7 +117,7 @@ export default defineEventHandler(async (event) => {
 
       // Set error response headers
       setResponseHeaders(event, {
-        'Content-Type': 'application/rss+xml; charset=UTF-8'
+        'Content-Type': 'application/xml; charset=UTF-8'
       });
 
       // Return error XML
