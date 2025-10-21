@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     // Set proper content type for XML/RSS
     setResponseHeaders(event, {
       'Content-Type': 'application/xml; charset=UTF-8',
-      'Cache-Control': 'public, max-age=600, s-maxage=600, must-revalidate', // Cache for 10 minutes
+      'Cache-Control': 'public, max-age=900, s-maxage=900, must-revalidate', // Cache for 15 minutes
     });
 
     // Return the XML response as-is
