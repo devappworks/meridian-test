@@ -21,8 +21,8 @@ export default defineEventHandler((event) => {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
     // Allow fonts from Google and CDNs
     "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
-    // Allow frames from YouTube and Twitter
-    "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://platform.twitter.com https://*.twitter.com https://www.googletagmanager.com",
+    // Allow frames from YouTube, Twitter, and SofaScore widgets
+    "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://platform.twitter.com https://*.twitter.com https://www.googletagmanager.com https://widgets.sofascore.com https://*.sofascore.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'"
