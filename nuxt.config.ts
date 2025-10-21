@@ -54,7 +54,10 @@ export default defineNuxtConfig({
       '/nove-vesti': { redirect: { to: '/najnovije-vesti', statusCode: 301 } },
       '/nove-vesti/**': { redirect: { to: '/najnovije-vesti', statusCode: 301 } },
       // Enable SSR for all main routes with caching
-      '/': { ssr: true, swr: 60 }, // Cache for 60 seconds
+      '/': { ssr: true, swr: 60, headers: {
+        'Content-Security-Policy':
+          "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://platform.twitter.com https://*.twitter.com https://www.googletagmanager.com https://widgets.sofascore.com https://*.sofascore.com;"
+      } }, // Cache for 60 seconds
       '/fudbal': { ssr: true, swr: 60 },
       '/kosarka': { ssr: true, swr: 60 },
       '/tenis': { ssr: true, swr: 60 },
