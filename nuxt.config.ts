@@ -77,7 +77,9 @@ export default defineNuxtConfig({
         ssr: true,
         headers: {
           // Add Link preload headers for HTTP/2 Server Push
-          'Link': '</fonts.googleapis.com>; rel=preconnect; crossorigin, </fonts.gstatic.com>; rel=preconnect; crossorigin'
+          'Link': '</fonts.googleapis.com>; rel=preconnect; crossorigin, </fonts.gstatic.com>; rel=preconnect; crossorigin',
+          'Content-Security-Policy':
+            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://platform.twitter.com https://*.twitter.com https://www.googletagmanager.com https://widgets.sofascore.com https://*.sofascore.com;"
         }
       }
     }
