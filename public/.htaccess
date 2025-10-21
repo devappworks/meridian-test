@@ -1,6 +1,11 @@
 Options -MultiViews
 RewriteEngine On
 
+# Content Security Policy - Allow iframe embeds from trusted sources
+<IfModule mod_headers.c>
+    Header always set Content-Security-Policy "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://platform.twitter.com https://*.twitter.com https://www.googletagmanager.com https://widgets.sofascore.com https://*.sofascore.com;"
+</IfModule>
+
 # Handle client-side routing for Nuxt SPA
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
