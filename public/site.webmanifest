@@ -1,0 +1,68 @@
+{
+  "name": "Meridian Sport - Najnovije Sportske Vesti",
+  "short_name": "Meridian Sport",
+  "description": "Sve sportske vesti na jednom mestu - fudbal, košarka, tenis i još mnogo toga. Meridian Sport donosi najbrže informacije i analize.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D1519",
+  "theme_color": "#0D1519",
+  "orientation": "portrait-primary",
+  "lang": "sr-RS",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/images/meridian-favicon-1758622126.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/meridian-favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "sports",
+    "news"
+  ],
+  "shortcuts": [
+    {
+      "name": "Fudbal",
+      "short_name": "Fudbal",
+      "description": "Najnovije fudbalske vesti",
+      "url": "/fudbal/",
+      "icons": [
+        {
+          "src": "/images/meridian-favicon-512x512.png",
+          "sizes": "512x512"
+        }
+      ]
+    },
+    {
+      "name": "Košarka",
+      "short_name": "Košarka",
+      "description": "Najnovije košarkaške vesti",
+      "url": "/kosarka/",
+      "icons": [
+        {
+          "src": "/images/meridian-favicon-512x512.png",
+          "sizes": "512x512"
+        }
+      ]
+    },
+    {
+      "name": "Tenis",
+      "short_name": "Tenis",
+      "description": "Najnovije teniške vesti",
+      "url": "/tenis/",
+      "icons": [
+        {
+          "src": "/images/meridian-favicon-512x512.png",
+          "sizes": "512x512"
+        }
+      ]
+    }
+  ]
+}

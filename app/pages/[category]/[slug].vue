@@ -429,6 +429,9 @@ useHead(() => {
   const meta = [
     { key: "description", name: "description", content: filledDescription },
     { key: "robots", name: "robots", content: "index, follow, max-image-preview:large" },
+    // Language and locale meta tags
+    { key: "content-language", name: "content-language", content: "sr" },
+    { key: "og:locale", property: "og:locale", content: "sr_RS" },
     // Google News specific meta tags
     newsKeywords.length > 0 ? { key: "news_keywords", name: "news_keywords", content: newsKeywords.join(', ') } : null,
     // Open Graph meta tags
@@ -441,6 +444,7 @@ useHead(() => {
     imageUrl ? { key: "og:image:width", property: "og:image:width", content: String(imageDimensions.width) } : null,
     imageUrl ? { key: "og:image:height", property: "og:image:height", content: String(imageDimensions.height) } : null,
     imageUrl ? { key: "og:image:alt", property: "og:image:alt", content: title } : null,
+    imageUrl ? { key: "og:image:type", property: "og:image:type", content: "image/jpeg" } : null,
     // Article meta tags with ISO 8601 format
     publishedTimeISO ? { key: "article:published_time", property: "article:published_time", content: publishedTimeISO } : null,
     modifiedTimeISO ? { key: "article:modified_time", property: "article:modified_time", content: modifiedTimeISO } : null,

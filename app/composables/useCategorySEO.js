@@ -121,11 +121,16 @@ export function useCategorySEO(categorySlug) {
       { name: 'description', content: category.description },
       { name: 'robots', content: 'index, follow, max-image-preview:large' },
 
+      // Language and locale meta tags
+      { name: 'content-language', content: 'sr' },
+      { property: 'og:locale', content: 'sr_RS' },
+
       // Open Graph
       { property: 'og:type', content: 'website' },
       { property: 'og:title', content: category.title },
       { property: 'og:description', content: category.description },
       { property: 'og:image', content: ogImageUrl },
+      { property: 'og:image:type', content: 'image/jpeg' },
       { property: 'og:url', content: canonicalUrl },
       { property: 'og:site_name', content: siteName },
 

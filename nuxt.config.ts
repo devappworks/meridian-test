@@ -100,6 +100,12 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: 'sr'
       },
+      meta: [
+        // PWA theme color for mobile browsers
+        { name: 'theme-color', content: '#0D1519' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }
+      ],
       script: [
         // Google Tag Manager (GTM) - OPTIMIZED: Load on user interaction or after 3s
         {
@@ -135,6 +141,8 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/x-icon', href: '/images/meridian-favicon-1758622126.png' },
         { rel: 'apple-touch-icon', href: '/images/meridian-favicon-1758622126.png' },
         { rel: 'shortcut icon', href: '/images/meridian-favicon-1758622126.png' },
+        // Web App Manifest for PWA support
+        { rel: 'manifest', href: '/site.webmanifest' },
         // Preconnect to ONLY the most critical origins
         { rel: 'preconnect', href: 'https://meridian.mpanel.app' },
         // Critical: Preconnect to S3 image CDN for LCP optimization

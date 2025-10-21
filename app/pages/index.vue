@@ -131,6 +131,9 @@ useHead(() => ({
     { key: "description", name: "description", content: description },
     { key: "keywords", name: "keywords", content: "sportske vesti, fudbal, košarka, partizan, zvezda, ponovo, vesti, tenis, odbojka, sport srbija, rezultati uživo, transfer vesti, sportski portal" },
     { key: "robots", name: "robots", content: "index, follow, max-image-preview:large" },
+    // Language and locale meta tags
+    { key: "content-language", name: "content-language", content: "sr" },
+    { key: "og:locale", property: "og:locale", content: "sr_RS" },
     // Open Graph
     { key: "og:type", property: "og:type", content: "website" },
     { key: "og:site_name", property: "og:site_name", content: siteName },
@@ -138,6 +141,7 @@ useHead(() => ({
     { key: "og:description", property: "og:description", content: description },
     canonicalUrl ? { key: "og:url", property: "og:url", content: canonicalUrl } : null,
     imageUrl ? { key: "og:image", property: "og:image", content: imageUrl } : null,
+    imageUrl ? { key: "og:image:type", property: "og:image:type", content: "image/jpeg" } : null,
     // Twitter
     { key: "twitter:card", name: "twitter:card", content: imageUrl ? "summary_large_image" : "summary" },
     twitterHandle ? { key: "twitter:site", name: "twitter:site", content: twitterHandle } : null,
