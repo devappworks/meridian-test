@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
 
       // Set proper content type for XML/RSS
       setResponseHeaders(event, {
-        'Content-Type': 'application/xml; charset=UTF-8',
+        'Content-Type': 'application/rss+xml; charset=UTF-8',
         'Cache-Control': 'public, max-age=900, s-maxage=900', // Cache for 15 minutes
         'X-Cache': 'HIT',
         'Age': String(Math.round((Date.now() - cached.timestamp) / 1000)),
@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
 
     // Set proper content type for XML/RSS
     setResponseHeaders(event, {
-      'Content-Type': 'application/xml; charset=UTF-8',
+      'Content-Type': 'application/rss+xml; charset=UTF-8',
       'Cache-Control': 'public, max-age=900, s-maxage=900', // Cache for 15 minutes
       'X-Cache': 'MISS',
     });
@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
 
     // Set error response headers
     setResponseHeaders(event, {
-      'Content-Type': 'application/xml; charset=UTF-8'
+      'Content-Type': 'application/rss+xml; charset=UTF-8'
     });
 
     // Return error XML
