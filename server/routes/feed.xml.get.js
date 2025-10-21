@@ -1,3 +1,7 @@
+// In-memory cache for RSS feeds
+const rssCache = new Map();
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
+
 export default defineEventHandler(async (event) => {
   try {
     // Get optional page parameter from query string
@@ -6,9 +10,27 @@ export default defineEventHandler(async (event) => {
 
     console.log(`📰 RSS Feed requested - page: ${page}`);
 
+    // Check server-side cache first
+    const cacheKey = `rss-index-page-${page}`;
+    const cached = rssCache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      console.log(`✅ RSS Feed served from server cache (age: ${Math.round((Date.now() - cached.timestamp) / 1000)}s)`);
+
+      // Set proper content type for XML/RSS
+      setResponseHeaders(event, {
+        'Content-Type': 'application/xml; charset=UTF-8',
+        'Cache-Control': 'public, max-age=900, s-maxage=900', // Cache for 15 minutes
+        'X-Cache': 'HIT',
+        'Age': String(Math.round((Date.now() - cached.timestamp) / 1000)),
+      });
+
+      return cached.data;
+    }
+
     // Fetch RSS feed from backend API
     const apiUrl = `https://meridian.mpanel.app/api/webV3/rss${page !== '1' ? `?page=${page}` : ''}`;
-    console.log(`📡 Fetching RSS from: ${apiUrl}`);
+    console.log(`📡 Fetching RSS from backend API: ${apiUrl}`);
 
     const response = await $fetch(apiUrl, {
       method: 'GET',
@@ -17,12 +39,19 @@ export default defineEventHandler(async (event) => {
       }
     });
 
-    console.log(`✅ RSS Feed fetched successfully`);
+    console.log(`✅ RSS Feed fetched successfully from backend`);
+
+    // Store in server-side cache
+    rssCache.set(cacheKey, {
+      data: response,
+      timestamp: Date.now()
+    });
 
     // Set proper content type for XML/RSS
     setResponseHeaders(event, {
       'Content-Type': 'application/xml; charset=UTF-8',
-      'Cache-Control': 'public, max-age=900, s-maxage=900, must-revalidate', // Cache for 15 minutes
+      'Cache-Control': 'public, max-age=900, s-maxage=900', // Cache for 15 minutes
+      'X-Cache': 'MISS',
     });
 
     // Return the XML response as-is

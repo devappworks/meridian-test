@@ -4,6 +4,10 @@
  * Dynamically fetches category ID from backend API based on category slug
  */
 
+// In-memory cache for category RSS feeds
+const categoryRssCache = new Map();
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
+
 export default defineEventHandler(async (event) => {
   const url = getRequestURL(event);
   const pathname = url.pathname;
@@ -93,6 +97,24 @@ export default defineEventHandler(async (event) => {
 
     console.log(`📡 RSS Middleware: Fetching RSS from: ${apiUrl}`);
 
+    // Check server-side cache first
+    const cacheKey = `rss-category-${categoryId}-page-${page}`;
+    const cached = categoryRssCache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      console.log(`✅ RSS Middleware: Served from server cache for ${categorySlug} (age: ${Math.round((Date.now() - cached.timestamp) / 1000)}s)`);
+
+      // Set proper content type for XML/RSS
+      setResponseHeaders(event, {
+        'Content-Type': 'application/xml; charset=UTF-8',
+        'Cache-Control': 'public, max-age=900, s-maxage=900', // Cache for 15 minutes
+        'X-Cache': 'HIT',
+        'Age': String(Math.round((Date.now() - cached.timestamp) / 1000)),
+      });
+
+      return cached.data;
+    }
+
     try {
       const response = await $fetch(apiUrl, {
         method: 'GET',
@@ -101,12 +123,19 @@ export default defineEventHandler(async (event) => {
         }
       });
 
-      console.log(`✅ RSS Middleware: RSS Feed fetched successfully for ${categorySlug}`);
+      console.log(`✅ RSS Middleware: RSS Feed fetched successfully from backend for ${categorySlug}`);
+
+      // Store in server-side cache
+      categoryRssCache.set(cacheKey, {
+        data: response,
+        timestamp: Date.now()
+      });
 
       // Set proper content type for XML/RSS
       setResponseHeaders(event, {
         'Content-Type': 'application/xml; charset=UTF-8',
-        'Cache-Control': 'public, max-age=900, s-maxage=900, must-revalidate', // Cache for 15 minutes
+        'Cache-Control': 'public, max-age=900, s-maxage=900', // Cache for 15 minutes
+        'X-Cache': 'MISS',
       });
 
       // Return the XML response
