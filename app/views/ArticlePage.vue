@@ -1048,12 +1048,29 @@ const getJosVestiWebp = (news) => {
 const extractParagraphs = (htmlContent) => {
   // First, try to detect and preserve Twitter embeds using a simpler approach
   const twitterEmbedPattern = /<blockquote class="twitter-tweet">[\s\S]*?<\/blockquote>\s*<p><script src="https:\/\/platform\.twitter\.com\/widgets\.js"><\/script><\/p>/gi;
-  
+
+  // Instagram embed pattern - matches both //www.instagram.com and platform.instagram.com
+  const instagramEmbedPattern = /<blockquote class="instagram-media"[\s\S]*?<\/blockquote>\s*<p>\s*<script[^>]*src="[^"]*instagram\.com[^"]*embed\.js[^"]*"[^>]*><\/script>\s*<\/p>/gi;
+
+  console.log('[ArticlePage] Checking for embeds in content:', {
+    contentLength: htmlContent?.length,
+    hasInstagramClass: htmlContent?.includes('instagram-media'),
+    hasInstagramScript: htmlContent?.includes('instagram.com/embed.js')
+  });
+
   // Check if content contains Twitter embeds
   if (twitterEmbedPattern.test(htmlContent)) {
     console.log('[ArticlePage] Twitter embed detected, using special handling');
     return extractParagraphsWithTwitterEmbeds(htmlContent);
   }
+
+  // Check if content contains Instagram embeds
+  if (instagramEmbedPattern.test(htmlContent)) {
+    console.log('[ArticlePage] Instagram embed detected, using special handling');
+    return extractParagraphsWithInstagramEmbeds(htmlContent);
+  }
+
+  console.log('[ArticlePage] No Twitter or Instagram embeds detected, using standard extraction');
   
   // Server-side safe paragraph extraction
   if (typeof document === 'undefined') {
@@ -1064,29 +1081,29 @@ const extractParagraphs = (htmlContent) => {
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = htmlContent;
   const elements = Array.from(tempDiv.children);
-  
-  // Group Twitter embeds on client side
+
+  // Group Twitter and Instagram embeds on client side
   const grouped = [];
   let i = 0;
-  
+
   console.log(`[ArticlePage Client] Processing ${elements.length} elements`);
-  
+
   while (i < elements.length) {
     const element = elements[i];
-    
+
     // Check if this is a Twitter blockquote
     if (element.tagName === 'BLOCKQUOTE' && element.classList.contains('twitter-tweet')) {
       console.log(`[ArticlePage Client] Found Twitter blockquote at position ${i}`);
-      
+
       // Collect the blockquote and the following elements until we find the script tag
       let twitterBlock = element.outerHTML;
       let j = i + 1;
-      
+
       // Keep adding following elements until we find the Twitter widgets script
       while (j < elements.length) {
         const nextElement = elements[j];
         twitterBlock += nextElement.outerHTML;
-        
+
         // Check if this element contains the Twitter widgets script
         if (nextElement.outerHTML.includes('platform.twitter.com/widgets.js')) {
           console.log(`[ArticlePage Client] Found Twitter script at position ${j}`);
@@ -1095,16 +1112,43 @@ const extractParagraphs = (htmlContent) => {
         }
         j++;
       }
-      
+
       console.log(`[ArticlePage Client] Grouped Twitter block: ${twitterBlock.substring(0, 100)}...`);
       grouped.push(twitterBlock);
       i = j;
-    } else {
+    }
+    // Check if this is an Instagram blockquote
+    else if (element.tagName === 'BLOCKQUOTE' && element.classList.contains('instagram-media')) {
+      console.log(`[ArticlePage Client] Found Instagram blockquote at position ${i}`);
+
+      // Collect the blockquote and the following elements until we find the script tag
+      let instagramBlock = element.outerHTML;
+      let j = i + 1;
+
+      // Keep adding following elements until we find the Instagram embed script
+      while (j < elements.length) {
+        const nextElement = elements[j];
+        instagramBlock += nextElement.outerHTML;
+
+        // Check if this element contains the Instagram embed script
+        if (nextElement.outerHTML.includes('instagram.com') && nextElement.outerHTML.includes('embed.js')) {
+          console.log(`[ArticlePage Client] Found Instagram script at position ${j}`);
+          j++;
+          break;
+        }
+        j++;
+      }
+
+      console.log(`[ArticlePage Client] Grouped Instagram block: ${instagramBlock.substring(0, 100)}...`);
+      grouped.push(instagramBlock);
+      i = j;
+    }
+    else {
       grouped.push(element.outerHTML);
       i++;
     }
   }
-  
+
   return grouped;
 };
 
@@ -1152,17 +1196,73 @@ const extractParagraphsWithTwitterEmbeds = (htmlContent) => {
   return result;
 };
 
-// Server-side paragraph extraction that keeps Twitter embeds intact
+// Special handling for content with Instagram embeds
+const extractParagraphsWithInstagramEmbeds = (htmlContent) => {
+  console.log('[ArticlePage] Using Instagram embed special handling');
+
+  // Fix protocol-relative URLs to use https://
+  let fixedContent = htmlContent.replace(/src="\/\/www\.instagram\.com\/embed\.js"/g, 'src="https://www.instagram.com/embed.js"');
+
+  // Split by Instagram embed pattern first - matches both //www.instagram.com and platform.instagram.com
+  const instagramEmbedPattern = /<blockquote class="instagram-media"[\s\S]*?<\/blockquote>\s*<p>\s*<script[^>]*src="[^"]*instagram\.com[^"]*embed\.js[^"]*"[^>]*><\/script>\s*<\/p>/gi;
+  const parts = fixedContent.split(instagramEmbedPattern);
+  const instagramEmbeds = fixedContent.match(instagramEmbedPattern) || [];
+
+  const result = [];
+  let instagramIndex = 0;
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+
+    // Process the content part (split by paragraphs)
+    if (part.trim()) {
+      const paragraphs = part.split(/<\/(?:p|h[1-6]|div)>/i)
+        .map(p => p.trim())
+        .filter(p => p.length > 0)
+        .map(p => {
+          if (p.includes('<') && !p.match(/<\/(?:p|h[1-6]|div)>$/i)) {
+            const tagMatch = p.match(/<(p|h[1-6]|div)/i);
+            if (tagMatch) {
+              return p + `</${tagMatch[1]}>`;
+            }
+          }
+          return p;
+        });
+
+      result.push(...paragraphs);
+    }
+
+    // Add Instagram embed if it exists (already has https:// fixed)
+    if (instagramIndex < instagramEmbeds.length) {
+      result.push(instagramEmbeds[instagramIndex]);
+      instagramIndex++;
+    }
+  }
+
+  console.log(`[ArticlePage] Instagram embed handling produced ${result.length} paragraphs`);
+
+  // Log which paragraphs contain Instagram embeds for debugging
+  result.forEach((para, index) => {
+    if (para.includes('instagram-media')) {
+      console.log(`[ArticlePage] Instagram embed found at paragraph ${index}`);
+    }
+  });
+
+  return result;
+};
+
+
+// Server-side paragraph extraction that keeps Twitter and Instagram embeds intact
 const extractParagraphsSSR = (htmlContent) => {
   const parts = [];
   let currentPos = 0;
-  
+
   // Find all Twitter embed blocks first
   // More flexible regex that matches the exact format from your example
   const twitterBlockRegex = /<blockquote[^>]*class="twitter-tweet"[^>]*>[\s\S]*?<\/blockquote>[\s\S]*?<script[^>]*src="[^"]*platform\.twitter\.com\/widgets\.js[^"]*"[^>]*><\/script>/gi;
   const twitterBlocks = [];
   let match;
-  
+
   while ((match = twitterBlockRegex.exec(htmlContent)) !== null) {
     twitterBlocks.push({
       start: match.index,
@@ -1170,17 +1270,34 @@ const extractParagraphsSSR = (htmlContent) => {
       content: match[0]
     });
   }
-  
+
   console.log(`[ArticlePage SSR] Found ${twitterBlocks.length} Twitter embed blocks`);
+
+  // Find all Instagram embed blocks - matches both //www.instagram.com and platform.instagram.com
+  const instagramBlockRegex = /<blockquote[^>]*class="instagram-media"[^>]*>[\s\S]*?<\/blockquote>[\s\S]*?<script[^>]*src="[^"]*instagram\.com[^"]*embed\.js[^"]*"[^>]*><\/script>/gi;
+  const instagramBlocks = [];
+
+  while ((match = instagramBlockRegex.exec(htmlContent)) !== null) {
+    instagramBlocks.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      content: match[0]
+    });
+  }
+
+  console.log(`[ArticlePage SSR] Found ${instagramBlocks.length} Instagram embed blocks`);
+
+  // Combine Twitter and Instagram blocks, then sort by position
+  const allBlocks = [...twitterBlocks, ...instagramBlocks].sort((a, b) => a.start - b.start);
   
-  // Split content, but skip Twitter embed blocks
+  // Split content, but skip embed blocks
   let tempContent = htmlContent;
   let offset = 0;
   
-  // Replace Twitter blocks with placeholders temporarily
+  // Replace embed blocks with placeholders temporarily
   const placeholders = [];
-  twitterBlocks.forEach((block, index) => {
-    const placeholder = `___TWITTER_BLOCK_${index}___`;
+  allBlocks.forEach((block, index) => {
+    const placeholder = `___EMBED_BLOCK_${index}___`;
     placeholders.push(placeholder);
     const before = tempContent.substring(0, block.start - offset);
     const after = tempContent.substring(block.end - offset);
@@ -1193,14 +1310,14 @@ const extractParagraphsSSR = (htmlContent) => {
     .map(part => part.trim())
     .filter(part => part.length > 0);
   
-  // Restore Twitter blocks and reconstruct closing tags
+  // Restore embed blocks and reconstruct closing tags
   const result = [];
   splitParts.forEach(part => {
-    // Check if this part contains a Twitter placeholder
+    // Check if this part contains an embed placeholder
     let processedPart = part;
     placeholders.forEach((placeholder, index) => {
       if (part.includes(placeholder)) {
-        processedPart = part.replace(placeholder, twitterBlocks[index].content);
+        processedPart = part.replace(placeholder, allBlocks[index].content);
       }
     });
     

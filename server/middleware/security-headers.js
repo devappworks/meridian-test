@@ -9,21 +9,21 @@ export default defineEventHandler((event) => {
   // CRITICAL: Allow Google Analytics and Tag Manager to function properly
   const cspDirectives = [
     "default-src 'self'",
-    // Allow scripts from self, Google domains, Twitter, SofaScore, and CDNs (with eval for GTM)
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://tagmanager.google.com https://cdn.jsdelivr.net https://ajax.googleapis.com https://cdnjs.cloudflare.com https://platform.twitter.com https://widgets.sofascore.com https://*.sofascore.com https://www.sofascore.com",
+    // Allow scripts from self, Google domains, Twitter, SofaScore, Instagram, and CDNs (with eval for GTM)
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://tagmanager.google.com https://cdn.jsdelivr.net https://ajax.googleapis.com https://cdnjs.cloudflare.com https://platform.twitter.com https://widgets.sofascore.com https://*.sofascore.com https://www.sofascore.com https://www.instagram.com https://*.instagram.com",
     // Allow script elements (needed for script tags)
-    "script-src-elem 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://tagmanager.google.com https://cdn.jsdelivr.net https://ajax.googleapis.com https://cdnjs.cloudflare.com https://platform.twitter.com https://widgets.sofascore.com https://*.sofascore.com https://www.sofascore.com",
+    "script-src-elem 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://tagmanager.google.com https://cdn.jsdelivr.net https://ajax.googleapis.com https://cdnjs.cloudflare.com https://platform.twitter.com https://widgets.sofascore.com https://*.sofascore.com https://www.sofascore.com https://www.instagram.com https://*.instagram.com",
     // FIXED: Added www.googletagmanager.com to connect-src (was missing!)
-    // Added SofaScore domains for API calls
-    "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com https://ssl.google-analytics.com https://stats.g.doubleclick.net https://*.google-analytics.com https://*.analytics.google.com https://meridian.mpanel.app wss://meridian.mpanel.app https://cdn.jsdelivr.net https://ajax.googleapis.com https://cdnjs.cloudflare.com https://platform.twitter.com https://*.twitter.com https://widgets.sofascore.com https://*.sofascore.com https://www.sofascore.com https://api.sofascore.com",
+    // Added SofaScore and Instagram domains for API calls
+    "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com https://ssl.google-analytics.com https://stats.g.doubleclick.net https://*.google-analytics.com https://*.analytics.google.com https://meridian.mpanel.app wss://meridian.mpanel.app https://cdn.jsdelivr.net https://ajax.googleapis.com https://cdnjs.cloudflare.com https://platform.twitter.com https://*.twitter.com https://widgets.sofascore.com https://*.sofascore.com https://www.sofascore.com https://api.sofascore.com https://www.instagram.com https://*.instagram.com",
     // Allow images from all HTTPS sources and Google Analytics
     "img-src 'self' data: https: http: https://www.google-analytics.com https://www.googletagmanager.com https://ssl.google-analytics.com",
     // Allow styles with inline and from CDNs (including SofaScore)
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://widgets.sofascore.com https://*.sofascore.com",
     // Allow fonts from Google and CDNs
     "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com https://widgets.sofascore.com https://*.sofascore.com",
-    // Allow frames from YouTube, Twitter, and SofaScore widgets
-    "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://platform.twitter.com https://*.twitter.com https://www.googletagmanager.com https://widgets.sofascore.com https://*.sofascore.com",
+    // Allow frames from YouTube, Twitter, SofaScore, and Instagram widgets
+    "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://platform.twitter.com https://*.twitter.com https://www.googletagmanager.com https://widgets.sofascore.com https://*.sofascore.com https://www.instagram.com https://*.instagram.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'"
