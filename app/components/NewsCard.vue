@@ -1,5 +1,5 @@
 <template>
-  <div class="news-card" @click.stop="navigateToArticle">
+  <NuxtLink :to="articleUrl" class="news-card" @click="handleClick">
     <div class="news-image">
       <picture>
         <source
@@ -25,7 +25,7 @@
     <div class="news-content">
       <h3 class="news-title">{{ title }}</h3>
     </div>
-  </div>
+  </NuxtLink>
 </template>
 
 <script>
@@ -80,48 +80,12 @@ export default {
       default: false,
     },
   },
-  methods: {
-    resolveArticleRoute(rawUrl, fallbackId) {
-      // Normalize incoming URLs to internal app routes
-      if (!rawUrl || rawUrl === '#') {
-        return fallbackId ? `/article/${fallbackId}` : '/';
-      }
-      try {
-        const u = new URL(rawUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-        const p = u.pathname || '/';
-        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
-        if (match) return `/article/${match[1]}`;
-        return p.startsWith('/') ? p : `/${p}`;
-      } catch {
-        const p = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
-        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
-        if (match) return `/article/${match[1]}`;
-        return p;
-      }
-    },
-    navigateToArticle() {
+  computed: {
+    articleUrl() {
       // Use canonical category for navigation
       const canonicalCategory = getCanonicalCategoryFromSlug(this.category);
-      const target = `/${canonicalCategory}/${this.slug}/`;
-
-      console.log("🔵 NewsCard clicked!", {
-        id: this.id,
-        title: this.title,
-        originalCategory: this.category,
-        canonicalCategory: canonicalCategory,
-        slug: this.slug,
-        target: target
-      });
-
-      this.$router.push(target);
-
-      if (this.id && this.emitEvents) {
-        console.log("🔵 NewsCard emitting event to parent");
-        this.$emit("article-clicked", this.id);
-      }
+      return `/${canonicalCategory}/${this.slug}/`;
     },
-  },
-  computed: {
     responsiveImage() {
       // If featImages object is provided, use it for responsive images
       if (this.featImages && typeof this.featImages === 'object') {
@@ -204,6 +168,23 @@ export default {
       return this.forceShowSportTag || this.sport !== this.sectionType;
     },
   },
+  methods: {
+    handleClick() {
+      console.log("🔵 NewsCard clicked!", {
+        id: this.id,
+        title: this.title,
+        originalCategory: this.category,
+        canonicalCategory: getCanonicalCategoryFromSlug(this.category),
+        slug: this.slug,
+        target: this.articleUrl
+      });
+
+      if (this.id && this.emitEvents) {
+        console.log("🔵 NewsCard emitting event to parent");
+        this.$emit("article-clicked", this.id);
+      }
+    },
+  },
 };
 </script>
 
@@ -216,6 +197,8 @@ export default {
   width: 100%;
   cursor: pointer;
   transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
 }
 
 .news-card:hover {

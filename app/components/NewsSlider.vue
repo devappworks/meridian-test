@@ -42,7 +42,7 @@
         class="news-swiper"
       >
         <swiper-slide v-for="(item, index) in news" :key="index">
-          <div class="news-card" @click.stop="navigateToArticle(item)">
+          <NuxtLink :to="getArticleUrl(item)" class="news-card">
             <div class="news-image">
               <picture>
                 <source
@@ -64,7 +64,7 @@
             <div class="news-content">
               <h3 class="news-title">{{ item.title }}</h3>
             </div>
-          </div>
+          </NuxtLink>
         </swiper-slide>
       </swiper>
 
@@ -263,53 +263,21 @@ export default {
         this.swiper.slideNext();
       }
     },
-    resolveArticleRoute(rawUrl, fallbackId) {
-      // Normalize incoming URLs to internal app routes
-      if (!rawUrl || rawUrl === '#') {
-        return fallbackId ? `/article/${fallbackId}` : '/';
-      }
-      try {
-        const u = new URL(rawUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-        const p = u.pathname || '/';
-        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
-        if (match) return `/article/${match[1]}`;
-        return p.startsWith('/') ? p : `/${p}`;
-      } catch {
-        const p = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
-        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
-        if (match) return `/article/${match[1]}`;
-        return p;
-      }
-    },
-    navigateToArticle(item) {
-      console.log("🟡 NewsSlider card clicked!", {
-        id: item?.id,
-        title: item?.title,
-        url: item?.url,
-        sport: item?.sport || item?.category,
-        category: item?.category,
-        slug: item?.slug,
-        sliderSport: this.sport
-      });
-      
-      if (item && item.id) {
-        // Map slider sport to URL category
-        const sportToCategory = {
-          'FUDBAL': 'fudbal',
-          'KOŠARKA': 'kosarka', 
-          'TENIS': 'tenis',
-          'ODBOJKA': 'odbojka',
-          'NAJNOVIJE': 'najnovije-vesti',
-          'OSTALE VESTI': 'ostali-sportovi'
-        };
-        
-        const categorySlug = sportToCategory[this.sport] || 'najnovije-vesti';
-        console.log(this.sport, "CATEGORY SLUG");
-        const target = `/${categorySlug}/${item.slug}/`;
+    getArticleUrl(item) {
+      if (!item || !item.id) return '/';
 
-        console.log("🟡 NewsSlider navigating to:", target, "from sport:", this.sport);
-        this.$router.push(target);
-      }
+      // Map slider sport to URL category
+      const sportToCategory = {
+        'FUDBAL': 'fudbal',
+        'KOŠARKA': 'kosarka',
+        'TENIS': 'tenis',
+        'ODBOJKA': 'odbojka',
+        'NAJNOVIJE': 'najnovije-vesti',
+        'OSTALE VESTI': 'ostali-sportovi'
+      };
+
+      const categorySlug = sportToCategory[this.sport] || 'najnovije-vesti';
+      return `/${categorySlug}/${item.slug}/`;
     },
   },
 };
@@ -467,6 +435,8 @@ export default {
   cursor: pointer;
   height: 100%;
   transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
 }
 
 .news-card:hover {

@@ -1,7 +1,7 @@
 <template>
   <div class="featured-section" v-if="article">
     <div class="container">
-      <div class="featured-content" @click.stop="navigateToArticle">
+      <NuxtLink :to="articleUrl" class="featured-content">
         <div class="featured-image">
           <picture>
             <source
@@ -29,7 +29,7 @@
         <div class="featured-text">
           <h2 class="featured-title">{{ article.title }}</h2>
         </div>
-      </div>
+      </NuxtLink>
     </div>
   </div>
 </template>
@@ -55,6 +55,10 @@ export default {
     default: true,
   },
   computed: {
+    articleUrl() {
+      if (!this.article) return '/';
+      return `/${this.article.category}/${this.article.slug}/`;
+    },
     responsiveImage() {
       if (!this.article) {
         return { src: '', srcset: '', srcsetWebp: '', sizes: '' };
@@ -149,34 +153,6 @@ export default {
       };
       return sportMap[sport] || "other";
     },
-    resolveArticleRoute(rawUrl, fallbackId) {
-      // Normalize incoming URLs to internal app routes
-      if (!rawUrl || rawUrl === '#') {
-        return fallbackId ? `/article/${fallbackId}` : '/';
-      }
-      try {
-        const u = new URL(rawUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-        const p = u.pathname || '/';
-        // Collapse /article/:id/:slug to /article/:id for local route support
-        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
-        if (match) return `/article/${match[1]}`;
-        return p.startsWith('/') ? p : `/${p}`;
-      } catch {
-        const p = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
-        const match = p.match(/^\/article\/(\d+)(?:\/.+)?$/i);
-        if (match) return `/article/${match[1]}`;
-        return p;
-      }
-    },
-    navigateToArticle() {
-      if (this.article && this.article.id) {
-        /* const target = this.article.url
-          ? this.resolveArticleRoute(this.article.url, this.article.id)
-          : `/article/${this.article.id}` */
-        const target = `/${this.article.category}/${this.article.slug}/`
-        this.$router.push(target);
-      }
-    },
   },
 };
 </script>
@@ -202,6 +178,8 @@ export default {
   transition: var(--transition);
   margin-bottom: -16px;
   flex-wrap: wrap;
+  text-decoration: none;
+  color: inherit;
 }
 
 .featured-content:hover {

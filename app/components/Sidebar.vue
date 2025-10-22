@@ -1,11 +1,11 @@
 <template>
   <div class="sidebar">
     <div class="sidebar-content">
-      <div
+      <NuxtLink
         v-for="(item, index) in latestNews"
         :key="index"
+        :to="getArticleUrl(item)"
         :class="['news-item', index % 2 === 0 ? 'highlight' : '']"
-        @click.stop="navigateToArticle(item)"
       >
         <div class="news-category" :class="sportClass(item.sport)">
           <span>{{ item.sport }}</span>
@@ -13,7 +13,7 @@
         <div class="news-headline">
           <p>{{ item.title }}</p>
         </div>
-      </div>
+      </NuxtLink>
     </div>
   </div>
 </template>
@@ -66,11 +66,9 @@ export default {
       };
       return sportMap[sport] || "other";
     },
-    navigateToArticle(item) {
-      if (item && item.id) {
-        const target = `/${item.category}/${item.slug}/`
-        this.$router.push(target);
-      }
+    getArticleUrl(item) {
+      if (!item || !item.id) return '/';
+      return `/${item.category}/${item.slug}/`;
     },
   },
 };
@@ -96,6 +94,8 @@ export default {
   height: 116.29px;
   cursor: pointer;
   transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
 }
 
 .sidebar-content .news-item:first-child {

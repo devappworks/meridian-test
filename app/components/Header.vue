@@ -4,9 +4,9 @@
     <div class="top-navbar">
       <div class="container">
         <div class="top-navbar-content">
-          <div class="logo" @click="$router.push('/')">
+          <NuxtLink to="/" class="logo">
             <img src="@/assets/images/meridian-logo.svg" alt="Meridian Sport" fetchpriority="high" decoding="async" width="171" height="24" />
-          </div>
+          </NuxtLink>
           <!-- Desktop Navigation -->
 
           <nav class="main-nav desktop-nav">
@@ -1318,6 +1318,8 @@ a:hover {
 .logo {
   display: flex;
   align-items: center;
+  text-decoration: none;
+  color: inherit;
 }
 
 .logo img {

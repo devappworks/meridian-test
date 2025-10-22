@@ -185,11 +185,11 @@
                       </div>
                     </div>
                     <div v-else class="more-news-grid">
-                      <div
+                      <NuxtLink
                         v-for="news in josVestiNews"
                         :key="news.id"
+                        :to="getArticleUrl(news)"
                         class="news-item"
-                        @click="navigateToArticle(news.id)"
                       >
                         <div class="news-image">
                           <picture>
@@ -202,7 +202,7 @@
                           </picture>
                         </div>
                         <h3 class="news-title">{{ news.title }}</h3>
-                      </div>
+                      </NuxtLink>
                     </div>
                   </div>
                 </div>
@@ -232,14 +232,14 @@
               <!-- Tags section -->
               <ClientOnly>
                 <div class="tags-section" v-if="article?.tags && Array.isArray(article.tags)">
-                  <button
+                  <NuxtLink
+                    :to="getTagUrl(tag)"
                     class="tag"
                     v-for="tag in article.tags"
                     :key="tag?.id"
-                    @click="navigateToTag(tag?.id, tag?.name)"
                   >
                     {{ tag?.name?.toUpperCase() }}
-                  </button>
+                  </NuxtLink>
                 </div>
 
                 <!-- Other news section -->
@@ -293,11 +293,11 @@
               </div>
             </div>
             <div v-else class="related-news-list">
-              <div
+              <NuxtLink
                 v-for="(news, index) in relatedNews"
                 :key="news.id"
+                :to="getArticleUrl(news)"
                 class="related-news-item"
-                @click="navigateToArticle(news.id)"
               >
                 <div class="number">{{ index + 1 }}</div>
                 <div class="content">
@@ -318,7 +318,7 @@
                     <div class="divider"></div>
                   </div>
                 </div>
-              </div>
+              </NuxtLink>
             </div>
           </div>
         </div>
@@ -977,35 +977,12 @@ const formatDate = (dateString) => {
   return `${day}.${month}.${year}. ${hours}:${minutes}`;
 };
 
-const navigateToArticle = (id) => {
-  console.log("🔴 ArticlePage navigateToArticle called!", {
-    id,
-    category: props.category,
-    slug: props.slug
-  });
-
-  const foundInJos = josVestiNews.value.find((a) => a.id === id)
-  console.log(foundInJos, "FOUND IN JOS");
-  const foundInRelated = relatedNews.value.find((a) => a.id === id)
-  console.log(foundInRelated, "FOUND IN RELATED");
-  const foundInOther = otherNews.value.find((a) => a.id === id)
-  console.log(foundInOther, "FOUND IN OTHER");
-
-  let target;
-  if (foundInJos?.category && foundInJos?.slug) {
-    target = `/${foundInJos.category}/${foundInJos.slug}/`;
-  } else if (foundInRelated?.category && foundInRelated?.slug) {
-    target = `/${foundInRelated.category}/${foundInRelated.slug}/`;
-  } else if (foundInOther?.category && foundInOther?.slug) {
-    target = `/${foundInOther.category}/${foundInOther.slug}/`;
-  } else {
-    console.error('🔴 Could not find article for navigation:', id);
-    return;
+const getArticleUrl = (news) => {
+  if (!news || !news.category || !news.slug) {
+    console.error('🔴 Invalid article data for URL generation:', news);
+    return '/';
   }
-
-  console.log(target, "TARGET");
-  console.log("🔴 ArticlePage navigating to:", target);
-  useRouter().push(target)
+  return `/${news.category}/${news.slug}/`;
 };
 
 // Generate URL-friendly slug from tag name
@@ -1023,15 +1000,13 @@ const generateSlugFromTagName = (tagName) => {
     .replace(/^-|-$/g, "");  // Remove leading/trailing hyphens
 };
 
-const navigateToTag = (tagId, tagName) => {
-  if (!tagName || !tagId) {
-    console.error("🔴 NavigateToTag: Invalid tag data", { tagId, tagName });
-    return;
+const getTagUrl = (tag) => {
+  if (!tag || !tag.name || !tag.id) {
+    console.error("🔴 Invalid tag data for URL generation:", tag);
+    return '/';
   }
-  const tagSlug = generateSlugFromTagName(tagName);
-  console.log("🔴 ArticlePage navigating to tag:", tagName, "→ slug:", tagSlug, "with ID:", tagId);
-  // Pass tag ID as query parameter so TagPage can use it
-  useRouter().push(`/tag/${tagSlug}/`);
+  const tagSlug = generateSlugFromTagName(tag.name);
+  return `/tag/${tagSlug}/`;
 };
 
 const getJosVestiWebp = (news) => {
@@ -1886,6 +1861,8 @@ h2.section-title {
   align-items: center;
   cursor: pointer;
   transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
 }
 
 .more-news-grid .news-item:hover {
@@ -1971,6 +1948,7 @@ h2.section-title {
   cursor: pointer;
   white-space: nowrap;
   transition: var(--transition);
+  text-decoration: none;
 }
 
 .tag:hover {
@@ -2013,6 +1991,8 @@ h2.section-title {
   gap: 10px;
   cursor: pointer;
   transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
 }
 
 .related-news-item:hover {
