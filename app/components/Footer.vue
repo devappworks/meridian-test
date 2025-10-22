@@ -42,15 +42,16 @@
             class="links-column"
           >
             <h3 class="column-title">{{ section.label.toUpperCase() }}</h3>
-            <router-link
+            <NuxtLink
               v-for="child in section.children"
               :key="child.label.toUpperCase()"
               :to="getRouteForChild(child)"
+              :target="getTargetForChild(child)"
               class="footer-link"
               @click="handleLinkClick(child, $event)"
             >
               {{ child.label }}
-            </router-link>
+            </NuxtLink>
           </div>
         </div>
       </div>
@@ -77,6 +78,7 @@ export default {
         const response = await fetchFooterMenu();
         if (response.success && response.footer_menu) {
           this.footerMenu = response.footer_menu;
+          console.log("footerMenu", this.footerMenu);
         }
       } catch (error) {
         console.error("Failed to load footer menu:", error);
@@ -84,8 +86,27 @@ export default {
         this.footerMenu = [];
       }
     },
+    getTargetForChild(child) {
+      // External URLs open in new tab by default
+      if (this.isExternalUrl(child)) {
+        return '_blank';
+      }
+      // Internal links with newTab flag also open in new tab
+      if (child.newTab) {
+        return '_blank';
+      }
+      // Default behavior for internal links
+      return undefined;
+    },
+    isExternalUrl(child) {
+      // Check if the href is a full URL (external link)
+      return child.href && 
+             child.href !== "#" && 
+             child.href !== null && 
+             (child.href.startsWith('http://') || child.href.startsWith('https://'));
+    },
     getRouteForChild(child) {
-      // If child has a direct href, use it
+      // If child has a direct href, use it (works for both internal and external)
       if (child.href && child.href !== "#" && child.href !== null) {
         return child.href;
       }
@@ -133,17 +154,7 @@ export default {
           event.preventDefault();
         }
       }
-
-      // If newTab is true, open in new tab
-      if (
-        child.newTab &&
-        child.href &&
-        child.href !== "#" &&
-        child.href !== null
-      ) {
-        event.preventDefault();
-        window.open(child.href, "_blank");
-      }
+      // Let NuxtLink handle all other cases (external URLs and internal navigation)
     },
   },
 };
