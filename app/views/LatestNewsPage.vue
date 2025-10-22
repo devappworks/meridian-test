@@ -357,7 +357,7 @@ div.sidebar-header h3.latest {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 4px;
+  gap: 16px;
   color: var(--text-25);
   font-size: 15px;
 }
