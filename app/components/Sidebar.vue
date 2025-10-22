@@ -108,6 +108,7 @@ export default {
 
 .sidebar-content .news-item:hover {
   transform: translateX(4px);
+  opacity: 1;
 }
 
 .sidebar-content .news-item.highlight {

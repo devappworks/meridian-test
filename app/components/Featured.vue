@@ -3,23 +3,18 @@
     <div class="container">
       <NuxtLink :to="articleUrl" class="featured-content">
         <div class="featured-image">
-          <picture>
-            <source
-              v-if="webpUrl"
-              type="image/webp"
-              :srcset="webpUrl"
-            />
-            <img
-              :src="responsiveImage.src"
-              :srcset="responsiveImage.srcset"
-              :sizes="responsiveImage.sizes"
-              :alt="article.title"
-              fetchpriority="high"
-              decoding="async"
-              width="1200"
-              height="675"
-            />
-          </picture>
+          <NuxtPicture
+            :src="imageSrc"
+            :alt="article.title"
+            :img-attrs="{
+              fetchpriority: 'high',
+              decoding: 'async',
+              class: 'featured-image-img'
+            }"
+            sizes="(max-width: 1024px) 100vw, 604px"
+            format="webp"
+            quality="85"
+          />
           <div class="category-tag" v-if="showTag">
             <span class="sport-tag" :class="sportClass(article.sport)">{{
               article.sport
@@ -35,8 +30,6 @@
 </template>
 
 <script>
-import { generateFeaturedImageAttrs } from '~/utils/responsiveImage';
-
 export default {
   name: "FeaturedArticle",
   props: {
@@ -49,77 +42,48 @@ export default {
         );
       },
     },
-  },
-  showTag: {
-    type: Boolean,
-    default: true,
+    showTag: {
+      type: Boolean,
+      default: true,
+    },
   },
   computed: {
     articleUrl() {
       if (!this.article) return '/';
       return `/${this.article.category}/${this.article.slug}/`;
     },
-    responsiveImage() {
-      if (!this.article) {
-        return { src: '', srcset: '', srcsetWebp: '', sizes: '' };
-      }
+    imageSrc() {
+      if (!this.article) return '';
 
-      // If featImages object is provided, use it for responsive images
+      // Priority: Use WebP URLs from featImages for featured images (smaller file size)
       if (this.article.featImages && typeof this.article.featImages === 'object') {
-        return generateFeaturedImageAttrs(this.article.featImages);
+        return this.article.featImages['extra-large']?.webp ||
+               this.article.featImages.large?.webp ||
+               this.article.featImages['extra-large']?.url ||
+               this.article.featImages.large?.url ||
+               this.article.featImages.medium?.url ||
+               this.article.featImages.small?.url ||
+               '';
       }
 
       // Fallback to legacy string image
       if (typeof this.article.image === 'string') {
-        return {
-          src: this.article.image,
-          srcset: '',
-          srcsetWebp: '',
-          sizes: ''
-        };
+        return this.article.image;
       }
 
-      // If image is an object (feat_images), use it
+      // If image is an object, try to extract URL
       if (typeof this.article.image === 'object' && this.article.image !== null) {
-        return generateFeaturedImageAttrs(this.article.image);
+        return this.article.image['extra-large']?.webp ||
+               this.article.image.large?.webp ||
+               this.article.image['extra-large']?.url ||
+               this.article.image.large?.url ||
+               this.article.image.medium?.url ||
+               this.article.image.url ||
+               '';
       }
 
       // Final fallback
-      return {
-        src: '',
-        srcset: '',
-        srcsetWebp: '',
-        sizes: ''
-      };
-    },
-    webpUrl() {
-      if (!this.article) return null;
-
-      // Try to get WebP URL from featImages
-      if (this.article.featImages?.['extra-large']?.webp) {
-        return this.article.featImages['extra-large'].webp;
-      }
-      if (this.article.featImages?.large?.webp) {
-        return this.article.featImages.large.webp;
-      }
-      if (this.article.featImages?.medium?.webp) {
-        return this.article.featImages.medium.webp;
-      }
-
-      // Try from image object
-      if (typeof this.article.image === 'object' && this.article.image !== null) {
-        if (this.article.image['extra-large']?.webp) {
-          return this.article.image['extra-large'].webp;
-        }
-        if (this.article.image.large?.webp) {
-          return this.article.image.large.webp;
-        }
-        if (this.article.image.medium?.webp) {
-          return this.article.image.medium.webp;
-        }
-      }
-
-      return null;
+      return '';
     },
   },
   methods: {
@@ -184,6 +148,7 @@ export default {
 
 .featured-content:hover {
   transform: translateY(var(--translate-y-hover));
+  opacity: 1;
 }
 
 .featured-image {
@@ -196,10 +161,12 @@ export default {
   aspect-ratio: 16 / 9;
 }
 
-.featured-image img {
+.featured-image :deep(picture),
+.featured-image :deep(img) {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .category-tag {

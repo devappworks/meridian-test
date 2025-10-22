@@ -44,22 +44,19 @@
         <swiper-slide v-for="(item, index) in news" :key="index">
           <NuxtLink :to="getArticleUrl(item)" class="news-card">
             <div class="news-image">
-              <picture>
-                <source
-                  v-if="getWebpUrl(item)"
-                  type="image/webp"
-                  :srcset="getWebpUrl(item)"
-                />
-                <img
-                  :src="item.image"
-                  :alt="item.title"
-                  draggable="false"
-                  loading="lazy"
-                  decoding="async"
-                  width="400"
-                  height="225"
-                />
-              </picture>
+              <NuxtPicture
+                :src="getImageSrc(item)"
+                :alt="item.title"
+                :img-attrs="{
+                  draggable: 'false',
+                  loading: 'lazy',
+                  decoding: 'async',
+                  class: 'slider-image'
+                }"
+                sizes="(max-width: 576px) 80vw, (max-width: 768px) 45vw, (max-width: 1024px) 30vw, 242px"
+                format="webp"
+                quality="85"
+              />
             </div>
             <div class="news-content">
               <h3 class="news-title">{{ item.title }}</h3>
@@ -202,15 +199,18 @@ export default {
     window.removeEventListener("resize", this.updateVisibility);
   },
   methods: {
-    getWebpUrl(item) {
-      // Try to get WebP URL from featImages
-      if (item.featImages?.small?.webp) {
-        return item.featImages.small.webp;
+    getImageSrc(item) {
+      // Get the best available image URL from featImages, prioritizing WebP
+      if (item.featImages && typeof item.featImages === 'object') {
+        return item.featImages.small?.webp ||
+               item.featImages.medium?.webp ||
+               item.featImages.small?.url ||
+               item.featImages.medium?.url ||
+               item.featImages['thumb-small']?.url ||
+               item.image ||
+               '';
       }
-      if (item.featImages?.medium?.webp) {
-        return item.featImages.medium.webp;
-      }
-      return null;
+      return item.image || '';
     },
     getSportClass(sport) {
       const sportMap = {
@@ -453,7 +453,8 @@ export default {
   max-width: 250px;
 }
 
-.news-image img {
+.news-image :deep(picture),
+.news-image :deep(img) {
   width: 100%;
   height: 100%;
   object-fit: cover;

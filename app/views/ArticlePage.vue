@@ -1943,12 +1943,12 @@ h2.section-title {
   border: 1px solid var(--bg-05);
   border-radius: 100px;
   background: none;
-  color: var(--bg-05);
+  color: var(--bg-05) !important;
   font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
   transition: var(--transition);
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 .tag:hover {
@@ -1965,6 +1965,10 @@ h2.section-title {
   background: var(--bg-90);
   padding: 24px;
   border-radius: 8px;
+}
+
+.other-news-section .news-item a {
+  text-decoration: none !important;
 }
 
 .news-image {

@@ -9,18 +9,22 @@
         rel="noopener noreferrer"
         class="banner-link"
       >
-        <img
+        <NuxtImg
           :src="banner.creative_image"
           :alt="banner.name"
           class="live-stream-banner"
+          format="webp"
+          quality="85"
         />
       </a>
     </div>
-    <img
+    <NuxtImg
       v-else
       :src="fallbackImage"
       alt="Live Stream"
       class="live-stream-banner"
+      format="webp"
+      quality="85"
     />
   </div>
 </template>

@@ -5,7 +5,7 @@
       <div class="container">
         <div class="top-navbar-content">
           <NuxtLink to="/" class="logo">
-            <img src="@/assets/images/meridian-logo.svg" alt="Meridian Sport" fetchpriority="high" decoding="async" width="171" height="24" />
+            <img src="@/assets/images/meridian-logo.svg" alt="Meridian Sport" width="171" height="24" />
           </NuxtLink>
           <!-- Desktop Navigation -->
 

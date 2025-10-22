@@ -9,50 +9,50 @@
           rel="noopener noreferrer"
           class="banner-link"
         >
-          <img
+          <NuxtImg
             :src="topBanners[0].creative_image"
             :alt="topBanners[0].name"
             class="ad-banner-image"
             loading="lazy"
             decoding="async"
-            width="970"
-            height="250"
+            format="webp"
+            quality="85"
           />
         </a>
       </div>
       <div v-else class="ad-banner">
-        <img
-          src="../assets/images/image18.jpg"
+        <NuxtImg
+          src="~/assets/images/image18.jpg"
           alt="Ad Banner"
           class="ad-banner-image"
           loading="lazy"
           decoding="async"
-          width="970"
-          height="250"
+          format="webp"
+          quality="85"
         />
       </div>
       <div v-if="topBanners.length > 1" class="ad-banner test2">
         <a :href="topBanners[1].url_link" target="_blank" rel="noopener noreferrer" class="banner-link">
-          <img
+          <NuxtImg
             :src="topBanners[1].creative_image"
             :alt="topBanners[1].name"
             class="ad-banner-image"
             loading="lazy"
             decoding="async"
-            width="970"
-            height="250"
+            format="webp"
+            quality="85"
           />
         </a>
       </div>
       <div v-else class="ad-banner">
-        <img
-          src="../assets/images/image19.jpg"
+        <NuxtImg
+          src="~/assets/images/image19.jpg"
           alt="Ad Banner"
           class="ad-banner-image"
           loading="lazy"
           decoding="async"
-          width="970"
-          height="250"
+          format="webp"
+          quality="85"
         />
       </div>
     </div>
@@ -132,10 +132,12 @@ const { squareBanners: topBanners } = useOrders();
   opacity: 0.8;
 }
 
-.ad-banner-image {
+.ad-banner-image,
+.ad-banner-image :deep(img) {
   width: 100%;
   height: auto;
   border-radius: 8px;
+  display: block;
 }
 
 .video-placeholder {

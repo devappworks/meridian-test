@@ -1,23 +1,18 @@
 <template>
   <NuxtLink :to="articleUrl" class="news-card" @click="handleClick">
     <div class="news-image">
-      <picture>
-        <source
-          v-if="webpUrl"
-          type="image/webp"
-          :srcset="webpUrl"
-        />
-        <img
-          :src="responsiveImage.src"
-          :srcset="responsiveImage.srcset"
-          :sizes="responsiveImage.sizes"
-          :alt="title"
-          loading="lazy"
-          decoding="async"
-          width="640"
-          height="360"
-        />
-      </picture>
+      <NuxtPicture
+        :src="imageSrc"
+        :alt="title"
+        :img-attrs="{
+          loading: 'lazy',
+          decoding: 'async',
+          class: 'news-card-image'
+        }"
+        sizes="(max-width: 576px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 242px"
+        format="webp"
+        quality="85"
+      />
       <div class="category-tag" v-if="showSportTag">
         <span :class="['sport-tag', sportClass]">{{ sport }}</span>
       </div>
@@ -30,7 +25,6 @@
 
 <script>
 import { getCanonicalCategoryFromSlug } from '~/utils/canonicalCategory';
-import { generateNewsCardImageAttrs } from '~/utils/responsiveImage';
 
 export default {
   name: "NewsCard",
@@ -86,53 +80,36 @@ export default {
       const canonicalCategory = getCanonicalCategoryFromSlug(this.category);
       return `/${canonicalCategory}/${this.slug}/`;
     },
-    responsiveImage() {
-      // If featImages object is provided, use it for responsive images
+    imageSrc() {
+      // Priority: Get WebP URL from featImages if available, otherwise fallback to regular URL
       if (this.featImages && typeof this.featImages === 'object') {
-        return generateNewsCardImageAttrs(this.featImages);
+        // Try WebP first (smaller file size)
+        return this.featImages.medium?.webp ||
+               this.featImages.small?.webp ||
+               this.featImages.medium?.url ||
+               this.featImages.small?.url ||
+               this.featImages.large?.url ||
+               this.featImages['thumb-small']?.url ||
+               '';
       }
 
       // Fallback to legacy string image
       if (typeof this.image === 'string') {
-        return {
-          src: this.image,
-          srcset: '',
-          srcsetWebp: '',
-          sizes: ''
-        };
+        return this.image;
       }
 
-      // If image is an object (feat_images), use it
+      // If image is an object, try to extract URL
       if (typeof this.image === 'object' && this.image !== null) {
-        return generateNewsCardImageAttrs(this.image);
+        return this.image.medium?.webp ||
+               this.image.small?.webp ||
+               this.image.medium?.url ||
+               this.image.small?.url ||
+               this.image.url ||
+               '';
       }
 
       // Final fallback
-      return {
-        src: '',
-        srcset: '',
-        srcsetWebp: '',
-        sizes: ''
-      };
-    },
-    webpUrl() {
-      // Try to get WebP URL from featImages first
-      if (this.featImages?.small?.webp) {
-        return this.featImages.small.webp;
-      }
-      if (this.featImages?.medium?.webp) {
-        return this.featImages.medium.webp;
-      }
-      // Try from image object
-      if (typeof this.image === 'object' && this.image !== null) {
-        if (this.image.small?.webp) {
-          return this.image.small.webp;
-        }
-        if (this.image.medium?.webp) {
-          return this.image.medium.webp;
-        }
-      }
-      return null;
+      return '';
     },
     sportClass() {
       const sportMap = {
@@ -197,12 +174,13 @@ export default {
   width: 100%;
   cursor: pointer;
   transition: var(--transition);
-  text-decoration: none;
+  text-decoration: none !important;
   color: inherit;
 }
 
 .news-card:hover {
   transform: translateY(var(--translate-y-hover));
+  opacity: 1;
 }
 
 .news-image {
@@ -214,10 +192,12 @@ export default {
   overflow: hidden;
 }
 
-.news-image img {
+.news-image :deep(picture),
+.news-image :deep(img) {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .category-tag {

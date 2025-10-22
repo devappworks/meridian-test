@@ -6,6 +6,87 @@ loadDotenv()
 // Get GTM Container ID from environment or use default
 const gtmId = process.env.NUXT_PUBLIC_GTM_ID || process.env.GTM_ID || 'GTM-MDNMRBXM'
 export default defineNuxtConfig({
+  // Modules
+  modules: ['@nuxt/image'],
+
+  // Nuxt Image configuration
+  image: {
+    // Quality settings for optimal balance between size and visual quality
+    quality: 85,
+
+    // Image formats - prioritize WebP
+    format: ['webp'],
+
+    // Use IPX provider (built-in) for on-the-fly image optimization
+    provider: 'ipx',
+
+    // IPX configuration
+    ipx: {
+      maxAge: 60 * 60 * 24 * 7, // Cache for 7 days
+    },
+
+    // Presets for different image types
+    presets: {
+      newsCard: {
+        modifiers: {
+          format: 'webp',
+          quality: 85,
+          fit: 'cover',
+          width: 640,
+          height: 360
+        }
+      },
+      featured: {
+        modifiers: {
+          format: 'webp',
+          quality: 85,
+          fit: 'cover',
+          width: 1200,
+          height: 675
+        }
+      },
+      thumb: {
+        modifiers: {
+          format: 'webp',
+          quality: 80,
+          fit: 'cover',
+          width: 300,
+          height: 169
+        }
+      },
+      banner: {
+        modifiers: {
+          format: 'webp',
+          quality: 85,
+          width: 970,
+          height: 250
+        }
+      }
+    },
+
+    // Responsive image sizes (srcset)
+    screens: {
+      xs: 320,
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+      xxl: 1536,
+      '2xl': 1920
+    },
+
+    // Domains allowed for optimization
+    domains: [
+      'meridian.mpanel.app',
+      'mer-static.s3.eu-central-1.amazonaws.com'
+    ],
+
+    // Alias for local static images
+    alias: {
+      meridian: 'https://meridian.mpanel.app'
+    }
+  },
+
   // Enable SSR for all routes
   ssr: true,
   // Dev server configuration - allow external access
@@ -224,10 +305,9 @@ export default defineNuxtConfig({
               if (id.includes('swiper')) {
                 return 'swiper-vendor';
               }
-              if (id.includes('vue') || id.includes('vue-router')) {
-                return 'vue-vendor';
-              }
-              // All other vendors in one chunk
+              // Don't split Vue core - it causes circular dependency issues
+              // Keep Vue in the main vendor chunk
+              // All vendors in one chunk
               return 'vendor';
             }
             // Split large components into separate chunks
