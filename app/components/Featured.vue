@@ -215,8 +215,10 @@ export default {
 
   .featured-image {
     width: 100%;
+    max-width: 100%;
     height: auto;
-    aspect-ratio: 16/9;
+    min-height: auto;
+    aspect-ratio: 345 / 194;
   }
 
   .featured-text {
