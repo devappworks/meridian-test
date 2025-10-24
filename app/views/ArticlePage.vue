@@ -211,24 +211,6 @@
               <!-- Remaining paragraphs after fifth -->
               <div v-html="afterFifthParagraph" class="article-text"></div>
 
-              <!-- Quote block -->
-              <!-- <div class="quote-block">
-                <div class="quote-content">
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Suspendisse eget eleifend tellus. Pellentesque habitant
-                    morbi tristique senectus et netus et malesuada fames ac
-                    turpis egestas. Vestibulum feugiat eros luctus lacus
-                    vulputate eleifend.
-                  </p>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Suspendisse eget eleifend tellus. Pellentesque habitant
-                    morbi tristique senectus et netus et malesuada fames ac.
-                  </p>
-                </div>
-              </div> -->
-
               <!-- Tags section -->
               <ClientOnly>
                 <div class="tags-section" v-if="article?.tags && Array.isArray(article.tags)">
@@ -362,22 +344,8 @@ import { fetchFromApi, fetchAllComments } from "@/services/api";
 import { generateArticleImageAttrs } from "@/utils/responsiveImage";
 
 // Nuxt composables
-const nuxtApp = useNuxtApp();
 const cache = useGlobalCache();
 
-// SSR Detection - This runs on both server and client
-console.log("🟢 ArticlePage setup() - SSR check:", {
-  server: process.server,
-  client: process.client
-});
-
-if (process.server) {
-  console.log("🟢 This is running on the SERVER! SSR is working!");
-}
-
-if (process.client) {
-  console.log("🟢 This is running on the CLIENT! Hydration happening!");
-}
 
 // Props
 const props = defineProps({
@@ -399,36 +367,9 @@ const props = defineProps({
   },
 });
 
-// Early validation of article data structure
-console.log("\n🟡 ============ ARTICLE PAGE COMPONENT START ============");
-console.log("🟡 ArticlePage props received:", {
-  category: props.category,
-  slug: props.slug,
-  hasArticle: !!props.article,
-  articleType: typeof props.article,
-  articleId: props.article?.id,
-  articleTitle: props.article?.title?.substring(0, 50),
-  timestamp: new Date().toISOString()
-});
-
-if (props.article && typeof props.article !== 'object') {
-  console.error("🟡 ArticlePage: Invalid article data type:", typeof props.article);
-}
-
-if (!props.article) {
-  console.log("🟡 ArticlePage: No article data provided, will fetch from API");
-} else if (!props.article.id) {
-  console.warn("🟡 ArticlePage: Article provided but missing ID:", props.article);
-} else {
-  console.log("🟡 ArticlePage: Valid article data received from props");
-}
 
 // Reactive data
 const showComments = ref(false);
-// Generate unique instance ID for debugging
-const instanceId = Math.random().toString(36).substr(2, 9);
-console.log(`🆔 [ArticlePage ${instanceId}] Instance created`);
-
 const article = ref(props.article || null);
 const loading = ref({
   article: !props.article, // Don't show loading if we already have article data
@@ -469,14 +410,51 @@ const cleanBrokenImages = (htmlContent) => {
   return cleaned;
 };
 
+// Helper function to extract text from HTML for SEO meta descriptions (SSR-safe)
+const stripHtmlTags = (htmlContent) => {
+  if (!htmlContent) return '';
+
+  let textContent;
+  if (typeof document === 'undefined') {
+    // Server-side: strip HTML tags with regex
+    textContent = htmlContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  } else {
+    // Client-side: use DOM parsing
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    textContent = tempDiv.textContent || tempDiv.innerText || '';
+  }
+
+  // Return first 160 characters for SEO description
+  return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
+};
+
+// Helper function to transform article data with category handling
+const transformArticleData = (article, sportCategory = null, defaultCategory = 'ostali-sportovi') => {
+  const articleHasCategories = article.categories && Array.isArray(article.categories) && article.categories.length > 0;
+  if (!articleHasCategories) {
+    console.warn('Article without category:', article.id);
+  }
+
+  return {
+    id: article.id,
+    title: article.title,
+    image: article.feat_images?.small?.url || null,
+    featImages: article.feat_images,
+    sport: sportCategory || (articleHasCategories ? getSportFromCategories(article.categories) : 'OSTALE VESTI'),
+    url: article.url || null,
+    category: articleHasCategories ? article.categories[0]?.slug : defaultCategory,
+    categoryName: articleHasCategories ? article.categories[0]?.name : 'Ostali sportovi',
+    slug: article.slug,
+    date: article.date || article.publish_date,
+  };
+};
+
 // Computed properties
 const beforeFifthParagraph = computed(() => {
   if (!article.value || !article.value.contents) return "";
 
   const paragraphs = extractParagraphs(article.value.contents);
-  console.log(`[ArticlePage] Total paragraphs: ${paragraphs.length}`);
-  console.log(`[ArticlePage] Paragraph 4 (index 4): ${paragraphs[4]?.substring(0, 100)}...`);
-  
   const content = paragraphs.slice(0, 4).join("");
   return cleanBrokenImages(content);
 });
@@ -486,7 +464,6 @@ const fifthParagraph = computed(() => {
 
   const paragraphs = extractParagraphs(article.value.contents);
   const content = paragraphs[4] || "";
-  console.log(`[ArticlePage] Fifth paragraph content: ${content.substring(0, 200)}...`);
   return cleanBrokenImages(content);
 });
 
@@ -513,45 +490,17 @@ const articleImage = computed(() => {
 });
 
 
-console.log(article.value, "THIS ONE ARTICLE")
 // Dynamic meta tags that update based on article data
 useSeoMeta({
   title: () => `${article.value?.title} | Meridian Sport` || 'Article - Meridian',
   description: () => {
     if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
-
-    // Extract text content from HTML and create a description - SSR safe
-    let textContent;
-    if (typeof document === 'undefined') {
-      // Server-side: strip HTML tags with regex
-      textContent = article.value.contents.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-    } else {
-      // Client-side: use DOM parsing
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = article.value.contents;
-      textContent = tempDiv.textContent || tempDiv.innerText || '';
-    }
-
-    // Return first 160 characters for SEO description
-    return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
+    return stripHtmlTags(article.value.contents);
   },
   ogTitle: () => `${article.value?.title} | Meridian Sport` || 'Article - Meridian',
   ogDescription: () => {
     if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
-
-    // SSR-safe text extraction
-    let textContent;
-    if (typeof document === 'undefined') {
-      // Server-side: strip HTML tags with regex
-      textContent = article.value.contents.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-    } else {
-      // Client-side: use DOM parsing
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = article.value.contents;
-      textContent = tempDiv.textContent || tempDiv.innerText || '';
-    }
-
-    return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
+    return stripHtmlTags(article.value.contents);
   },
   ogImage: () => article.value?.feat_images?.["extra-large"]?.url || '/meridian-logo.svg',
   ogType: 'article',
@@ -559,20 +508,7 @@ useSeoMeta({
   twitterTitle: () => `${article.value?.title} | Meridian Sport` || 'Article - Meridian',
   twitterDescription: () => {
     if (!article.value?.contents) return 'Read the latest sports news and updates on Meridian';
-
-    // SSR-safe text extraction
-    let textContent;
-    if (typeof document === 'undefined') {
-      // Server-side: strip HTML tags with regex
-      textContent = article.value.contents.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-    } else {
-      // Client-side: use DOM parsing
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = article.value.contents;
-      textContent = tempDiv.textContent || tempDiv.innerText || '';
-    }
-
-    return textContent.substring(0, 160).trim() + (textContent.length > 160 ? '...' : '');
+    return stripHtmlTags(article.value.contents);
   },
   twitterImage: () => article.value?.feat_images?.["extra-large"]?.url || '/meridian-logo.svg',
 });
@@ -585,19 +521,10 @@ const fetchArticle = async () => {
   loading.value.article = true;
   error.value = null;
 
-  console.log("\n🟡 ============ FETCHING ARTICLE (CLIENT-SIDE FALLBACK) ============");
-  console.log("🟡 ArticlePage fetchArticle called with:", {
-    category: props.category,
-    slug: props.slug,
-    route: useRoute().path,
-    params: useRoute().params,
-    timestamp: new Date().toISOString()
-  });
-
   try {
     // Check if category and slug are valid before making API call
     if (!props.category || !props.slug) {
-      console.error("🟡 ArticlePage: category or slug is missing!", {
+      console.error("ArticlePage: category or slug is missing!", {
         category: props.category,
         slug: props.slug
       });
@@ -605,55 +532,27 @@ const fetchArticle = async () => {
       loading.value.article = false;
       return;
     }
-    
+
     const apiUrl = `/getArticlesBySlug/${props.category}/${props.slug}`;
-    console.log("🟡 Calling backend API directly:", apiUrl);
-    
-    const fetchStart = Date.now();
     const response = await fetchFromApi(apiUrl);
-    const fetchDuration = Date.now() - fetchStart;
-    
-    console.log(`🟡 Backend API response received in ${fetchDuration}ms:`, {
-      hasResponse: !!response,
-      hasArticle: !!response?.article,
-      articleId: response?.article?.id,
-      articleTitle: response?.article?.title?.substring(0, 50)
-    });
-    
+
     article.value = response.article;
     loading.value.article = false;
 
-    console.log("🟡 Article successfully loaded:", {
-      id: article.value?.id,
-      title: article.value?.title?.substring(0, 50),
-      hasRelatedArticles: !!article.value?.relatedArticle
-    });
-
     await fetchRelatedNews();
     await fetchOtherNews();
-    
-    console.log("🟡 ============ FETCH COMPLETE ============\n");
   } catch (fetchError) {
-    console.error("\n🟡 ============ FETCH ERROR ============");
-    console.error("🟡 ArticlePage Error fetching article:", {
-      message: fetchError.message,
-      statusCode: fetchError.response?.status,
-      statusText: fetchError.response?.statusText,
-      data: fetchError.response?.data,
-      stack: fetchError.stack
-    });
-    console.log("🟡 ============ FETCH ERROR END ============\n");
-    
+    console.error("ArticlePage Error fetching article:", fetchError);
+
     // If it's a 404, show the error page instead of inline error
     if (fetchError.response?.status === 404 || fetchError.statusCode === 404) {
-      console.log("🟡 ArticlePage: Article not found (404), showing error page");
       throw createError({
         statusCode: 404,
         statusMessage: 'Page Not Found',
         fatal: true
       });
     }
-    
+
     error.value = "Failed to load article";
     loading.value.article = false;
   }
@@ -661,7 +560,6 @@ const fetchArticle = async () => {
 
 const fetchRelatedNews = async () => {
   if (!article.value) {
-    console.log("🔴 fetchRelatedNews: No valid article data");
     loading.value.relatedNews = false;
     josVestiNews.value = [];
     relatedNews.value = [];
@@ -671,7 +569,7 @@ const fetchRelatedNews = async () => {
   // Handle articles without categories gracefully
   const hasCategories = article.value.categories && Array.isArray(article.value.categories) && article.value.categories.length > 0;
   if (!hasCategories) {
-    console.warn("⚠️ Article without categories, using default category:", article.value.id);
+    console.warn("Article without categories, using default category:", article.value.id);
   }
 
   loading.value.relatedNews = true;
@@ -684,29 +582,17 @@ const fetchRelatedNews = async () => {
     const defaultCategory = 'ostali-sportovi';
 
     const relatedArticles = article.value?.relatedArticle || [];
-    console.log(relatedArticles, "RELATED ARTICLES");
 
     if (Array.isArray(relatedArticles) && relatedArticles.length > 0) {
-      console.log(josVestiNews, "JOS VESTI NEWS");
       josVestiNews.value = relatedArticles
         .filter(article => article) // Only filter null/undefined
         .map((article) => {
-          const articleHasCategories = article.categories && Array.isArray(article.categories) && article.categories.length > 0;
-          if (!articleHasCategories) {
-            console.warn('Related article without category:', article.id);
+          const transformed = transformArticleData(article, sportCategory, defaultCategory);
+          // Override image with fallback if needed
+          if (!transformed.image) {
+            transformed.image = require("@/assets/images/image.jpg");
           }
-          return {
-            id: article.id,
-            title: article.title,
-            image:
-              article.feat_images?.small?.url ||
-              require("@/assets/images/image.jpg"),
-            featImages: article.feat_images,
-            sport: sportCategory,
-            url: article.url || null,
-            category: articleHasCategories ? article.categories[0]?.slug : defaultCategory,
-            slug: article.slug,
-          };
+          return transformed;
         });
     } else {
       josVestiNews.value = [];
@@ -725,20 +611,10 @@ const fetchRelatedNews = async () => {
       .slice(0, 8)
       .filter(article => article) // Only filter null/undefined
       .map((article) => {
-        const articleHasCategories = article.categories && Array.isArray(article.categories) && article.categories.length > 0;
-        if (!articleHasCategories) {
-          console.warn('Sidebar related article without category:', article.id);
-        }
-        return {
-          id: article.id,
-          title: article.title,
-          date: formatDate(article.date || article.publish_date),
-          sport: articleHasCategories ? getSportFromCategories(article.categories) : 'OSTALE VESTI',
-          url: article.url || null,
-          category: articleHasCategories ? article.categories[0]?.slug : defaultCategory,
-          categoryName: articleHasCategories ? article.categories[0]?.name : 'Ostali sportovi',
-          slug: article.slug,
-        };
+        const transformed = transformArticleData(article, null, defaultCategory);
+        // Format the date for sidebar display
+        transformed.date = formatDate(transformed.date);
+        return transformed;
       });
 
     loading.value.relatedNews = false;
@@ -751,12 +627,8 @@ const fetchRelatedNews = async () => {
 };
 
 const fetchOtherNews = async () => {
-  console.log(`🟠 [fetchOtherNews ${instanceId}] Starting...`);
-
   if (!article.value) {
-    console.log(`🔴 [fetchOtherNews ${instanceId}]: No valid article data`);
     loading.value.otherNews = false;
-    console.log(`🟠 [fetchOtherNews ${instanceId}] Set loading.otherNews = false (no valid data)`);
     otherNews.value = [];
     return;
   }
@@ -764,11 +636,10 @@ const fetchOtherNews = async () => {
   // Handle articles without categories gracefully
   const hasCategories = article.value.categories && Array.isArray(article.value.categories) && article.value.categories.length > 0;
   if (!hasCategories) {
-    console.warn("⚠️ Article without categories in fetchOtherNews, using default category:", article.value.id);
+    console.warn("Article without categories in fetchOtherNews, using default category:", article.value.id);
   }
 
   loading.value.otherNews = true;
-  console.log(`🟠 [fetchOtherNews ${instanceId}] Set loading.otherNews = true`);
 
   try {
     // Get the sport category from the article or use default
@@ -803,31 +674,13 @@ const fetchOtherNews = async () => {
     otherNews.value = articles
       .slice(0, 8)
       .filter(article => article) // Only filter null/undefined
-      .map((article) => {
-        const articleHasCategories = article.categories && Array.isArray(article.categories) && article.categories.length > 0;
-        if (!articleHasCategories) {
-          console.warn('Other news article without category:', article.id);
-        }
-        return {
-          id: article.id,
-          title: article.title,
-          image: article.feat_images?.small?.url || null,
-          sport: sportCategory,
-          url: article.url || null,
-          category: articleHasCategories ? article.categories[0]?.slug : defaultCategory,
-          slug: article.slug,
-        };
-      });
+      .map((article) => transformArticleData(article, sportCategory, defaultCategory));
 
-    console.log(`🟠 [fetchOtherNews ${instanceId}] Fetched ${otherNews.value.length} other news articles`);
     loading.value.otherNews = false;
-    console.log(`🟠 [fetchOtherNews ${instanceId}] Set loading.otherNews = false (success)`);
-    console.log(`🟠 [fetchOtherNews ${instanceId}] Current loading state:`, loading.value.otherNews);
   } catch (error) {
-    console.error(`🔴 [fetchOtherNews ${instanceId}] Error fetching other news:`, error);
+    console.error("Error fetching other news:", error);
     otherNews.value = [];
     loading.value.otherNews = false;
-    console.log(`🟠 [fetchOtherNews ${instanceId}] Set loading.otherNews = false (error)`);
   }
 };
 
@@ -925,7 +778,6 @@ const getSportFromCategories = (categories) => {
 };
 
 const formatDate = (dateString) => {
-  console.log(dateString, "dateString");
   // Robustly parse multiple possible input formats and avoid NaN
   if (!dateString) return "";
 
@@ -1021,31 +873,18 @@ const getJosVestiWebp = (news) => {
 };
 
 const extractParagraphs = (htmlContent) => {
-  // First, try to detect and preserve Twitter embeds using a simpler approach
-  const twitterEmbedPattern = /<blockquote class="twitter-tweet">[\s\S]*?<\/blockquote>\s*<p><script src="https:\/\/platform\.twitter\.com\/widgets\.js"><\/script><\/p>/gi;
-
-  // Instagram embed pattern - matches both //www.instagram.com and platform.instagram.com
-  const instagramEmbedPattern = /<blockquote class="instagram-media"[\s\S]*?<\/blockquote>\s*<p>\s*<script[^>]*src="[^"]*instagram\.com[^"]*embed\.js[^"]*"[^>]*><\/script>\s*<\/p>/gi;
-
-  console.log('[ArticlePage] Checking for embeds in content:', {
-    contentLength: htmlContent?.length,
-    hasInstagramClass: htmlContent?.includes('instagram-media'),
-    hasInstagramScript: htmlContent?.includes('instagram.com/embed.js')
-  });
-
-  // Check if content contains Twitter embeds
-  if (twitterEmbedPattern.test(htmlContent)) {
-    console.log('[ArticlePage] Twitter embed detected, using special handling');
-    return extractParagraphsWithTwitterEmbeds(htmlContent);
+  // Check for each embed type using the unified embedPatterns config
+  if (embedPatterns.twitter.pattern.test(htmlContent)) {
+    return extractParagraphsWithEmbeds(htmlContent, 'twitter');
   }
 
-  // Check if content contains Instagram embeds
-  if (instagramEmbedPattern.test(htmlContent)) {
-    console.log('[ArticlePage] Instagram embed detected, using special handling');
-    return extractParagraphsWithInstagramEmbeds(htmlContent);
+  if (embedPatterns.instagram.pattern.test(htmlContent)) {
+    return extractParagraphsWithEmbeds(htmlContent, 'instagram');
   }
 
-  console.log('[ArticlePage] No Twitter or Instagram embeds detected, using standard extraction');
+  if (embedPatterns.sofascore.pattern.test(htmlContent)) {
+    return extractParagraphsWithEmbeds(htmlContent, 'sofascore');
+  }
   
   // Server-side safe paragraph extraction
   if (typeof document === 'undefined') {
@@ -1061,15 +900,11 @@ const extractParagraphs = (htmlContent) => {
   const grouped = [];
   let i = 0;
 
-  console.log(`[ArticlePage Client] Processing ${elements.length} elements`);
-
   while (i < elements.length) {
     const element = elements[i];
 
     // Check if this is a Twitter blockquote
     if (element.tagName === 'BLOCKQUOTE' && element.classList.contains('twitter-tweet')) {
-      console.log(`[ArticlePage Client] Found Twitter blockquote at position ${i}`);
-
       // Collect the blockquote and the following elements until we find the script tag
       let twitterBlock = element.outerHTML;
       let j = i + 1;
@@ -1081,21 +916,17 @@ const extractParagraphs = (htmlContent) => {
 
         // Check if this element contains the Twitter widgets script
         if (nextElement.outerHTML.includes('platform.twitter.com/widgets.js')) {
-          console.log(`[ArticlePage Client] Found Twitter script at position ${j}`);
           j++;
           break;
         }
         j++;
       }
 
-      console.log(`[ArticlePage Client] Grouped Twitter block: ${twitterBlock.substring(0, 100)}...`);
       grouped.push(twitterBlock);
       i = j;
     }
     // Check if this is an Instagram blockquote
     else if (element.tagName === 'BLOCKQUOTE' && element.classList.contains('instagram-media')) {
-      console.log(`[ArticlePage Client] Found Instagram blockquote at position ${i}`);
-
       // Collect the blockquote and the following elements until we find the script tag
       let instagramBlock = element.outerHTML;
       let j = i + 1;
@@ -1107,14 +938,12 @@ const extractParagraphs = (htmlContent) => {
 
         // Check if this element contains the Instagram embed script
         if (nextElement.outerHTML.includes('instagram.com') && nextElement.outerHTML.includes('embed.js')) {
-          console.log(`[ArticlePage Client] Found Instagram script at position ${j}`);
           j++;
           break;
         }
         j++;
       }
 
-      console.log(`[ArticlePage Client] Grouped Instagram block: ${instagramBlock.substring(0, 100)}...`);
       grouped.push(instagramBlock);
       i = j;
     }
@@ -1127,64 +956,44 @@ const extractParagraphs = (htmlContent) => {
   return grouped;
 };
 
-// Special handling for content with Twitter embeds
-const extractParagraphsWithTwitterEmbeds = (htmlContent) => {
-  console.log('[ArticlePage] Using Twitter embed special handling');
-  
-  // Split by Twitter embed pattern first
-  const twitterEmbedPattern = /<blockquote class="twitter-tweet">[\s\S]*?<\/blockquote>\s*<p><script src="https:\/\/platform\.twitter\.com\/widgets\.js"><\/script><\/p>/gi;
-  const parts = htmlContent.split(twitterEmbedPattern);
-  const twitterEmbeds = htmlContent.match(twitterEmbedPattern) || [];
-  
-  const result = [];
-  let twitterIndex = 0;
-  
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
-    
-    // Process the content part (split by paragraphs)
-    if (part.trim()) {
-      const paragraphs = part.split(/<\/(?:p|h[1-6]|div)>/i)
-        .map(p => p.trim())
-        .filter(p => p.length > 0)
-        .map(p => {
-          if (p.includes('<') && !p.match(/<\/(?:p|h[1-6]|div)>$/i)) {
-            const tagMatch = p.match(/<(p|h[1-6]|div)/i);
-            if (tagMatch) {
-              return p + `</${tagMatch[1]}>`;
-            }
-          }
-          return p;
-        });
-      
-      result.push(...paragraphs);
-    }
-    
-    // Add Twitter embed if it exists
-    if (twitterIndex < twitterEmbeds.length) {
-      result.push(twitterEmbeds[twitterIndex]);
-      twitterIndex++;
-    }
+// Embed patterns configuration for unified extraction
+const embedPatterns = {
+  twitter: {
+    name: 'Twitter',
+    pattern: /<blockquote class="twitter-tweet">[\s\S]*?<\/blockquote>\s*<p><script src="https:\/\/platform\.twitter\.com\/widgets\.js"><\/script><\/p>/gi,
+    identifier: 'twitter-tweet'
+  },
+  instagram: {
+    name: 'Instagram',
+    pattern: /<blockquote class="instagram-media"[\s\S]*?<\/blockquote>\s*<p>\s*<script[^>]*src="[^"]*instagram\.com[^"]*embed\.js[^"]*"[^>]*><\/script>\s*<\/p>/gi,
+    identifier: 'instagram-media',
+    // Fix protocol-relative URLs
+    preProcess: (content) => content.replace(/src="\/\/www\.instagram\.com\/embed\.js"/g, 'src="https://www.instagram.com/embed.js"')
+  },
+  sofascore: {
+    name: 'SofaScore',
+    pattern: /<p>\s*<iframe[^>]*src="[^"]*widgets\.sofascore\.com[^"]*"[^>]*>[\s\S]*?<\/iframe>\s*<\/p>\s*<div[^>]*>[\s\S]*?<\/div>/gi,
+    identifier: 'widgets.sofascore.com'
   }
-  
-  console.log(`[ArticlePage] Twitter embed handling produced ${result.length} paragraphs`);
-  return result;
 };
 
-// Special handling for content with Instagram embeds
-const extractParagraphsWithInstagramEmbeds = (htmlContent) => {
-  console.log('[ArticlePage] Using Instagram embed special handling');
+// Unified function for extracting paragraphs with any embed type
+const extractParagraphsWithEmbeds = (htmlContent, embedType) => {
+  const config = embedPatterns[embedType];
+  if (!config) {
+    console.error(`[ArticlePage] Unknown embed type: ${embedType}`);
+    return [];
+  }
 
-  // Fix protocol-relative URLs to use https://
-  let fixedContent = htmlContent.replace(/src="\/\/www\.instagram\.com\/embed\.js"/g, 'src="https://www.instagram.com/embed.js"');
+  // Apply pre-processing if defined (e.g., Instagram URL fixes)
+  let processedContent = config.preProcess ? config.preProcess(htmlContent) : htmlContent;
 
-  // Split by Instagram embed pattern first - matches both //www.instagram.com and platform.instagram.com
-  const instagramEmbedPattern = /<blockquote class="instagram-media"[\s\S]*?<\/blockquote>\s*<p>\s*<script[^>]*src="[^"]*instagram\.com[^"]*embed\.js[^"]*"[^>]*><\/script>\s*<\/p>/gi;
-  const parts = fixedContent.split(instagramEmbedPattern);
-  const instagramEmbeds = fixedContent.match(instagramEmbedPattern) || [];
+  // Split by embed pattern
+  const parts = processedContent.split(config.pattern);
+  const embeds = processedContent.match(config.pattern) || [];
 
   const result = [];
-  let instagramIndex = 0;
+  let embedIndex = 0;
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
@@ -1207,21 +1016,12 @@ const extractParagraphsWithInstagramEmbeds = (htmlContent) => {
       result.push(...paragraphs);
     }
 
-    // Add Instagram embed if it exists (already has https:// fixed)
-    if (instagramIndex < instagramEmbeds.length) {
-      result.push(instagramEmbeds[instagramIndex]);
-      instagramIndex++;
+    // Add embed if it exists
+    if (embedIndex < embeds.length) {
+      result.push(embeds[embedIndex]);
+      embedIndex++;
     }
   }
-
-  console.log(`[ArticlePage] Instagram embed handling produced ${result.length} paragraphs`);
-
-  // Log which paragraphs contain Instagram embeds for debugging
-  result.forEach((para, index) => {
-    if (para.includes('instagram-media')) {
-      console.log(`[ArticlePage] Instagram embed found at paragraph ${index}`);
-    }
-  });
 
   return result;
 };
@@ -1246,8 +1046,6 @@ const extractParagraphsSSR = (htmlContent) => {
     });
   }
 
-  console.log(`[ArticlePage SSR] Found ${twitterBlocks.length} Twitter embed blocks`);
-
   // Find all Instagram embed blocks - matches both //www.instagram.com and platform.instagram.com
   const instagramBlockRegex = /<blockquote[^>]*class="instagram-media"[^>]*>[\s\S]*?<\/blockquote>[\s\S]*?<script[^>]*src="[^"]*instagram\.com[^"]*embed\.js[^"]*"[^>]*><\/script>/gi;
   const instagramBlocks = [];
@@ -1260,10 +1058,20 @@ const extractParagraphsSSR = (htmlContent) => {
     });
   }
 
-  console.log(`[ArticlePage SSR] Found ${instagramBlocks.length} Instagram embed blocks`);
+  // Find all SofaScore embed blocks
+  const sofascoreBlockRegex = /<p>\s*<iframe[^>]*src="[^"]*widgets\.sofascore\.com[^"]*"[^>]*>[\s\S]*?<\/iframe>\s*<\/p>\s*<div[^>]*>[\s\S]*?<\/div>/gi;
+  const sofascoreBlocks = [];
 
-  // Combine Twitter and Instagram blocks, then sort by position
-  const allBlocks = [...twitterBlocks, ...instagramBlocks].sort((a, b) => a.start - b.start);
+  while ((match = sofascoreBlockRegex.exec(htmlContent)) !== null) {
+    sofascoreBlocks.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      content: match[0]
+    });
+  }
+
+  // Combine Twitter, Instagram, and SofaScore blocks, then sort by position
+  const allBlocks = [...twitterBlocks, ...instagramBlocks, ...sofascoreBlocks].sort((a, b) => a.start - b.start);
   
   // Split content, but skip embed blocks
   let tempContent = htmlContent;
@@ -1372,77 +1180,98 @@ const copyToClipboard = (value) => {
   }
 };
 
-// Load and process Twitter widgets
-const loadTwitterWidgets = () => {
+// Unified embed loader configuration
+const embedConfigs = {
+  twitter: {
+    name: 'Twitter',
+    scriptUrl: 'https://platform.twitter.com/widgets.js',
+    scriptSelector: 'script[src*="platform.twitter.com/widgets.js"]',
+    globalVar: 'twttr',
+    processMethod: (win) => win.twttr?.widgets.load(),
+    charset: 'utf-8'
+  },
+  instagram: {
+    name: 'Instagram',
+    scriptUrl: 'https://www.instagram.com/embed.js',
+    scriptSelector: 'script[src*="instagram.com/embed.js"]',
+    globalVar: 'instgrm',
+    processMethod: (win) => win.instgrm?.Embeds.process()
+  },
+  sofascore: {
+    name: 'SofaScore',
+    scriptUrl: null, // No script needed - iframes work automatically
+    scriptSelector: 'iframe[src*="widgets.sofascore.com"]',
+    globalVar: null,
+    processMethod: () => {
+      const iframes = document.querySelectorAll('iframe[src*="widgets.sofascore.com"]');
+      if (iframes.length > 0) {
+        console.log(`[ArticlePage] Found ${iframes.length} SofaScore embed(s)`);
+      }
+    }
+  }
+};
+
+// Unified function to load and process all embed types
+const loadEmbedScript = (embedType) => {
   // Client-side only
   if (typeof window === 'undefined') return;
 
-  console.log('[ArticlePage] Loading Twitter widgets script...');
-
-  // Check if Twitter widgets script is already loaded
-  if (window.twttr) {
-    console.log('[ArticlePage] Twitter widgets already loaded, processing tweets...');
-    window.twttr.widgets.load();
+  const config = embedConfigs[embedType];
+  if (!config) {
+    console.error(`[ArticlePage] Unknown embed type: ${embedType}`);
     return;
   }
 
-  // Load Twitter widgets script
-  const existingScript = document.querySelector('script[src*="platform.twitter.com/widgets.js"]');
-  if (existingScript) {
-    console.log('[ArticlePage] Twitter script tag exists, waiting for load...');
-    // Script tag exists but might not be loaded yet
+  // For embeds that don't need a script (like SofaScore iframes)
+  if (!config.scriptUrl) {
+    config.processMethod(window);
+    return;
+  }
+
+  // Check if script is already loaded
+  if (config.globalVar && window[config.globalVar]) {
+    config.processMethod(window);
+    return;
+  }
+
+  // Check if script tag already exists
+  const existingScript = document.querySelector(config.scriptSelector);
+  if (existingScript && existingScript.tagName === 'SCRIPT') {
     existingScript.addEventListener('load', () => {
-      console.log('[ArticlePage] Twitter widgets script loaded, processing tweets...');
-      if (window.twttr) {
-        window.twttr.widgets.load();
-      }
-    });
+      config.processMethod(window);
+    }, { once: true });
     return;
   }
 
   // Create and load the script
   const script = document.createElement('script');
-  script.src = 'https://platform.twitter.com/widgets.js';
+  script.src = config.scriptUrl;
   script.async = true;
-  script.charset = 'utf-8';
+  // Note: charset attribute is deprecated but kept for Twitter compatibility
+  if (config.charset) {
+    script.setAttribute('charset', config.charset);
+  }
 
   script.onload = () => {
-    console.log('[ArticlePage] Twitter widgets script loaded successfully');
-    if (window.twttr) {
-      window.twttr.widgets.load();
-    }
+    config.processMethod(window);
   };
 
   script.onerror = () => {
-    console.error('[ArticlePage] Failed to load Twitter widgets script');
+    console.error(`[ArticlePage] Failed to load ${config.name} script`);
   };
 
   document.head.appendChild(script);
 };
 
+// Convenience function that loads all embed types
+const loadAllEmbeds = () => {
+  loadEmbedScript('twitter');
+  loadEmbedScript('instagram');
+  loadEmbedScript('sofascore');
+};
+
 // Lifecycle hooks
 onMounted(async () => {
-  console.log("\n🟡 ============ ARTICLE PAGE MOUNTED ============");
-  console.log("🟡 ArticlePage mounted with props:", {
-    category: props.category,
-    slug: props.slug,
-    route: useRoute(),
-    routePath: useRoute().path,
-    routeParams: useRoute().params,
-    isSSR: process.server,
-    isClient: process.client,
-    hasArticle: !!props.article,
-    articleValid: !!(props.article?.id),
-    timestamp: new Date().toISOString()
-  });
-
-  // SSR Debug - this should show true on server, false on client
-  console.log("🟡 SSR Status:", {
-    server: process.server,
-    client: process.client,
-    isHydrating: nuxtApp.isHydrating
-  });
-
   // Only scroll on client side to prevent SSR mismatch
   if (typeof window !== 'undefined') {
     window.scrollTo(0, 0);
@@ -1450,7 +1279,7 @@ onMounted(async () => {
 
   // Validate category and slug parameters
   if (!props.category || !props.slug) {
-    console.error("🟡 ArticlePage: Invalid route parameters", {
+    console.error("ArticlePage: Invalid route parameters", {
       category: props.category,
       slug: props.slug
     });
@@ -1460,53 +1289,43 @@ onMounted(async () => {
 
   // Only fetch article if we don't already have it from SSR or if the article is invalid
   if (!props.article || !props.article.id) {
-    console.log("🟡 ArticlePage: Need to fetch article from API");
-    console.log("🟡 Reason:", !props.article ? "No article prop" : "Article missing ID");
     await fetchArticle();
   } else {
-    console.log("🟡 ArticlePage: Using article from SSR props - skipping fetch");
     // If we have article data from props, validate it and fetch related content
     if (props.article.id) {
       loading.value.article = false;
       // Only fetch related content if we have valid article data
       if (props.article.categories && Array.isArray(props.article.categories)) {
-        console.log("🟡 Fetching related content...");
         await fetchRelatedNews();
         // Only fetch other news if we don't already have it from props
         if (props.otherNews.length === 0) {
-          console.log("🟡 No other news from props, fetching...");
           await fetchOtherNews();
         } else {
-          console.log("🟡 Using other news from SSR props - skipping fetch");
           loading.value.otherNews = false;
         }
       } else {
-        console.warn("🟡 ArticlePage: Article has no valid categories, skipping related content");
+        console.warn("ArticlePage: Article has no valid categories, skipping related content");
         loading.value.relatedNews = false;
         loading.value.otherNews = false;
       }
     } else {
-      console.warn("🟡 ArticlePage: Invalid article from props, fetching from API");
+      console.warn("ArticlePage: Invalid article from props, fetching from API");
       await fetchArticle();
     }
   }
 
   // Only fetch comments if we have a valid article
   if (article.value?.id || props.article?.id) {
-    console.log("🟡 Fetching comments...");
     await fetchComments();
   } else {
-    console.log("🟡 ArticlePage: No article ID for comments, skipping comment fetch");
     loading.value.comments = false;
   }
 
-  // Load Twitter widgets after content is rendered
+  // Load all embed widgets after content is rendered
   // Use nextTick to ensure DOM is updated
   nextTick(() => {
-    loadTwitterWidgets();
+    loadAllEmbeds();
   });
-
-  console.log("🟡 ============ ARTICLE PAGE MOUNTED END ============\n");
 });
 
 // Watchers
@@ -1522,9 +1341,9 @@ watch(() => props.category, async () => {
   await fetchArticle();
   await fetchComments();
 
-  // Reload Twitter widgets after new content is loaded
+  // Reload all embed widgets after new content is loaded
   nextTick(() => {
-    loadTwitterWidgets();
+    loadAllEmbeds();
   });
 });
 
@@ -1540,9 +1359,9 @@ watch(() => props.slug, async () => {
   await fetchArticle();
   await fetchComments();
 
-  // Reload Twitter widgets after new content is loaded
+  // Reload all embed widgets after new content is loaded
   nextTick(() => {
-    loadTwitterWidgets();
+    loadAllEmbeds();
   });
 });
 </script>

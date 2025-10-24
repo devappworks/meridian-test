@@ -184,7 +184,7 @@ export default defineNuxtConfig({
       meta: [
         // PWA theme color for mobile browsers
         { name: 'theme-color', content: '#0D1519' },
-        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }
       ],
       script: [
