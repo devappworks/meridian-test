@@ -173,7 +173,7 @@
               <div class="more-news">
                 <div class="more-news-content">
                   <div v-html="fifthParagraph" class="text-column"></div>
-                  <div class="more-news-column">
+                  <div v-if="loading.josVestiNews || josVestiNews.length > 0" class="more-news-column">
                     <div v-if="loading.josVestiNews" class="more-news-grid">
                       <div
                         v-for="n in josVestiNews.length"
