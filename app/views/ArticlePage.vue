@@ -2070,6 +2070,10 @@ h2.section-title {
   text-decoration: underline;
 }
 
+:deep(.article-content img) {
+  max-width: 100%;
+}
+
 @keyframes skeleton-loading {
   0% {
     background-position: 200% 0;
