@@ -1372,6 +1372,54 @@ const copyToClipboard = (value) => {
   }
 };
 
+// Load and process Twitter widgets
+const loadTwitterWidgets = () => {
+  // Client-side only
+  if (typeof window === 'undefined') return;
+
+  console.log('[ArticlePage] Loading Twitter widgets script...');
+
+  // Check if Twitter widgets script is already loaded
+  if (window.twttr) {
+    console.log('[ArticlePage] Twitter widgets already loaded, processing tweets...');
+    window.twttr.widgets.load();
+    return;
+  }
+
+  // Load Twitter widgets script
+  const existingScript = document.querySelector('script[src*="platform.twitter.com/widgets.js"]');
+  if (existingScript) {
+    console.log('[ArticlePage] Twitter script tag exists, waiting for load...');
+    // Script tag exists but might not be loaded yet
+    existingScript.addEventListener('load', () => {
+      console.log('[ArticlePage] Twitter widgets script loaded, processing tweets...');
+      if (window.twttr) {
+        window.twttr.widgets.load();
+      }
+    });
+    return;
+  }
+
+  // Create and load the script
+  const script = document.createElement('script');
+  script.src = 'https://platform.twitter.com/widgets.js';
+  script.async = true;
+  script.charset = 'utf-8';
+
+  script.onload = () => {
+    console.log('[ArticlePage] Twitter widgets script loaded successfully');
+    if (window.twttr) {
+      window.twttr.widgets.load();
+    }
+  };
+
+  script.onerror = () => {
+    console.error('[ArticlePage] Failed to load Twitter widgets script');
+  };
+
+  document.head.appendChild(script);
+};
+
 // Lifecycle hooks
 onMounted(async () => {
   console.log("\n🟡 ============ ARTICLE PAGE MOUNTED ============");
@@ -1451,12 +1499,18 @@ onMounted(async () => {
     console.log("🟡 ArticlePage: No article ID for comments, skipping comment fetch");
     loading.value.comments = false;
   }
-  
+
+  // Load Twitter widgets after content is rendered
+  // Use nextTick to ensure DOM is updated
+  nextTick(() => {
+    loadTwitterWidgets();
+  });
+
   console.log("🟡 ============ ARTICLE PAGE MOUNTED END ============\n");
 });
 
 // Watchers
-watch(() => props.category, () => {
+watch(() => props.category, async () => {
   if (typeof window !== 'undefined') {
     window.scrollTo(0, 0);
   }
@@ -1465,11 +1519,16 @@ watch(() => props.category, () => {
   loading.value.relatedNews = true;
   loading.value.otherNews = true;
 
-  fetchArticle();
-  fetchComments();
+  await fetchArticle();
+  await fetchComments();
+
+  // Reload Twitter widgets after new content is loaded
+  nextTick(() => {
+    loadTwitterWidgets();
+  });
 });
 
-watch(() => props.slug, () => {
+watch(() => props.slug, async () => {
   if (typeof window !== 'undefined') {
     window.scrollTo(0, 0);
   }
@@ -1478,8 +1537,13 @@ watch(() => props.slug, () => {
   loading.value.relatedNews = true;
   loading.value.otherNews = true;
 
-  fetchArticle();
-  fetchComments();
+  await fetchArticle();
+  await fetchComments();
+
+  // Reload Twitter widgets after new content is loaded
+  nextTick(() => {
+    loadTwitterWidgets();
+  });
 });
 </script>
 
