@@ -111,9 +111,7 @@
                 :alt="article?.title || ''"
                 :img-attrs="{
                   fetchpriority: 'high',
-                  decoding: 'async',
-                  width: 1200,
-                  height: 675
+                  decoding: 'async'
                 }"
                 sizes="(max-width: 768px) 100vw, 800px"
                 format="webp"

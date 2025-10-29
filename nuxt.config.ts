@@ -232,6 +232,15 @@ export default defineNuxtConfig({
         { rel: 'dns-prefetch', href: 'https://cdnjs.cloudflare.com' },
         { rel: 'dns-prefetch', href: 'https://www.googletagmanager.com' },
         { rel: 'dns-prefetch', href: 'https://fonts.googleapis.com' },
+        // Third-party embeds and widgets - DNS prefetch for faster connection
+        { rel: 'dns-prefetch', href: 'https://www.youtube.com' },
+        { rel: 'dns-prefetch', href: 'https://www.youtube-nocookie.com' },
+        { rel: 'dns-prefetch', href: 'https://platform.twitter.com' },
+        { rel: 'dns-prefetch', href: 'https://widgets.sofascore.com' },
+        { rel: 'dns-prefetch', href: 'https://api.sofascore.com' },
+        { rel: 'dns-prefetch', href: 'https://cdn.jsdelivr.net' },
+        { rel: 'dns-prefetch', href: 'https://ajax.googleapis.com' },
+        { rel: 'dns-prefetch', href: 'https://www.instagram.com' },
         // NOTE: Main fonts (Roboto, Roboto Condensed, Barlow Condensed, Urbanist, Source Sans Pro)
         // are now loaded locally via @fontsource in plugins/fonts.client.js for better performance
         // Non-critical icon fonts - defer loading to improve LCP
