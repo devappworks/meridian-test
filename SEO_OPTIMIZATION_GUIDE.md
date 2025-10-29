@@ -3,8 +3,8 @@
 **Comprehensive SEO documentation - Single source of truth**
 
 **Last Updated:** October 29, 2025
-**Status:** Active Implementation - Recent Updates Deployed
-**Current SEO Score:** 8.5/10 (improved from 8.0)
+**Status:** Active Implementation - Mobile Audit Complete
+**Current SEO Score:** 8.7/10 (improved from 8.0)
 **Target SEO Score:** 9.5/10
 
 ---
@@ -26,19 +26,21 @@ Meridian Sport has implemented a solid SEO foundation with:
 - ✅ **Console logs removed** - Production build removes all console statements (Oct 29, 2025)
 - ✅ **NuxtPicture optimization** - WebP images with responsive sizing in ArticlePage (Oct 29, 2025)
 - ✅ **DNS-prefetch hints** - 8 third-party domains pre-resolved for faster embeds (Oct 29, 2025)
+- ✅ **OG images uploaded** - Homepage and category OG images in public/images/ (Oct 29, 2025)
+- ✅ **Mobile optimization audit** - Complete audit with recommendations in MOBILE_OPTIMIZATION_AUDIT.md (Oct 29, 2025)
 
 ### What's Still Needed 🎯
 
 **HIGH PRIORITY** (Do These First):
 1. ❌ **Missing sitemap** - Being handled by backend (not frontend)
-2. ⚠️ **Upload OG images** - Default images still need to be created
-3. ⚠️ **Add canonical URLs** - Prevent duplicate content issues
+2. ⚠️ **Add canonical URLs** - Prevent duplicate content issues
+3. ⚠️ **Implement mobile UX fixes** - 6 critical touch target issues identified (see MOBILE_OPTIMIZATION_AUDIT.md)
 
 **MEDIUM PRIORITY** (Next Month):
-5. ⚠️ **ItemList schema** for category pages
-6. ⚠️ **VideoObject schema** for YouTube embeds
-7. ⚠️ **Breadcrumb UI** - Schema exists but no visual breadcrumbs
-8. ⚠️ **Mobile optimization audit** - Touch targets, viewport
+4. ⚠️ **ItemList schema** for category pages
+5. ⚠️ **VideoObject schema** for YouTube embeds
+6. ⚠️ **Breadcrumb UI** - Schema exists but no visual breadcrumbs
+7. ⚠️ **576px mobile breakpoint** - Add small phone support
 
 **LOW PRIORITY** (Future Enhancements):
 9. Author pages with detailed Person schema
@@ -174,6 +176,79 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 - **Monitoring:** Observes DOM for dynamically added links
 
 **Status:** ✅ Complete
+
+---
+
+### 1.2A Open Graph Images
+
+#### Default OG Images Uploaded
+**Location:** `public/images/`
+- `homepage-og.jpg` - Default Open Graph image for homepage
+- `default-category-og.jpg` - Fallback for category pages
+
+**Implementation:**
+- Images are 1200x630px (Facebook/Twitter recommended size)
+- Served from public directory for fast loading
+- Referenced in meta tags via `siteUrl` composable
+
+**Usage:**
+```vue
+<!-- Homepage -->
+<meta property="og:image" content="https://meridiansport.rs/images/homepage-og.jpg" />
+
+<!-- Category pages -->
+<meta property="og:image" content="https://meridiansport.rs/images/default-category-og.jpg" />
+
+<!-- Article pages -->
+<meta property="og:image" :content="article.feat_images['extra-large'].url" />
+```
+
+**Status:** ✅ Complete (Oct 29, 2025)
+
+---
+
+### 1.2B Mobile Optimization Audit
+
+#### Comprehensive Mobile UX Audit Completed
+**Document:** `MOBILE_OPTIMIZATION_AUDIT.md`
+
+**Audit Scope:**
+- ✅ Touch target size measurements (48x48px minimum standard)
+- ✅ Viewport meta tag verification
+- ✅ Media query breakpoint analysis
+- ✅ Font scaling for mobile devices
+- ✅ Interactive element spacing audit
+- ✅ Component-specific recommendations
+
+**Key Findings:**
+- **6 Critical Issues Identified:**
+  1. Missing viewport meta tag in nuxt.config.ts
+  2. Header burger menu (24x18px → need 48x48px)
+  3. Search icon (24x24px → need 48x48px)
+  4. User icon (24x24px → need 48x48px)
+  5. Footer social icons (32x32px → need 48x48px)
+  6. Newsletter input font size (12px → need 16px to prevent iOS zoom)
+
+- **Medium Priority Issues:**
+  - Sport category buttons too small
+  - Comment vote/reply buttons below minimum
+  - Footer link touch targets insufficient
+  - Missing 576px breakpoint for small phones
+
+**Implementation Effort:**
+- Critical fixes: ~1 hour
+- Medium priority: ~1.5 hours
+- Testing & validation: ~30 minutes
+- **Total:** ~3 hours for full mobile optimization
+
+**Next Steps:**
+1. Add viewport meta tag to nuxt.config.ts
+2. Increase touch target sizes (padding adjustments)
+3. Fix form input font sizes
+4. Add 576px media query breakpoint
+5. Test on real iOS/Android devices
+
+**Status:** ✅ Audit Complete (Oct 29, 2025) | ⚠️ Implementation Pending
 
 ---
 
