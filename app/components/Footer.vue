@@ -106,6 +106,7 @@ export default {
              (child.href.startsWith('http://') || child.href.startsWith('https://'));
     },
     getRouteForChild(child) {
+      return `/${child.web_categories_verbose[0].slug}/`;
       // If child has a direct href, use it (works for both internal and external)
       if (child.href && child.href !== "#" && child.href !== null) {
         return child.href;
