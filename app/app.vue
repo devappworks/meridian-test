@@ -8,6 +8,8 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
+
 // Speculation Rules API for instant page navigation
 // Inject the script tag directly into the DOM on client-side
 onMounted(() => {
