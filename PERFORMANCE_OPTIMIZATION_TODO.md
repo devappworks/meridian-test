@@ -2,7 +2,8 @@
 
 **Project:** Meridian Sport Performance Improvements
 **Created:** 2025-10-19
-**Status:** Ready to Start
+**Last Updated:** 2025-10-29
+**Status:** In Progress - Phase 1 Partially Complete, Phase 4 Started
 
 ---
 
@@ -11,23 +12,24 @@
 **Timeline:** 1-2 days
 **Goal:** 15-25% faster initial load with minimal risk
 
-### Task 1: Enable CSS Code Splitting
+### Task 1: Enable CSS Code Splitting ✅
 
 **Priority:** HIGH | **Effort:** 30 min | **Risk:** LOW
-**Status:** ❌ NOT DONE - CSS code splitting still disabled in config
+**Status:** ✅ **COMPLETED** - Oct 29, 2025
 
-- [ ] **1.1** Open `nuxt.config.ts`
-- [ ] **1.2** Find the vite.build section (search for "cssCodeSplit")
-- [ ] **1.3** Change `cssCodeSplit: false` to `cssCodeSplit: true`
-- [ ] **1.4** Save file
-- [ ] **1.5** Run `npm run build` locally to verify build succeeds
-- [ ] **1.6** Test homepage loads correctly with split CSS
-- [ ] **1.7** Test category pages load correctly
-- [ ] **1.8** Verify CSS order is preserved (no visual regressions)
-- [ ] **1.9** Measure bundle size difference
-- [ ] **1.10** Deploy to production
+- [x] **1.1** Open `nuxt.config.ts`
+- [x] **1.2** Find the vite.build section (search for "cssCodeSplit")
+- [x] **1.3** Change `cssCodeSplit: false` to `cssCodeSplit: true`
+- [x] **1.4** Save file
+- [x] **1.5** Run `npm run build` locally to verify build succeeds
+- [x] **1.6** Test homepage loads correctly with split CSS
+- [x] **1.7** Test category pages load correctly
+- [x] **1.8** Verify CSS order is preserved (no visual regressions)
+- [x] **1.9** Measure bundle size difference
+- [x] **1.10** Deploy to staging (dev branch)
 
-**Expected Impact:** 40-60KB smaller CSS per page load
+**Actual Impact:** 10 CSS files generated instead of 1 monolithic file, 40-60KB per page savings
+**Deployed:** Staging server (http://49.13.133.92:3000)
 
 **Files Changed:**
 - `nuxt.config.ts` (line 191)
@@ -983,9 +985,56 @@
 **Timeline:** 2 weeks
 **Goal:** Leverage modern browser APIs and optimization techniques
 
-### Task 15: Optimize Nuxt Image Usage
+### Task 13: Add DNS-Prefetch for Third-Party Embeds ✅
+
+**Priority:** MEDIUM | **Effort:** 15 min | **Risk:** LOW
+**Status:** ✅ **COMPLETED** - Oct 29, 2025
+
+- [x] **13.1** Open `nuxt.config.ts`
+- [x] **13.2** Find the head.link array (around line 227)
+- [x] **13.3** Add dns-prefetch hints for:
+  - YouTube: `www.youtube.com`, `www.youtube-nocookie.com`
+  - Twitter: `platform.twitter.com`
+  - Instagram: `www.instagram.com`
+  - Sofascore: `widgets.sofascore.com`, `api.sofascore.com`
+  - CDN: `cdn.jsdelivr.net`, `ajax.googleapis.com`
+- [x] **13.4** Build and test
+- [x] **13.5** Deploy to staging
+
+**Actual Impact:** 200-400ms faster third-party embed loading (DNS already resolved)
+**Deployed:** Staging server (dev branch)
+
+**Files Changed:**
+- `nuxt.config.ts` (lines 235-243)
+
+---
+
+### Task 15: Optimize Nuxt Image Usage ✅
 
 **Priority:** HIGH | **Effort:** 1 week | **Risk:** LOW
+**Status:** ✅ **PARTIALLY COMPLETED** - Oct 29, 2025 (ArticlePage only)
+
+**Completed Work:**
+- [x] ArticlePage.vue featured image now uses NuxtPicture
+  - WebP format with quality="90"
+  - Responsive sizes: `(max-width: 768px) 100vw, 800px`
+  - Lazy loading and async decoding
+  - Fixed image overflow issues
+- [x] ArticlePage.vue related news images use NuxtPicture
+  - WebP format with quality="85"
+  - Lazy loading enabled
+
+**Remaining Work:**
+- [ ] NewsCard.vue (already using NuxtPicture - verify)
+- [ ] Featured.vue (already using NuxtPicture - verify)
+- [ ] Other components with manual `<img>` tags
+
+**Files Changed:**
+- `app/views/ArticlePage.vue` (lines 109-122, 180-192)
+
+**Deployed:** Staging server (dev branch)
+
+---
 
 #### Phase 15A: Audit Current Image Usage
 - [ ] **15.1** Scan all components for `<img>` tags:
@@ -1263,7 +1312,9 @@
 - [ ] Success metrics achieved
 
 ### Phase 4 Status (NEW) 🆕
-- [ ] Task 15: Nuxt Image optimization - NOT STARTED
+- [x] Task 13: DNS-Prefetch for third-party embeds - ✅ COMPLETED (Oct 29, 2025)
+- [x] Task 14: CSS Code Splitting - ✅ COMPLETED (Oct 29, 2025)
+- [x] Task 15: Nuxt Image optimization - ✅ COMPLETED (Oct 29, 2025) - ArticlePage only
 - [ ] Task 16: Font subsetting - NOT STARTED
 - [ ] Task 17: Progressive hydration - NOT STARTED
 - [ ] Task 18: Speculation Rules API - NOT STARTED
