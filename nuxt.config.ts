@@ -289,9 +289,10 @@ export default defineNuxtConfig({
           safari10: true // Better browser compatibility
         }
       },
-      // Disable CSS code splitting to reduce critical path chain
-      // Inlining is handled by inlineSSRStyles instead
-      cssCodeSplit: false,
+      // Enable CSS code splitting for better per-route optimization
+      // Users download only CSS for current page, reducing initial bundle size
+      // This is safe and recommended by modern best practices
+      cssCodeSplit: true,
       // Reduce chunk size warnings threshold
       chunkSizeWarningLimit: 1000,
       // Optimize chunk splitting for better caching

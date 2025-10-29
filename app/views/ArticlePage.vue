@@ -106,33 +106,19 @@
               class="featured-image"
               v-if="article?.feat_images?.['extra-large']?.url"
             >
-              <picture v-if="article.feat_images['extra-large']?.webp">
-                <source
-                  type="image/webp"
-                  :srcset="article.feat_images['extra-large'].webp"
-                  :sizes="articleImage.sizes"
-                />
-                <img
-                  :src="articleImage.src"
-                  :srcset="articleImage.srcset"
-                  :sizes="articleImage.sizes"
-                  :alt="article?.title || ''"
-                  fetchpriority="high"
-                  decoding="async"
-                  width="1200"
-                  height="675"
-                />
-              </picture>
-              <img
-                v-else
-                :src="articleImage.src"
-                :srcset="articleImage.srcset"
-                :sizes="articleImage.sizes"
+              <NuxtPicture
+                :src="article.feat_images['extra-large'].url"
                 :alt="article?.title || ''"
-                fetchpriority="high"
-                decoding="async"
-                width="1200"
-                height="675"
+                :img-attrs="{
+                  fetchpriority: 'high',
+                  decoding: 'async',
+                  width: 1200,
+                  height: 675
+                }"
+                sizes="(max-width: 768px) 100vw, 800px"
+                format="webp"
+                quality="90"
+                preload
               />
               <div class="image-caption" v-if="article?.featured_image_caption">
                 {{ article.featured_image_caption }}
@@ -192,14 +178,17 @@
                         class="news-item"
                       >
                         <div class="news-image">
-                          <picture>
-                            <source
-                              v-if="getJosVestiWebp(news)"
-                              type="image/webp"
-                              :srcset="getJosVestiWebp(news)"
-                            />
-                            <img :src="news.image" :alt="news.title" />
-                          </picture>
+                          <NuxtPicture
+                            :src="news.image"
+                            :alt="news.title"
+                            :img-attrs="{
+                              loading: 'lazy',
+                              decoding: 'async'
+                            }"
+                            sizes="(max-width: 576px) 100vw, (max-width: 768px) 50vw, 200px"
+                            format="webp"
+                            quality="85"
+                          />
                         </div>
                         <h3 class="news-title">{{ news.title }}</h3>
                       </NuxtLink>
@@ -1415,6 +1404,14 @@ watch(() => props.slug, async () => {
   aspect-ratio: attr(width) / attr(height);
   border-radius: 8px;
   margin: 24px 0;
+  display: block;
+}
+
+/* Ensure picture elements don't cause layout issues */
+.article-text picture {
+  display: block;
+  width: 100%;
+  margin: 24px 0;
 }
 
 /* Fallback for images without width/height attributes */
@@ -1570,14 +1567,24 @@ watch(() => props.slug, async () => {
   opacity: 0.8;
 }
 .featured-image {
+  width: 100%;
+  max-width: 100%;
   border-radius: 8px;
+}
+
+/* Ensure NuxtPicture respects container width */
+.featured-image picture {
+  display: block;
+  width: 100%;
+  max-width: 100%;
 }
 
 .featured-image img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  max-width: 100%;
   border-radius: 8px;
+  display: block;
 }
 
 .image-caption {
@@ -1859,6 +1866,21 @@ h2.section-title {
   aspect-ratio: 16/9;
 }
 
+/* Ensure NuxtPicture elements display correctly */
+.news-image picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.news-image picture img {
+  display: block;
+  width: auto;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
 .related-news-list {
   display: flex;
   flex-direction: column;
@@ -1946,10 +1968,23 @@ h2.section-title {
   background: var(--bg-40);
 }
 
+:deep(.article-text figure) {
+  display: block;
+  width: 100%;
+  margin: 24px 0;
+  clear: both;
+}
+
 :deep(.article-text figure img) {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+}
+
+:deep(.article-text figure picture) {
+  display: block;
+  width: 100%;
 }
 
 /* Skeleton loading styles */
