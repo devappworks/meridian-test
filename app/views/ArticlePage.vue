@@ -377,20 +377,80 @@ const otherNews = ref(props.otherNews || []);
 // Template refs
 const mainColumn = ref(null);
 
-// Helper function to remove broken images from HTML content
+// Helper function to remove broken images, Gmail HTML, and unwanted sidebar content
 const cleanBrokenImages = (htmlContent) => {
   if (!htmlContent) return "";
 
-  // Remove figure elements with images that have invalid src (not starting with http/https)
-  // This regex matches figure elements containing img tags with src="files/images/..."
-  let cleaned = htmlContent.replace(
+  let cleaned = htmlContent;
+
+  // Step 1: Remove Gmail wrapper divs with specific classes
+  // These are the outermost Gmail containers that wrap everything
+  cleaned = cleaned.replace(
+    /<div[^>]*class=["'][^"']*(?:gs|ii gt|a3s aiL|yj6qo|adL|WhmR8e)[^"']*["'][^>]*>/gi,
+    ''
+  );
+
+  // Remove Gmail-specific div IDs and data attributes
+  cleaned = cleaned.replace(
+    /<div[^>]*(?:id|data-hash)=["'][^"']*["'][^>]*>/gi,
+    '<div>'
+  );
+
+  // Step 2: Clean up excessive nested empty divs (common in Gmail HTML)
+  // Remove divs that only contain whitespace or line breaks
+  cleaned = cleaned.replace(
+    /<div[^>]*>\s*<\/div>/gi,
+    ''
+  );
+
+  cleaned = cleaned.replace(
+    /<div[^>]*>\s*<br\s*\/?>\s*<br\s*\/?>\s*<\/div>/gi,
+    ''
+  );
+
+  // Step 3: Remove figure elements with broken images
+  cleaned = cleaned.replace(
     /<figure[^>]*>[\s\S]*?<img[^>]*src=["'](?!https?:\/\/)files\/images\/[^"']*["'][^>]*>[\s\S]*?<\/figure>/gi,
     ''
   );
 
-  // Also remove standalone img tags with invalid src
+  // Remove standalone img tags with invalid src
   cleaned = cleaned.replace(
     /<img[^>]*src=["'](?!https?:\/\/)files\/images\/[^"']*["'][^>]*>/gi,
+    ''
+  );
+
+  // Step 4: Remove any sidebar-related HTML (iterative for nested structures)
+  let maxIterations = 10;
+  let prevCleaned = '';
+
+  while (prevCleaned !== cleaned && maxIterations > 0) {
+    prevCleaned = cleaned;
+
+    // Remove sidebar wrapper divs
+    cleaned = cleaned.replace(
+      /<div[^>]*class=["'][^"']*(?:sidebar|related-news|news-sidebar|sidebar-column|sidebar-news|news-list|loading|skeleton)[^"']*["'][^>]*>[\s\S]*?<\/div>/gi,
+      ''
+    );
+
+    // Remove specific loading/skeleton structures
+    cleaned = cleaned.replace(
+      /<div[^>]*(?:class|style)=["'][^"']*(?:loading|skeleton|pulse|animate)[^"']*["'][^>]*>[\s\S]*?<\/div>/gi,
+      ''
+    );
+
+    maxIterations--;
+  }
+
+  // Step 5: Normalize dir="auto" attributes (Gmail adds these everywhere)
+  cleaned = cleaned.replace(
+    / dir=["']auto["']/gi,
+    ''
+  );
+
+  // Step 6: Clean up any remaining empty divs after all removals
+  cleaned = cleaned.replace(
+    /<div[^>]*>\s*<\/div>/gi,
     ''
   );
 
@@ -1716,6 +1776,7 @@ h2.section-title {
   display: flex;
   gap: 24px;
   align-items: center;
+  flex-direction: column;
 }
 
 .text-column {
