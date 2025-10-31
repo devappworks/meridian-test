@@ -170,9 +170,12 @@ export default {
         console.error("Login error:", error);
 
         // Handle different error types
-        if (error.response?.status === 401) {
+        if (error.response?.status === 202) {
           this.errorMessage =
             "Poslat Vam je email sa linkom za resetovanje lozinke.";
+        } else if (error.response?.status === 401) {
+          this.errorMessage =
+            "Pogrešna email adresa ili lozinka.";
         } else if (error.response?.status === 422) {
           this.errorMessage =
             "Nevažeći format podataka. Molimo proverite unos.";
