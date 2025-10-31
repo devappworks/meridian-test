@@ -332,7 +332,11 @@ useHead(() => {
     // Speakable schema for voice search optimization
     speakable: {
       "@type": "SpeakableSpecification",
-      cssSelector: [".article-title", ".article-subtitle", ".article-text"]
+      cssSelector: [
+        ".article-title",
+        ...(a.subtitle ? [".article-subtitle"] : []),
+        ".article-text"
+      ]
     },
     mainEntityOfPage: canonicalUrl
       ? {
