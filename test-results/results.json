@@ -1,0 +1,525 @@
+{
+  "config": {
+    "configFile": "/root/meridian/meridian-test/playwright.config.ts",
+    "rootDir": "/root/meridian/meridian-test/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/root/meridian/meridian-test/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/root/meridian/meridian-test/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/root/meridian/meridian-test/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/root/meridian/meridian-test/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/root/meridian/meridian-test/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/root/meridian/meridian-test/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/root/meridian/meridian-test/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "/root/meridian/meridian-test/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/root/meridian/meridian-test/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "/root/meridian/meridian-test/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run preview",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000,
+      "stdout": "pipe",
+      "stderr": "pipe"
+    }
+  },
+  "suites": [
+    {
+      "title": "font-loading.spec.ts",
+      "file": "font-loading.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Font Loading - FOUT Prevention",
+          "file": "font-loading.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "critical fonts should be preloaded in HTML",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1988,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ All critical fonts have preload links\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-29T14:38:26.212Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f32c9983590ecc5ccad8-e553b13c05a53a09c224",
+              "file": "font-loading.spec.ts",
+              "line": 9,
+              "column": 3
+            },
+            {
+              "title": "preload links should be in HTML head before CSS",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2154,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m419\u001b[39m\nReceived:   \u001b[31m160563\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m419\u001b[39m\nReceived:   \u001b[31m160563\u001b[39m\n    at /root/meridian/meridian-test/tests/e2e/font-loading.spec.ts:43:26",
+                        "location": {
+                          "file": "/root/meridian/meridian-test/tests/e2e/font-loading.spec.ts",
+                          "column": 26,
+                          "line": 43
+                        },
+                        "snippet": "  41 |     // Preload should come before stylesheet for optimal loading\n  42 |     expect(preloadIndex).toBeGreaterThan(0)\n> 43 |     expect(preloadIndex).toBeLessThan(cssIndex)\n     |                          ^\n  44 |\n  45 |     console.log('✅ Preload links correctly positioned before CSS')\n  46 |   })"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/root/meridian/meridian-test/tests/e2e/font-loading.spec.ts",
+                            "column": 26,
+                            "line": 43
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m419\u001b[39m\nReceived:   \u001b[31m160563\u001b[39m\n\n  41 |     // Preload should come before stylesheet for optimal loading\n  42 |     expect(preloadIndex).toBeGreaterThan(0)\n> 43 |     expect(preloadIndex).toBeLessThan(cssIndex)\n     |                          ^\n  44 |\n  45 |     console.log('✅ Preload links correctly positioned before CSS')\n  46 |   })\n    at /root/meridian/meridian-test/tests/e2e/font-loading.spec.ts:43:26"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-29T14:38:28.532Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/meridian/meridian-test/test-results/font-loading-Font-Loading--6bf46--be-in-HTML-head-before-CSS-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/meridian/meridian-test/test-results/font-loading-Font-Loading--6bf46--be-in-HTML-head-before-CSS-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/meridian/meridian-test/test-results/font-loading-Font-Loading--6bf46--be-in-HTML-head-before-CSS-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/root/meridian/meridian-test/tests/e2e/font-loading.spec.ts",
+                        "column": 26,
+                        "line": 43
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f32c9983590ecc5ccad8-41ff8d704108284c2485",
+              "file": "font-loading.spec.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "font files should load with high priority",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2741,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ 3 critical font files loaded\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-29T14:38:31.587Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f32c9983590ecc5ccad8-c0f48280f1a277f7014f",
+              "file": "font-loading.spec.ts",
+              "line": 48,
+              "column": 3
+            },
+            {
+              "title": "fonts should not cause layout shift",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2609,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Custom fonts applied correctly\n"
+                        },
+                        {
+                          "text": "   Body font: Roboto, sans-serif\n"
+                        },
+                        {
+                          "text": "   Heading font: Roboto, sans-serif\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-29T14:38:34.458Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f32c9983590ecc5ccad8-5bd97711f5532e2cd7ca",
+              "file": "font-loading.spec.ts",
+              "line": 79,
+              "column": 3
+            },
+            {
+              "title": "font files should be cached for 1 year",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2697,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ 14 font files have immutable cache headers\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-29T14:38:37.092Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f32c9983590ecc5ccad8-41c683717624971fbde6",
+              "file": "font-loading.spec.ts",
+              "line": 106,
+              "column": 3
+            },
+            {
+              "title": "homepage should not show visible font swap (FOUT)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3437,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ No font swap detected - FOUT prevented\n"
+                        },
+                        {
+                          "text": "   Initial font: Roboto, sans-serif\n"
+                        },
+                        {
+                          "text": "   Final font: Roboto, sans-serif\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-29T14:38:39.809Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f32c9983590ecc5ccad8-a8aae4cd990c1eadc777",
+              "file": "font-loading.spec.ts",
+              "line": 131,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Font Performance",
+          "file": "font-loading.spec.ts",
+          "line": 162,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should load fonts quickly on fast connection",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2768,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Fonts loaded in 2343ms\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-29T14:38:43.268Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f32c9983590ecc5ccad8-1e791440b3063e7398f8",
+              "file": "font-loading.spec.ts",
+              "line": 163,
+              "column": 3
+            },
+            {
+              "title": "preload links should have correct attributes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1926,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ 3 font preload links with correct attributes\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-29T14:38:46.054Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f32c9983590ecc5ccad8-802be371a81099d90207",
+              "file": "font-loading.spec.ts",
+              "line": 177,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-10-29T14:38:25.310Z",
+    "duration": 22764.381,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
