@@ -77,13 +77,28 @@ import Footer from "@/components/Footer.vue";
 const config = useRuntimeConfig();
 const gtmId = config.public?.GTM_ID || 'GTM-MDNMRBXM';
 
-// Load GTM script on client side
+// GTM loading function
+function loadGTM() {
+  const script = document.createElement('script')
+  script.src = `https://www.googletagmanager.com/gtm.js?id=${gtmId}`
+  script.async = true
+  document.head.appendChild(script)
+}
+
+// Load GTM script on client side (prerendering-aware to prevent analytics inflation)
 onMounted(() => {
   if (process.client) {
-    const script = document.createElement('script')
-    script.src = `https://www.googletagmanager.com/gtm.js?id=${gtmId}`
-    script.async = true
-    document.head.appendChild(script)
+    // Check if page is being prerendered by Speculation Rules API
+    if (document.prerendering) {
+      // Wait for actual activation before loading GTM
+      // This prevents double-counting pageviews in analytics
+      document.addEventListener('prerenderingchange', () => {
+        loadGTM()
+      }, { once: true })
+    } else {
+      // Normal page load - not being prerendered
+      loadGTM()
+    }
   }
 })
 

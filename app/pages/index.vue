@@ -189,33 +189,6 @@ const volleyballNews = ref([]);
 const otherNews = ref([]);
 const tipovi = ref([]);
 
-const matches = ref([
-  {
-    date: "03.02. 16:00",
-    homeTeam: "Manchester United",
-    awayTeam: "Wolverhampton Wanderers",
-    odds: ["1.32", "1.32", "1.32"],
-  },
-  {
-    date: "03.02. 16:00",
-    homeTeam: "Manchester United",
-    awayTeam: "Wolverhampton Wanderers",
-    odds: ["1.32", "1.32", "1.32"],
-  },
-  {
-    date: "03.02. 16:00",
-    homeTeam: "Manchester United",
-    awayTeam: "Wolverhampton Wanderers",
-    odds: ["1.32", "1.32", "1.32"],
-  },
-  {
-    date: "03.02. 16:00",
-    homeTeam: "Manchester United",
-    awayTeam: "Wolverhampton Wanderers",
-    odds: ["1.32", "1.32", "1.32"],
-  },
-]);
-
 // Helper functions
 const mapArticleData = (article) => {
   if (!article) {

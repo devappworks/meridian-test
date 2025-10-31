@@ -106,33 +106,17 @@
               class="featured-image"
               v-if="article?.feat_images?.['extra-large']?.url"
             >
-              <picture v-if="article.feat_images['extra-large']?.webp">
-                <source
-                  type="image/webp"
-                  :srcset="article.feat_images['extra-large'].webp"
-                  :sizes="articleImage.sizes"
-                />
-                <img
-                  :src="articleImage.src"
-                  :srcset="articleImage.srcset"
-                  :sizes="articleImage.sizes"
-                  :alt="article?.title || ''"
-                  fetchpriority="high"
-                  decoding="async"
-                  width="1200"
-                  height="675"
-                />
-              </picture>
-              <img
-                v-else
-                :src="articleImage.src"
-                :srcset="articleImage.srcset"
-                :sizes="articleImage.sizes"
+              <NuxtPicture
+                :src="article.feat_images['extra-large'].url"
                 :alt="article?.title || ''"
-                fetchpriority="high"
-                decoding="async"
-                width="1200"
-                height="675"
+                :img-attrs="{
+                  fetchpriority: 'high',
+                  decoding: 'async'
+                }"
+                sizes="(max-width: 768px) 100vw, 800px"
+                format="webp"
+                quality="90"
+                preload
               />
               <div class="image-caption" v-if="article?.featured_image_caption">
                 {{ article.featured_image_caption }}
@@ -192,14 +176,17 @@
                         class="news-item"
                       >
                         <div class="news-image">
-                          <picture>
-                            <source
-                              v-if="getJosVestiWebp(news)"
-                              type="image/webp"
-                              :srcset="getJosVestiWebp(news)"
-                            />
-                            <img :src="news.image" :alt="news.title" />
-                          </picture>
+                          <NuxtPicture
+                            :src="news.image"
+                            :alt="news.title"
+                            :img-attrs="{
+                              loading: 'lazy',
+                              decoding: 'async'
+                            }"
+                            sizes="(max-width: 576px) 100vw, (max-width: 768px) 50vw, 200px"
+                            format="webp"
+                            quality="85"
+                          />
                         </div>
                         <h3 class="news-title">{{ news.title }}</h3>
                       </NuxtLink>
@@ -390,20 +377,80 @@ const otherNews = ref(props.otherNews || []);
 // Template refs
 const mainColumn = ref(null);
 
-// Helper function to remove broken images from HTML content
+// Helper function to remove broken images, Gmail HTML, and unwanted sidebar content
 const cleanBrokenImages = (htmlContent) => {
   if (!htmlContent) return "";
 
-  // Remove figure elements with images that have invalid src (not starting with http/https)
-  // This regex matches figure elements containing img tags with src="files/images/..."
-  let cleaned = htmlContent.replace(
+  let cleaned = htmlContent;
+
+  // Step 1: Remove Gmail wrapper divs with specific classes
+  // These are the outermost Gmail containers that wrap everything
+  cleaned = cleaned.replace(
+    /<div[^>]*class=["'][^"']*(?:gs|ii gt|a3s aiL|yj6qo|adL|WhmR8e)[^"']*["'][^>]*>/gi,
+    ''
+  );
+
+  // Remove Gmail-specific div IDs and data attributes
+  cleaned = cleaned.replace(
+    /<div[^>]*(?:id|data-hash)=["'][^"']*["'][^>]*>/gi,
+    '<div>'
+  );
+
+  // Step 2: Clean up excessive nested empty divs (common in Gmail HTML)
+  // Remove divs that only contain whitespace or line breaks
+  cleaned = cleaned.replace(
+    /<div[^>]*>\s*<\/div>/gi,
+    ''
+  );
+
+  cleaned = cleaned.replace(
+    /<div[^>]*>\s*<br\s*\/?>\s*<br\s*\/?>\s*<\/div>/gi,
+    ''
+  );
+
+  // Step 3: Remove figure elements with broken images
+  cleaned = cleaned.replace(
     /<figure[^>]*>[\s\S]*?<img[^>]*src=["'](?!https?:\/\/)files\/images\/[^"']*["'][^>]*>[\s\S]*?<\/figure>/gi,
     ''
   );
 
-  // Also remove standalone img tags with invalid src
+  // Remove standalone img tags with invalid src
   cleaned = cleaned.replace(
     /<img[^>]*src=["'](?!https?:\/\/)files\/images\/[^"']*["'][^>]*>/gi,
+    ''
+  );
+
+  // Step 4: Remove any sidebar-related HTML (iterative for nested structures)
+  let maxIterations = 10;
+  let prevCleaned = '';
+
+  while (prevCleaned !== cleaned && maxIterations > 0) {
+    prevCleaned = cleaned;
+
+    // Remove sidebar wrapper divs
+    cleaned = cleaned.replace(
+      /<div[^>]*class=["'][^"']*(?:sidebar|related-news|news-sidebar|sidebar-column|sidebar-news|news-list|loading|skeleton)[^"']*["'][^>]*>[\s\S]*?<\/div>/gi,
+      ''
+    );
+
+    // Remove specific loading/skeleton structures
+    cleaned = cleaned.replace(
+      /<div[^>]*(?:class|style)=["'][^"']*(?:loading|skeleton|pulse|animate)[^"']*["'][^>]*>[\s\S]*?<\/div>/gi,
+      ''
+    );
+
+    maxIterations--;
+  }
+
+  // Step 5: Normalize dir="auto" attributes (Gmail adds these everywhere)
+  cleaned = cleaned.replace(
+    / dir=["']auto["']/gi,
+    ''
+  );
+
+  // Step 6: Clean up any remaining empty divs after all removals
+  cleaned = cleaned.replace(
+    /<div[^>]*>\s*<\/div>/gi,
     ''
   );
 
@@ -1415,6 +1462,14 @@ watch(() => props.slug, async () => {
   aspect-ratio: attr(width) / attr(height);
   border-radius: 8px;
   margin: 24px 0;
+  display: block;
+}
+
+/* Ensure picture elements don't cause layout issues */
+.article-text picture {
+  display: block;
+  width: 100%;
+  margin: 24px 0;
 }
 
 /* Fallback for images without width/height attributes */
@@ -1570,14 +1625,24 @@ watch(() => props.slug, async () => {
   opacity: 0.8;
 }
 .featured-image {
+  width: 100%;
+  max-width: 100%;
   border-radius: 8px;
+}
+
+/* Ensure NuxtPicture respects container width */
+.featured-image picture {
+  display: block;
+  width: 100%;
+  max-width: 100%;
 }
 
 .featured-image img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  max-width: 100%;
   border-radius: 8px;
+  display: block;
 }
 
 .image-caption {
@@ -1711,6 +1776,7 @@ h2.section-title {
   display: flex;
   gap: 24px;
   align-items: center;
+  flex-direction: column;
 }
 
 .text-column {
@@ -1859,6 +1925,21 @@ h2.section-title {
   aspect-ratio: 16/9;
 }
 
+/* Ensure NuxtPicture elements display correctly */
+.news-image picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.news-image picture img {
+  display: block;
+  width: auto;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
 .related-news-list {
   display: flex;
   flex-direction: column;
@@ -1946,10 +2027,23 @@ h2.section-title {
   background: var(--bg-40);
 }
 
+:deep(.article-text figure) {
+  display: block;
+  width: 100%;
+  margin: 24px 0;
+  clear: both;
+}
+
 :deep(.article-text figure img) {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+}
+
+:deep(.article-text figure picture) {
+  display: block;
+  width: 100%;
 }
 
 /* Skeleton loading styles */

@@ -126,6 +126,7 @@ export default {
       if (dedicatedRoutes[child.label.toUpperCase()]) {
         return dedicatedRoutes[child.label.toUpperCase()];
       }
+      return `/${child.web_categories_verbose?.[0]?.slug}/`;
 
       // If child has web_categories, return clean path with slug
       if (child.web_categories && child.web_categories.length > 0) {
