@@ -224,6 +224,29 @@ export default defineNuxtConfig({
         { rel: 'shortcut icon', href: '/images/meridian-favicon-1758622126.png' },
         // Web App Manifest for PWA support
         { rel: 'manifest', href: '/site.webmanifest' },
+        // Preload critical fonts to eliminate FOUT (Font flashing/jumping)
+        // These 3 Latin fonts cover 90%+ of users and are used immediately on page load
+        {
+          rel: 'preload',
+          href: '/_nuxt/roboto-latin-400-normal-CNwBRw8h.woff2',
+          as: 'font',
+          type: 'font/woff2',
+          crossorigin: 'anonymous'
+        },
+        {
+          rel: 'preload',
+          href: '/_nuxt/barlow-condensed-latin-700-normal-v1xN8_Wq.woff2',
+          as: 'font',
+          type: 'font/woff2',
+          crossorigin: 'anonymous'
+        },
+        {
+          rel: 'preload',
+          href: '/_nuxt/source-sans-pro-latin-400-normal-tpsLXCSJ.woff2',
+          as: 'font',
+          type: 'font/woff2',
+          crossorigin: 'anonymous'
+        },
         // Preconnect to ONLY the most critical origins
         { rel: 'preconnect', href: 'https://meridian.mpanel.app' },
         // Critical: Preconnect to S3 image CDN for LCP optimization
